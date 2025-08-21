@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>ARIA Label Test Cases</title>
+</head>
+<body>
+    <!-- WCAG 2.5.3 Violations: aria-label overrides visible text without including it -->
+    <button aria-label="Submit the form">Save</button>  <!-- Should warn: aria-label should include visible text 'Save' -->
+    <a href="#" aria-label="Navigate to home">Go Home</a>  <!-- Should warn: aria-label should start with 'Go Home' -->
+    
+    <!-- Redundant role words in aria-label -->
+    <button aria-label="Save button">Save</button>  <!-- Should warn: Redundant 'button' in aria-label -->
+    <a href="#" aria-label="Home link">Home</a>  <!-- Should warn: Redundant 'link' in aria-label -->
+    <input type="checkbox" aria-label="Accept terms checkbox">  <!-- Should warn: Redundant 'checkbox' -->
+    
+    <!-- Invalid aria-labelledby references -->
+    <button aria-labelledby="non-existent-id">Action</button>  <!-- Should warn: ID doesn't exist -->
+    <input aria-labelledby="label1 label2 missing-id">  <!-- Should warn: missing-id doesn't exist -->
+    
+    <!-- Valid reference -->
+    <label id="label1">First Name</label>
+    <input aria-labelledby="label1">
+    
+    <!-- Unnecessary aria-label (duplicates visible text) -->
+    <button aria-label="Submit">Submit</button>  <!-- Should warn: Unnecessary, duplicates visible text -->
+    
+    <!-- Invalid ARIA attributes -->
+    <div aria-custom="value">Content</div>  <!-- Should warn: Invalid ARIA attribute -->
+    <button aria-invalid-attr="true">Button</button>  <!-- Should warn: Invalid ARIA attribute -->
+    
+    <!-- Verbose aria-labels (should suggest aria-describedby) -->
+    <button aria-label="This is a very long button label that contains way too much information and should really be shortened to just the essential information while moving the detailed explanations to aria-describedby instead">Click</button>
+    
+    <!-- Instructions in aria-label (should use aria-describedby) -->
+    <input aria-label="Enter your email address and press Enter to submit">
+    
+    <!-- aria-hidden with focusable elements -->
+    <button aria-hidden="true" onclick="handleClick()">Hidden Button</button>  <!-- Should warn -->
+    <a href="#" aria-hidden="true">Hidden Link</a>  <!-- Should warn -->
+    <input aria-hidden="true" tabindex="0">  <!-- Should warn -->
+    
+    <!-- Missing aria-expanded on collapsible elements -->
+    <button class="dropdown-toggle" data-toggle="dropdown">Menu</button>  <!-- Should warn: needs aria-expanded -->
+    <button class="collapse-trigger" data-bs-toggle="collapse">Expand</button>  <!-- Should warn -->
+    
+    <!-- Translation concerns -->
+    <button aria-label="Visit https://example.com for more info">Learn More</button>  <!-- Should warn: contains URL -->
+    <button aria-label="Contact support@example.com">Contact</button>  <!-- Should warn: contains email -->
+    <button aria-label="API endpoint configuration">Configure</button>  <!-- Should warn: technical abbreviation -->
+    
+    <!-- Good examples that should not trigger warnings -->
+    <button aria-label="Save document as PDF">Save</button>  <!-- Good: includes visible text -->
+    <button>Submit Form</button>  <!-- Good: no aria-label needed -->
+    <img src="logo.jpg" aria-label="Company Logo">  <!-- Good: appropriate for img -->
+    <button aria-describedby="help-text">Submit</button>
+    <div id="help-text">Click this button to submit the form</div>  <!-- Good: uses describedby for instructions -->
+    
+    <!-- Proper aria-expanded usage -->
+    <button aria-expanded="false" aria-controls="menu">Menu</button>
+    
+    <!-- Fluid ViewHelpers with ARIA issues -->
+    <f:form.button aria-label="Submit button">Submit</f:form.button>  <!-- Should warn: redundant 'button' -->
+    <f:link.page aria-label="Navigate to contact page">Contact</f:link.page>  <!-- Should warn: should include visible text -->
+    
+    <!-- Valid ARIA attributes that should not trigger warnings -->
+    <div aria-live="polite" aria-atomic="true">Status updates</div>
+    <button aria-describedby="help" aria-pressed="false">Toggle</button>
+    <input aria-required="true" aria-invalid="false" aria-errormessage="error">
+</body>
+</html>

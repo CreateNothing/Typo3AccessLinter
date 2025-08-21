@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Conflicting ARIA Attributes Test</title>
+</head>
+<body>
+    <!-- Hidden elements that are interactive (conflict) -->
+    <button aria-hidden="true">Hidden but interactive button</button>
+    <a href="#" aria-hidden="true">Hidden but interactive link</a>
+    <input type="text" aria-hidden="true" tabindex="0">
+    <div role="button" aria-hidden="true" tabindex="0">Hidden interactive div</div>
+    
+    <!-- Conflicting implicit and explicit roles -->
+    <button role="link">Button with link role (conflict)</button>
+    <a href="#" role="button">Link with button role (may be intentional)</a>
+    <nav role="main">Nav with main role (conflict)</nav>
+    <main role="navigation">Main with navigation role (conflict)</main>
+    <form role="navigation">Form with navigation role (conflict)</form>
+    
+    <!-- Input elements with inappropriate roles -->
+    <input type="checkbox" role="button">Checkbox with button role</input>
+    <input type="radio" role="checkbox">Radio with checkbox role</input>
+    <input type="button" role="textbox">Button input with textbox role</input>
+    <input type="range" role="textbox">Range input with textbox role</input>
+    
+    <!-- Semantic elements with presentation role (removes semantics) -->
+    <h1 role="presentation">Heading with presentation role</h1>
+    <button role="presentation">Button with presentation role</button>
+    <a href="#" role="none">Link with none role</a>
+    <ul role="presentation">
+        <li>List with presentation role</li>
+    </ul>
+    
+    <!-- Interactive elements with non-interactive roles -->
+    <button role="article">Button with article role</button>
+    <a href="#" role="region">Link with region role</a>
+    <input type="text" role="img">Input with image role</input>
+    
+    <!-- Elements styled as buttons but with different roles -->
+    <div class="btn btn-primary" onclick="handleClick()" role="link">Looks like button, role is link</div>
+    <span class="button" onclick="doAction()" role="heading">Styled as button, role is heading</span>
+    
+    <!-- Links styled as buttons without proper role -->
+    <a href="#" class="btn btn-primary">Link styled as button (needs role="button")</a>
+    <a href="#" class="button large-button">Another button-styled link</a>
+</body>
+</html>
