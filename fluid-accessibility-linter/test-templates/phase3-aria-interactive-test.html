@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Phase 3: ARIA Roles & Interactive Components Test</title>
+</head>
+<body>
+    <h1>Phase 3 ARIA and Interactive Components Test File</h1>
+    
+    <p>This file tests all Phase 3 inspections for ARIA roles and interactive component patterns.</p>
+    
+    <!-- ============================== -->
+    <!-- 1. ARIA Role Validation Tests -->
+    <!-- ============================== -->
+    <h2>1. ARIA Role Validation</h2>
+    
+    <h3>Invalid Roles (Should trigger errors)</h3>
+    
+    <!-- ERROR: Abstract role used directly -->
+    <div role="widget">Abstract widget role - ERROR</div>
+    <div role="landmark">Abstract landmark role - ERROR</div>
+    <div role="input">Abstract input role - ERROR</div>
+    
+    <!-- ERROR: Invalid role value -->
+    <div role="invalid-role">Invalid role - ERROR</div>
+    <div role="my-custom-role">Non-existent role - ERROR</div>
+    
+    <!-- ERROR: Multiple roles not allowed -->
+    <div role="button link">Multiple roles - ERROR</div>
+    <div role="navigation region">Multiple roles - ERROR</div>
+    
+    <!-- ERROR: Missing required properties -->
+    <div role="checkbox">Checkbox without aria-checked - ERROR</div>
+    <div role="slider">Slider without aria-valuenow - ERROR</div>
+    <div role="combobox">Combobox without aria-expanded - ERROR</div>
+    <div role="tab">Tab without aria-selected - ERROR</div>
+    <div role="switch">Switch without aria-checked - ERROR</div>
+    
+    <!-- ERROR: Redundant ARIA -->
+    <button role="button">Redundant role on button - ERROR</button>
+    <nav role="navigation">Redundant role on nav - ERROR</nav>
+    <main role="main">Redundant role on main - ERROR</main>
+    
+    <!-- ERROR: Conflicting ARIA -->
+    <div role="button" aria-hidden="true" tabindex="0">Hidden interactive element - ERROR</div>
+    
+    <h3>Valid Roles (Should NOT trigger errors)</h3>
+    
+    <!-- Valid roles with required properties -->
+    <div role="checkbox" aria-checked="false">Valid checkbox</div>
+    <div role="slider" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Valid slider</div>
+    <div role="combobox" aria-expanded="false">Valid combobox</div>
+    <div role="tab" aria-selected="false">Valid tab</div>
+    <div role="switch" aria-checked="true">Valid switch</div>
+    
+    <!-- Valid semantic HTML without redundant roles -->
+    <button>Button without redundant role</button>
+    <nav>Nav without redundant role</nav>
+    <main>Main without redundant role</main>
+    
+    <!-- ================================ -->
+    <!-- 2. Modal Dialog Accessibility -->
+    <!-- ================================ -->
+    <h2>2. Modal Dialog Accessibility</h2>
+    
+    <h3>Invalid Modals (Should trigger warnings)</h3>
+    
+    <!-- WARNING: Missing aria-modal -->
+    <div role="dialog" aria-labelledby="dialog1-title">
+        <h2 id="dialog1-title">Missing aria-modal - WARNING</h2>
+        <button>Close</button>
+    </div>
+    
+    <!-- WARNING: Missing label -->
+    <div role="dialog" aria-modal="true">
+        <h2>Missing aria-labelledby or aria-label - WARNING</h2>
+        <button>Close</button>
+    </div>
+    
+    <!-- WARNING: No focusable elements -->
+    <div role="dialog" aria-modal="true" aria-label="Empty dialog">
+        <p>Dialog with no focusable elements - WARNING</p>
+    </div>
+    
+    <!-- WARNING: No close button -->
+    <div role="dialog" aria-modal="true" aria-label="No close">
+        <input type="text" placeholder="Input but no close button - WARNING">
+    </div>
+    
+    <!-- WARNING: Modal-like element without role -->
+    <div class="modal" id="myModal">
+        <div class="modal-content">
+            Modal class without role="dialog" - WARNING
+        </div>
+    </div>
+    
+    <h3>Valid Modals (Should NOT trigger warnings)</h3>
+    
+    <!-- Valid modal dialog -->
+    <div role="dialog" aria-modal="true" aria-labelledby="dialog2-title">
+        <h2 id="dialog2-title">Valid Modal Dialog</h2>
+        <p>This is a properly structured modal.</p>
+        <button>Cancel</button>
+        <button>OK</button>
+        <button aria-label="Close dialog">×</button>
+    </div>
+    
+    <!-- Valid alert dialog -->
+    <div role="alertdialog" aria-modal="true" aria-label="Confirmation">
+        <p>Are you sure?</p>
+        <button>Yes</button>
+        <button>No</button>
+    </div>
+    
+    <!-- ======================================= -->
+    <!-- 3. Accordion/Collapsible Content -->
+    <!-- ======================================= -->
+    <h2>3. Accordion/Collapsible Content</h2>
+    
+    <h3>Invalid Accordions (Should trigger warnings)</h3>
+    
+    <!-- WARNING: Missing aria-expanded -->
+    <div class="accordion">
+        <button aria-controls="panel1">
+            Missing aria-expanded - WARNING
+        </button>
+        <div id="panel1">Panel content</div>
+    </div>
+    
+    <!-- WARNING: Missing aria-controls -->
+    <div class="accordion">
+        <button aria-expanded="false">
+            Missing aria-controls - WARNING
+        </button>
+        <div id="panel2">Panel content</div>
+    </div>
+    
+    <!-- WARNING: Invalid aria-expanded value -->
+    <div class="accordion">
+        <button aria-expanded="maybe" aria-controls="panel3">
+            Invalid aria-expanded value - WARNING
+        </button>
+        <div id="panel3">Panel content</div>
+    </div>
+    
+    <!-- WARNING: aria-controls references non-existent element -->
+    <div class="accordion">
+        <button aria-expanded="false" aria-controls="nonexistent">
+            aria-controls references non-existent element - WARNING
+        </button>
+        <div id="panel4">Panel content</div>
+    </div>
+    
+    <!-- WARNING: Link used as trigger without role="button" -->
+    <div class="accordion">
+        <a href="#" aria-expanded="false" aria-controls="panel5">
+            Link without role="button" - WARNING
+        </a>
+        <div id="panel5">Panel content</div>
+    </div>
+    
+    <h3>Valid Accordions (Should NOT trigger warnings)</h3>
+    
+    <!-- Valid accordion with button -->
+    <div class="accordion">
+        <button aria-expanded="false" aria-controls="panel6">
+            Valid Accordion Header
+        </button>
+        <div id="panel6">
+            Panel content properly linked
+        </div>
+    </div>
+    
+    <!-- Valid accordion with role="button" on link -->
+    <div class="accordion">
+        <a role="button" tabindex="0" aria-expanded="true" aria-controls="panel7">
+            Link with button role
+        </a>
+        <div id="panel7" role="region" aria-labelledby="header7">
+            Panel with region role
+        </div>
+    </div>
+    
+    <!-- Valid details/summary (native accordion) -->
+    <details>
+        <summary>Native HTML accordion</summary>
+        <p>This is naturally accessible</p>
+    </details>
+    
+    <!-- ========================== -->
+    <!-- 4. Tab Panel Interfaces -->
+    <!-- ========================== -->
+    <h2>4. Tab Panel Interfaces</h2>
+    
+    <h3>Invalid Tab Interfaces (Should trigger warnings)</h3>
+    
+    <!-- WARNING: Tab without aria-selected -->
+    <div role="tablist">
+        <div role="tab" aria-controls="tabpanel1">
+            Tab without aria-selected - WARNING
+        </div>
+        <div role="tab" aria-selected="false" aria-controls="tabpanel2">
+            Valid tab
+        </div>
+    </div>
+    <div role="tabpanel" id="tabpanel1">Panel 1</div>
+    <div role="tabpanel" id="tabpanel2">Panel 2</div>
+    
+    <!-- WARNING: Tab without aria-controls -->
+    <div role="tablist">
+        <div role="tab" aria-selected="true">
+            Tab without aria-controls - WARNING
+        </div>
+    </div>
+    
+    <!-- WARNING: Tabpanel without id -->
+    <div role="tablist">
+        <div role="tab" aria-selected="true" aria-controls="tabpanel3">Tab</div>
+    </div>
+    <div role="tabpanel">Tabpanel without id - WARNING</div>
+    
+    <!-- WARNING: Tabpanel without aria-labelledby -->
+    <div role="tablist">
+        <div role="tab" id="tab4" aria-selected="true" aria-controls="tabpanel4">Tab</div>
+    </div>
+    <div role="tabpanel" id="tabpanel4">
+        Tabpanel without aria-labelledby - WARNING
+    </div>
+    
+    <!-- WARNING: Multiple tabs selected -->
+    <div role="tablist">
+        <div role="tab" aria-selected="true" aria-controls="tabpanel5">Tab 1</div>
+        <div role="tab" aria-selected="true" aria-controls="tabpanel6">Tab 2 - ERROR multiple selected</div>
+    </div>
+    
+    <!-- WARNING: Tab pattern without proper roles -->
+    <div class="nav-tabs">
+        <div class="tab" data-toggle="tab">Tab without role - WARNING</div>
+    </div>
+    
+    <h3>Valid Tab Interfaces (Should NOT trigger warnings)</h3>
+    
+    <!-- Valid tab interface -->
+    <div role="tablist" aria-label="Account settings">
+        <button role="tab" id="tab1" aria-selected="true" aria-controls="panel1" tabindex="0">
+            Profile
+        </button>
+        <button role="tab" id="tab2" aria-selected="false" aria-controls="panel2" tabindex="-1">
+            Security
+        </button>
+        <button role="tab" id="tab3" aria-selected="false" aria-controls="panel3" tabindex="-1">
+            Preferences
+        </button>
+    </div>
+    <div role="tabpanel" id="panel1" aria-labelledby="tab1" tabindex="0">
+        Profile settings content
+    </div>
+    <div role="tabpanel" id="panel2" aria-labelledby="tab2" tabindex="0" hidden>
+        Security settings content
+    </div>
+    <div role="tabpanel" id="panel3" aria-labelledby="tab3" tabindex="0" hidden>
+        Preferences content
+    </div>
+    
+    <!-- ========================== -->
+    <!-- 5. Live Regions -->
+    <!-- ========================== -->
+    <h2>5. Live Regions and Dynamic Content</h2>
+    
+    <h3>Invalid Live Regions (Should trigger warnings)</h3>
+    
+    <!-- WARNING: Invalid aria-live value -->
+    <div aria-live="immediate">Invalid aria-live value - WARNING</div>
+    <div aria-live="loud">Invalid aria-live value - WARNING</div>
+    
+    <!-- WARNING: Invalid aria-atomic value -->
+    <div aria-live="polite" aria-atomic="yes">Invalid aria-atomic - WARNING</div>
+    
+    <!-- WARNING: Invalid aria-relevant value -->
+    <div aria-live="polite" aria-relevant="everything">Invalid aria-relevant - WARNING</div>
+    <div aria-live="polite" aria-relevant="all additions">Invalid combination - WARNING</div>
+    
+    <!-- WARNING: Invalid aria-busy value -->
+    <div aria-busy="loading">Invalid aria-busy value - WARNING</div>
+    
+    <!-- WARNING: Overuse of assertive -->
+    <div aria-live="assertive">
+        This is just informational text, not critical - WARNING
+    </div>
+    
+    <!-- WARNING: Status message without live region -->
+    <div class="alert">
+        Error message without role="alert" - WARNING
+    </div>
+    
+    <div class="status">
+        Status message without role="status" - WARNING
+    </div>
+    
+    <div class="message success">
+        Success message without live region - WARNING
+    </div>
+    
+    <!-- WARNING: Nested live regions -->
+    <div aria-live="polite">
+        Outer live region
+        <div aria-live="assertive">
+            Nested live region - WARNING
+        </div>
+    </div>
+    
+    <h3>Valid Live Regions (Should NOT trigger warnings)</h3>
+    
+    <!-- Valid aria-live values -->
+    <div aria-live="polite">Polite announcement</div>
+    <div aria-live="assertive">Critical alert!</div>
+    <div aria-live="off">No announcement</div>
+    
+    <!-- Valid role="alert" (implicit aria-live="assertive") -->
+    <div role="alert">
+        Error: Please fix the form errors below
+    </div>
+    
+    <!-- Valid role="status" (implicit aria-live="polite") -->
+    <div role="status">
+        Form saved successfully
+    </div>
+    
+    <!-- Valid role="log" with label -->
+    <div role="log" aria-label="Chat messages">
+        <div>User1: Hello</div>
+        <div>User2: Hi there</div>
+    </div>
+    
+    <!-- Valid aria-atomic -->
+    <div aria-live="polite" aria-atomic="true">
+        Entire content will be announced
+    </div>
+    
+    <!-- Valid aria-relevant combinations -->
+    <div aria-live="polite" aria-relevant="additions">Only additions</div>
+    <div aria-live="polite" aria-relevant="additions text">Additions and text</div>
+    <div aria-live="polite" aria-relevant="all">All changes</div>
+    
+    <!-- Valid aria-busy -->
+    <div aria-busy="true" aria-live="polite">
+        <div>Loading...</div>
+    </div>
+    
+    <!-- Valid timer region -->
+    <div role="timer" aria-label="Countdown">
+        10:00
+    </div>
+    
+    <!-- ======================================= -->
+    <!-- Fluid ViewHelper Specific Tests -->
+    <!-- ======================================= -->
+    <h2>Fluid ViewHelper ARIA Tests</h2>
+    
+    <!-- These should work with Fluid ViewHelpers too -->
+    <f:if condition="{showModal}">
+        <!-- WARNING: Modal without proper attributes -->
+        <div class="modal">
+            <f:render section="modalContent" />
+        </div>
+    </f:if>
+    
+    <f:for each="{accordionItems}" as="item">
+        <!-- WARNING: Accordion without proper ARIA -->
+        <button class="accordion-trigger" data-target="panel-{item.id}">
+            {item.title}
+        </button>
+        <div id="panel-{item.id}">
+            {item.content}
+        </div>
+    </f:for>
+    
+    <!-- Valid Fluid with ARIA -->
+    <f:for each="{tabs}" as="tab" iteration="iterator">
+        <button role="tab" 
+                id="tab-{tab.id}"
+                aria-selected="{f:if(condition: iterator.isFirst, then: 'true', else: 'false')}"
+                aria-controls="panel-{tab.id}">
+            {tab.label}
+        </button>
+    </f:for>
+    
+    <!-- ======================================= -->
+    <!-- Summary -->
+    <!-- ======================================= -->
+    <h2>Test Summary</h2>
+    <p>This test file covers all Phase 3 inspections:</p>
+    <ul>
+        <li>AriaRoleInspection - ARIA role validation and required properties</li>
+        <li>ModalDialogInspection - Modal dialog accessibility patterns</li>
+        <li>AccordionAccessibilityInspection - Accordion and collapsible content</li>
+        <li>TabPanelInspection - Tab interface patterns</li>
+        <li>LiveRegionInspection - Live regions and dynamic content announcements</li>
+    </ul>
+    
+    <p>Each section includes both invalid patterns that should trigger warnings/errors 
+       and valid patterns that should pass inspection.</p>
+</body>
+</html>

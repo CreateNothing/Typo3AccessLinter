@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <meta charset="UTF-8">
+    <title>Enhanced Accessibility Inspections Test Suite</title>
+</head>
+<body>
+
+<!-- =================================================================== -->
+<!-- ENHANCED IMAGE ACCESSIBILITY TESTS -->
+<!-- =================================================================== -->
+<section>
+    <h1>Enhanced Image Accessibility Tests</h1>
+    
+    <!-- Context-aware decorative image detection -->
+    <img src="spacer.gif" width="1" height="1"> <!-- Should suggest alt="" for decorative -->
+    <img src="divider.png" class="separator"> <!-- Should suggest alt="" for decorative -->
+    <img src="icon-arrow.svg" class="icon" alt="arrow"> <!-- Should suggest empty alt for decorative -->
+    
+    <!-- Alt text quality validation -->
+    <img src="team.jpg" alt="image"> <!-- Redundant phrase warning -->
+    <img src="product.png" alt="picture of product"> <!-- Redundant phrase warning -->
+    <img src="DSC_0001.jpg" alt="DSC_0001.jpg"> <!-- Filename as alt text warning -->
+    <img src="photo.jpg" alt="untitled"> <!-- Placeholder text warning -->
+    <img src="diagram.png" alt="A very long description that exceeds the recommended 125 character limit for alt text which should really be moved to aria-describedby or longdesc attribute for better accessibility"> <!-- Long alt text warning -->
+    
+    <!-- Image in link context -->
+    <a href="/products">
+        <img src="products.jpg" alt=""> <!-- Should warn: image in link needs alt describing destination -->
+    </a>
+    
+    <!-- SVG accessibility -->
+    <svg role="img" width="100" height="100">
+        <!-- Should warn: SVG with role="img" needs title or aria-label -->
+        <circle cx="50" cy="50" r="40"/>
+    </svg>
+    
+    <svg aria-label="Company Logo" role="img">
+        <!-- Valid: has aria-label -->
+        <rect width="100" height="100"/>
+    </svg>
+    
+    <!-- Input image buttons -->
+    <input type="image" src="submit.png"> <!-- Should warn: needs alt text -->
+    <input type="image" src="search.png" alt="Search"> <!-- Valid -->
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED LINK TEXT WITH CONTEXT ANALYSIS -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Link Text Tests</h2>
+    
+    <!-- Context-aware "read more" validation -->
+    <article>
+        <h3>Product Features</h3>
+        <p>Our product offers amazing capabilities...</p>
+        <a href="/features">Read more</a> <!-- Should be allowed with preceding descriptive text -->
+    </article>
+    
+    <div>
+        <a href="/page1">Click here</a> <!-- Should warn: no context -->
+        <a href="/page2">Here</a> <!-- Should warn: non-descriptive -->
+    </div>
+    
+    <!-- Link clustering detection -->
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <!-- Should suggest using list for navigation links -->
+    </nav>
+    
+    <!-- Icon-only links -->
+    <a href="/settings" class="icon-settings" title="Settings"></a> <!-- Should warn: use aria-label instead of title -->
+    <a href="/profile" aria-label="User Profile"><i class="icon-user"></i></a> <!-- Valid -->
+    
+    <!-- Duplicate link text -->
+    <a href="/page1">Details</a>
+    <a href="/page2">Details</a>
+    <a href="/page3">Details</a>
+    <!-- Should warn about multiple "Details" links to different destinations -->
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED HEADING HIERARCHY WITH HTML5 SECTIONING -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Heading Tests</h2>
+    
+    <!-- HTML5 sectioning context -->
+    <article>
+        <h1>Article Title</h1> <!-- Valid: H1 in article context -->
+        <section>
+            <h1>Section Title</h1> <!-- Valid: H1 in nested section -->
+            <p>Content...</p>
+        </section>
+    </article>
+    
+    <aside>
+        <h1>Sidebar</h1> <!-- Valid: H1 in aside -->
+    </aside>
+    
+    <!-- Navigation headings -->
+    <nav>
+        <h3>Main Navigation</h3> <!-- Different rules for nav headings -->
+        <ul>
+            <li><a href="/home">Home</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Fluid layout awareness -->
+    <f:section name="content">
+        <h1>Section Content</h1> <!-- Should understand Fluid section context -->
+    </f:section>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED TABLE ACCESSIBILITY WITH LAYOUT DETECTION -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Table Tests</h2>
+    
+    <!-- Data table (should be detected by content patterns) -->
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>2024-01-01</td>
+            <td>$100.00</td>
+            <td>Paid</td>
+        </tr>
+    </table>
+    
+    <!-- Layout table (should be detected by class and structure) -->
+    <table class="layout">
+        <tr>
+            <td><img src="logo.png" alt="Logo"></td>
+            <td>
+                <nav>
+                    <a href="/home">Home</a>
+                </nav>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Complex data table needing scope -->
+    <table>
+        <caption>Quarterly Sales Report</caption>
+        <tr>
+            <th rowspan="2">Region</th> <!-- Should suggest scope="row" -->
+            <th colspan="3">Q1 2024</th> <!-- Should suggest scope="colgroup" -->
+        </tr>
+        <tr>
+            <th>Jan</th>
+            <th>Feb</th>
+            <th>Mar</th>
+        </tr>
+        <tr>
+            <th>North</th> <!-- Should suggest scope="row" -->
+            <td>1000</td>
+            <td>1200</td>
+            <td>1100</td>
+        </tr>
+    </table>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED FORM LABEL WITH FIELDSET GROUPING -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Form Tests</h2>
+    
+    <!-- Placeholder anti-pattern detection -->
+    <input type="text" placeholder="Enter your name"> <!-- Should warn: placeholder without label -->
+    <input type="email" id="email" placeholder="Email"> <!-- Should warn: placeholder-only -->
+    
+    <!-- Required field consistency -->
+    <label for="username">Username</label>
+    <input type="text" id="username" required> <!-- Should check for required indicator in label -->
+    
+    <label for="password">Password *</label>
+    <input type="password" id="password" aria-required="true"> <!-- Valid: has indicator -->
+    
+    <!-- Related field groups (date components) -->
+    <label for="month">Month</label>
+    <input type="text" id="month">
+    <label for="day">Day</label>
+    <input type="text" id="day">
+    <label for="year">Year</label>
+    <input type="text" id="year">
+    <!-- Should suggest grouping in fieldset with legend -->
+    
+    <!-- Fieldset with missing legend -->
+    <fieldset>
+        <input type="radio" name="color" id="red">
+        <label for="red">Red</label>
+        <input type="radio" name="color" id="blue">
+        <label for="blue">Blue</label>
+    </fieldset>
+    <!-- Should warn: fieldset needs legend -->
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED NAVIGATION LANDMARKS -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Navigation Tests</h2>
+    
+    <!-- Skip link validation -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <!-- Should validate that #main target exists and is focusable -->
+    
+    <!-- Navigation hierarchy -->
+    <nav aria-label="Main">
+        <nav aria-label="Breadcrumb"> <!-- Nested navigation -->
+            <ol>
+                <li><a href="/">Home</a></li>
+                <li><a href="/products">Products</a></li>
+            </ol>
+        </nav>
+    </nav>
+    
+    <!-- Missing landmarks -->
+    <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+    </ul>
+    <!-- Should suggest wrapping in nav element -->
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED ARIA ROLES WITH IMPLICIT DETECTION -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced ARIA Role Tests</h2>
+    
+    <!-- Unnecessary explicit roles -->
+    <button role="button">Click me</button> <!-- Should warn: redundant role -->
+    <nav role="navigation">Menu</nav> <!-- Should warn: redundant role -->
+    
+    <!-- Context-inappropriate roles -->
+    <div role="button" onclick="doSomething()">Click</div> <!-- Should suggest using button element -->
+    <span role="heading" aria-level="2">Title</span> <!-- Should suggest using h2 -->
+    
+    <!-- Semantic conflicts -->
+    <h2 role="presentation">Important Heading</h2> <!-- Should warn: conflicts with semantic meaning -->
+    
+    <!-- Valid role usage -->
+    <div role="tablist">
+        <button role="tab" aria-selected="true">Tab 1</button>
+        <button role="tab">Tab 2</button>
+    </div>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED MODAL DIALOG WITH FOCUS MANAGEMENT -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Modal Tests</h2>
+    
+    <!-- Modal without proper focus management -->
+    <div role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <h2 id="modal-title">Settings</h2>
+        <button>Save</button>
+        <!-- Should warn: no explicit focus management detected -->
+    </div>
+    
+    <!-- Modal without backdrop -->
+    <div class="modal" role="dialog">
+        <!-- Should warn: modal needs backdrop for proper isolation -->
+        <div class="modal-content">
+            <button class="close">×</button>
+        </div>
+    </div>
+    
+    <!-- Modal without multiple dismiss methods -->
+    <div role="dialog" aria-modal="true">
+        <button class="close">Close</button>
+        <!-- Should warn: needs Escape key handler -->
+    </div>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED ACCORDION WITH STATE MANAGEMENT -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Accordion Tests</h2>
+    
+    <!-- Accordion with inconsistent state -->
+    <div class="accordion">
+        <button aria-expanded="false" aria-controls="panel1">Section 1</button>
+        <div id="panel1" hidden>Content 1</div>
+        
+        <button aria-controls="panel2">Section 2</button> <!-- Missing aria-expanded -->
+        <div id="panel2">Content 2</div>
+    </div>
+    
+    <!-- Accordion without proper relationships -->
+    <div class="accordion">
+        <button>Toggle</button> <!-- Missing aria-controls -->
+        <div class="panel">Content</div>
+    </div>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED TAB PANELS WITH KEYBOARD NAVIGATION -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Tab Panel Tests</h2>
+    
+    <!-- Tab interface without proper keyboard support indicators -->
+    <div role="tablist">
+        <button role="tab" aria-selected="true" aria-controls="panel1">Tab 1</button>
+        <button role="tab" aria-selected="false" aria-controls="panel2" tabindex="-1">Tab 2</button>
+        <!-- Should validate Arrow key navigation patterns -->
+    </div>
+    <div role="tabpanel" id="panel1" aria-labelledby="tab1">Content 1</div>
+    <div role="tabpanel" id="panel2" aria-labelledby="tab2" hidden>Content 2</div>
+    
+    <!-- Tab without proper selection state -->
+    <div role="tablist">
+        <button role="tab">Tab 1</button> <!-- Missing aria-selected -->
+        <button role="tab">Tab 2</button> <!-- Missing aria-selected -->
+    </div>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED LIVE REGIONS WITH PRIORITIZATION -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Live Region Tests</h2>
+    
+    <!-- Competing live regions -->
+    <div aria-live="assertive">Critical alert</div>
+    <div aria-live="assertive">Another alert</div>
+    <!-- Should warn about multiple assertive regions -->
+    
+    <!-- Inappropriate assertive usage -->
+    <div aria-live="assertive">
+        <span>Items in cart: 3</span> <!-- Should be polite -->
+    </div>
+    
+    <!-- Status without live region -->
+    <div class="status-message">
+        Form saved successfully <!-- Should have role="status" or aria-live -->
+    </div>
+    
+    <!-- Proper live region usage -->
+    <div role="alert">Emergency: System will restart in 5 minutes</div>
+    <div aria-live="polite" aria-atomic="true">Search results: 42 items found</div>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED LIST SEMANTICS WITH CONTENT ANALYSIS -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced List Tests</h2>
+    
+    <!-- Ordered list with non-sequential content -->
+    <ol>
+        <li>Red</li>
+        <li>Blue</li>
+        <li>Green</li>
+    </ol>
+    <!-- Should suggest using ul for non-sequential items -->
+    
+    <!-- Navigation list not using nav -->
+    <ul class="navigation">
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+    </ul>
+    <!-- Should suggest wrapping in nav element -->
+    
+    <!-- List with inappropriate nesting -->
+    <ul>
+        <li>Item 1
+            <div>
+                <li>Nested item</li> <!-- Invalid: li not direct child of ul -->
+            </div>
+        </li>
+    </ul>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED RADIO/CHECKBOX GROUPS -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Radio/Checkbox Group Tests</h2>
+    
+    <!-- Related radio buttons without fieldset -->
+    <input type="radio" name="size" id="small">
+    <label for="small">Small</label>
+    <input type="radio" name="size" id="medium">
+    <label for="medium">Medium</label>
+    <input type="radio" name="size" id="large">
+    <label for="large">Large</label>
+    <!-- Should suggest fieldset with legend -->
+    
+    <!-- Related checkboxes needing grouping -->
+    <h3>Select your interests:</h3>
+    <input type="checkbox" id="sports">
+    <label for="sports">Sports</label>
+    <input type="checkbox" id="music">
+    <label for="music">Music</label>
+    <input type="checkbox" id="art">
+    <label for="art">Art</label>
+    <!-- Should suggest fieldset grouping -->
+    
+    <!-- Fieldset with non-descriptive legend -->
+    <fieldset>
+        <legend>Options</legend> <!-- Too generic -->
+        <input type="radio" name="delivery" id="standard">
+        <label for="standard">Standard (5-7 days)</label>
+        <input type="radio" name="delivery" id="express">
+        <label for="express">Express (1-2 days)</label>
+    </fieldset>
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED PAGE LANGUAGE WITH MULTILINGUAL DETECTION -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Language Tests</h2>
+    
+    <!-- Mixed language content without lang attributes -->
+    <p>Welcome to our website</p>
+    <p>Bienvenue sur notre site web</p> <!-- Should detect French and suggest lang="fr" -->
+    <p>Willkommen auf unserer Website</p> <!-- Should detect German and suggest lang="de" -->
+    
+    <!-- Language switching without proper attributes -->
+    <div class="language-switcher">
+        <a href="?lang=en">English</a>
+        <a href="?lang=fr">Français</a>
+        <a href="?lang=de">Deutsch</a>
+    </div>
+    <!-- Should validate language switching mechanism -->
+    
+    <!-- RTL content without dir attribute -->
+    <p>مرحبا بكم في موقعنا</p> <!-- Should detect Arabic and suggest dir="rtl" -->
+</section>
+
+<!-- =================================================================== -->
+<!-- ENHANCED SKIP LINKS WITH TARGET VALIDATION -->
+<!-- =================================================================== -->
+<section>
+    <h2>Enhanced Skip Link Tests</h2>
+    
+    <!-- Skip link with missing target -->
+    <a href="#content" class="skip-link">Skip to content</a>
+    <!-- Should warn if #content doesn't exist -->
+    
+    <!-- Skip link with non-focusable target -->
+    <a href="#main" class="skip-link">Skip to main</a>
+    <div id="main">Main content</div> <!-- Should warn: target needs tabindex="-1" -->
+    
+    <!-- Hidden skip link without proper visibility on focus -->
+    <a href="#nav" class="skip-link" style="position: absolute; left: -9999px;">Skip to navigation</a>
+    <!-- Should check for :focus styles -->
+    
+    <!-- Valid skip link -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <main id="main-content" tabindex="-1">
+        <h1>Page Title</h1>
+    </main>
+</section>
+
+<!-- Target for skip link test -->
+<main id="main" tabindex="-1">
+    <h1>Main Content Area</h1>
+</main>
+
+</body>
+</html>

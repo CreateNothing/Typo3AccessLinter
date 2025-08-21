@@ -1,0 +1,123 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Sample Fluid Template with Accessibility Issues</title>
+</head>
+<body>
+    <h1>Test Page for Accessibility Linting</h1>
+    
+    <!-- Issue: Image without alt text -->
+    <img src="logo.png">
+    
+    <!-- Issue: Fluid image ViewHelper without alt -->
+    <f:image src="{image.uid}" width="300" />
+    
+    <!-- Issue: Invalid list structure - div as direct child of ul -->
+    <ul>
+        <div>This should be in an li element</div>
+        <li>Valid list item</li>
+        <span>Another invalid child</span>
+    </ul>
+    
+    <!-- Issue: Text directly in ol -->
+    <ol>
+        Direct text content not allowed here
+        <li>Item 1</li>
+        <li>Item 2</li>
+    </ol>
+    
+    <!-- Valid examples -->
+    <img src="banner.jpg" alt="Company banner">
+    <f:image src="{product.image}" alt="{product.title}" />
+    
+    <ul>
+        <li>Properly structured</li>
+        <li>List items only</li>
+    </ul>
+    
+    <!-- Valid: Fluid loop with proper structure -->
+    <ul>
+        <f:for each="{items}" as="item">
+            <li>{item.title}</li>
+        </f:for>
+    </ul>
+    
+    <!-- Valid: Conditional content in list -->
+    <ul>
+        <f:if condition="{showItems}">
+            <li>Conditional item 1</li>
+            <li>Conditional item 2</li>
+        </f:if>
+        <f:else>
+            <li>Alternative item</li>
+        </f:else>
+    </ul>
+    
+    <!-- Valid: Switch statement in list -->
+    <ul>
+        <f:switch expression="{category}">
+            <f:case value="fruits">
+                <li>Apple</li>
+                <li>Banana</li>
+            </f:case>
+            <f:case value="vegetables">
+                <li>Carrot</li>
+                <li>Broccoli</li>
+            </f:case>
+            <f:defaultCase>
+                <li>Unknown category</li>
+            </f:defaultCase>
+        </f:switch>
+    </ul>
+    
+    <!-- Valid: Using f:cObject -->
+    <ul>
+        <f:cObject typoscriptObjectPath="lib.menuItems" />
+        <li>Static item</li>
+    </ul>
+    
+    <!-- Valid: Using f:groupedFor -->
+    <ul>
+        <f:groupedFor each="{products}" as="productGroup" groupBy="category">
+            <f:for each="{productGroup}" as="product">
+                <li>{product.name}</li>
+            </f:for>
+        </f:groupedFor>
+    </ul>
+    
+    <!-- Valid: Using f:alias -->
+    <ul>
+        <f:alias map="{x: 'foo', y: 'bar'}">
+            <li>{x}</li>
+            <li>{y}</li>
+        </f:alias>
+    </ul>
+    
+    <!-- Valid: Using f:comment (content is ignored) -->
+    <ul>
+        <f:comment>
+            This comment doesn't affect the list structure
+            Even if it contains invalid HTML like <div>test</div>
+        </f:comment>
+        <li>Item after comment</li>
+    </ul>
+    
+    <!-- Valid: Using f:spaceless -->
+    <ul>
+        <f:spaceless>
+            <li>Item 1</li>
+            <li>Item 2</li>
+        </f:spaceless>
+    </ul>
+    
+    <!-- Issue: Invalid HTML elements mixed with ViewHelpers -->
+    <ul>
+        <f:for each="{items}" as="item">
+            <li>{item.title}</li>
+        </f:for>
+        <div>This div is still invalid</div>
+        <f:if condition="{showMore}">
+            <li>More items</li>
+        </f:if>
+    </ul>
+</body>
+</html>

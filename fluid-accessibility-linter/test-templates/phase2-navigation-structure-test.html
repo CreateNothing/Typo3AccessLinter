@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Phase 2: Navigation & Structure Accessibility Test</title>
+    <style>
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+        .sr-only:focus {
+            position: static;
+            width: auto;
+            height: auto;
+            margin: 0;
+            overflow: visible;
+            clip: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================= -->
+    <!-- LINK TEXT INSPECTION TESTS -->
+    <!-- ========================================= -->
+    
+    <h2>Link Text Issues</h2>
+    
+    <!-- ERROR: Non-descriptive link text -->
+    <a href="/products">Click here</a>
+    <a href="/about">Here</a>
+    <a href="/services">Read more</a>
+    <a href="/contact">More</a>
+    <a href="/blog">Learn more</a>
+    <a href="/help">Info</a>
+    
+    <!-- ERROR: Single character/number links -->
+    <a href="/page1">1</a>
+    <a href="/page2">a</a>
+    
+    <!-- ERROR: URL as link text -->
+    <a href="https://example.com">https://example.com</a>
+    <a href="/page">www.example.com</a>
+    
+    <!-- ERROR: Empty link without aria-label -->
+    <a href="/icon-link"></a>
+    
+    <!-- VALID: Descriptive link text -->
+    <a href="/products">Browse our products</a>
+    <a href="/about">About our company</a>
+    <a href="/services">Professional services we offer</a>
+    
+    <!-- VALID: Empty link with aria-label -->
+    <a href="/home" aria-label="Go to homepage"></a>
+    
+    <!-- VALID: Fluid link ViewHelpers -->
+    <f:link.page pageUid="1">Home Page</f:link.page>
+    <f:link.external uri="https://typo3.org">TYPO3 Official Website</f:link.external>
+    
+    <!-- ERROR: Non-descriptive Fluid link -->
+    <f:link.page pageUid="2">Click here</f:link.page>
+    
+    <!-- ========================================= -->
+    <!-- NAVIGATION LANDMARK INSPECTION TESTS -->
+    <!-- ========================================= -->
+    
+    <h2>Navigation Landmark Issues</h2>
+    
+    <!-- ERROR: Multiple nav elements without aria-label -->
+    <nav>
+        <ul>
+            <li><a href="/home">Home</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+    </nav>
+    
+    <nav>
+        <ul>
+            <li><a href="/products">Products</a></li>
+            <li><a href="/services">Services</a></li>
+        </ul>
+    </nav>
+    
+    <!-- ERROR: Redundant role on nav -->
+    <nav role="navigation">
+        <ul>
+            <li><a href="/home">Home</a></li>
+        </ul>
+    </nav>
+    
+    <!-- WARNING: Navigation with multiple links not in a list -->
+    <nav>
+        <a href="/link1">Link 1</a>
+        <a href="/link2">Link 2</a>
+        <a href="/link3">Link 3</a>
+        <a href="/link4">Link 4</a>
+        <a href="/link5">Link 5</a>
+    </nav>
+    
+    <!-- VALID: Multiple nav with unique labels -->
+    <nav aria-label="Main navigation">
+        <ul>
+            <li><a href="/home">Home</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+    </nav>
+    
+    <nav aria-label="Footer navigation">
+        <ul>
+            <li><a href="/privacy">Privacy</a></li>
+            <li><a href="/terms">Terms</a></li>
+        </ul>
+    </nav>
+    
+    <!-- ERROR: Page without main landmark (detected if file is large) -->
+    <div class="content">
+        Main content here but not in a <main> element
+    </div>
+    
+    <!-- ========================================= -->
+    <!-- SKIP LINKS INSPECTION TESTS -->
+    <!-- ========================================= -->
+    
+    <h2>Skip Links Issues</h2>
+    
+    <!-- ERROR: Skip link target doesn't exist -->
+    <a href="#nonexistent" class="skip-link">Skip to content</a>
+    
+    <!-- ERROR: Skip link with non-descriptive target ID -->
+    <a href="#x">Skip to main</a>
+    <div id="x">Content</div>
+    
+    <!-- WARNING: Hidden skip link without focus styles (sr-only class exists but no :focus styles) -->
+    <a href="#main-content" class="sr-only-no-focus">Skip to main content</a>
+    
+    <!-- VALID: Proper skip link -->
+    <a href="#main-content" class="sr-only">Skip to main content</a>
+    <main id="main-content">
+        <h1>Main Content</h1>
+    </main>
+    
+    <!-- ========================================= -->
+    <!-- LIST SEMANTIC INSPECTION TESTS -->
+    <!-- ========================================= -->
+    
+    <h2>Enhanced List Semantic Issues</h2>
+    
+    <!-- ERROR: Empty list items -->
+    <ul>
+        <li>Valid item</li>
+        <li></li>
+        <li>  </li>
+        <li><br/></li>
+    </ul>
+    
+    <!-- ERROR: List items used as dividers -->
+    <ul>
+        <li>Item 1</li>
+        <li>---</li>
+        <li>Item 2</li>
+        <li class="divider"></li>
+        <li>Item 3</li>
+    </ul>
+    
+    <!-- ERROR: Invalid direct children in list -->
+    <ul>
+        <li>Valid item</li>
+        <div>Invalid div as direct child</div>
+        <span>Invalid span</span>
+        <li>Another valid item</li>
+    </ul>
+    
+    <!-- ERROR: Improperly nested lists -->
+    </ul>
+    <ul>
+        <li>Item in second list</li>
+    </ul>
+    
+    <!-- ERROR: Description list issues -->
+    <dl>
+        <dt>Term without definition</dt>
+        <dt>Another term without dd</dt>
+    </dl>
+    
+    <dl>
+        <dd>Definition without term</dd>
+    </dl>
+    
+    <!-- WARNING: Single item list -->
+    <ul>
+        <li>Only one item - consider if list is appropriate</li>
+    </ul>
+    
+    <!-- ERROR: Redundant role on ul -->
+    <ul role="list">
+        <li>Item 1</li>
+        <li>Item 2</li>
+    </ul>
+    
+    <!-- VALID: Properly structured lists -->
+    <ul>
+        <li>Item 1</li>
+        <li>Item 2
+            <ul>
+                <li>Nested item 1</li>
+                <li>Nested item 2</li>
+            </ul>
+        </li>
+        <li>Item 3</li>
+    </ul>
+    
+    <dl>
+        <dt>Term 1</dt>
+        <dd>Definition 1</dd>
+        <dt>Term 2</dt>
+        <dd>Definition 2a</dd>
+        <dd>Definition 2b</dd>
+    </dl>
+    
+    <!-- ========================================= -->
+    <!-- TABLE ACCESSIBILITY INSPECTION TESTS -->
+    <!-- ========================================= -->
+    
+    <h2>Table Accessibility Issues</h2>
+    
+    <!-- ERROR: Data table without headers -->
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>Age</td>
+            <td>City</td>
+        </tr>
+        <tr>
+            <td>John</td>
+            <td>30</td>
+            <td>New York</td>
+        </tr>
+        <tr>
+            <td>Jane</td>
+            <td>25</td>
+            <td>London</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Empty table headers -->
+    <table>
+        <tr>
+            <th></th>
+            <th>Column 2</th>
+        </tr>
+        <tr>
+            <td>Data 1</td>
+            <td>Data 2</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Non-descriptive headers -->
+    <table>
+        <tr>
+            <th>Col1</th>
+            <th>Column 2</th>
+            <th>3</th>
+        </tr>
+        <tr>
+            <td>Data</td>
+            <td>More data</td>
+            <td>Even more</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Complex table without caption -->
+    <table>
+        <tr>
+            <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Total</th>
+        </tr>
+        <tr>
+            <td>100</td><td>150</td><td>200</td><td>250</td><td>700</td>
+        </tr>
+        <tr>
+            <td>110</td><td>160</td><td>210</td><td>260</td><td>740</td>
+        </tr>
+        <tr>
+            <td>120</td><td>170</td><td>220</td><td>270</td><td>780</td>
+        </tr>
+        <tr>
+            <td>130</td><td>180</td><td>230</td><td>280</td><td>820</td>
+        </tr>
+        <tr>
+            <td>140</td><td>190</td><td>240</td><td>290</td><td>860</td>
+        </tr>
+        <tr>
+            <td>150</td><td>200</td><td>250</td><td>300</td><td>900</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Table with obsolete summary attribute -->
+    <table summary="This is an obsolete attribute">
+        <tr>
+            <th>Header</th>
+        </tr>
+        <tr>
+            <td>Data</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Layout table with headers -->
+    <table role="presentation">
+        <tr>
+            <th>Should not have headers in layout table</th>
+        </tr>
+        <tr>
+            <td>Content</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Complex table without scope attributes -->
+    <table>
+        <tr>
+            <th colspan="2">Sales</th>
+            <th rowspan="2">Total</th>
+        </tr>
+        <tr>
+            <th>Q1</th>
+            <th>Q2</th>
+        </tr>
+        <tr>
+            <td>100</td>
+            <td>150</td>
+            <td>250</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Caption in wrong position -->
+    <table>
+        <tr>
+            <th>Header</th>
+        </tr>
+        <caption>This caption is not the first child</caption>
+        <tr>
+            <td>Data</td>
+        </tr>
+    </table>
+    
+    <!-- ERROR: Empty caption -->
+    <table>
+        <caption></caption>
+        <tr>
+            <th>Header</th>
+        </tr>
+        <tr>
+            <td>Data</td>
+        </tr>
+    </table>
+    
+    <!-- WARNING: Large table without sections -->
+    <table>
+        <tr><th>H1</th><th>H2</th><th>H3</th></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+        <tr><td>D1</td><td>D2</td><td>D3</td></tr>
+    </table>
+    
+    <!-- VALID: Properly structured accessible table -->
+    <table>
+        <caption>Quarterly Sales Report</caption>
+        <thead>
+            <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Q1 Sales</th>
+                <th scope="col">Q2 Sales</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">Widget A</th>
+                <td>$10,000</td>
+                <td>$15,000</td>
+                <td>$25,000</td>
+            </tr>
+            <tr>
+                <th scope="row">Widget B</th>
+                <td>$8,000</td>
+                <td>$12,000</td>
+                <td>$20,000</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th scope="row">Total</th>
+                <td>$18,000</td>
+                <td>$27,000</td>
+                <td>$45,000</td>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <!-- VALID: Simple layout table -->
+    <table role="presentation">
+        <tr>
+            <td>Layout content 1</td>
+            <td>Layout content 2</td>
+        </tr>
+    </table>
+    
+    <!-- ========================================= -->
+    <!-- FLUID VIEWHELPER SPECIFIC TESTS -->
+    <!-- ========================================= -->
+    
+    <h2>Fluid ViewHelper Navigation Tests</h2>
+    
+    <!-- Test with Fluid navigation menu -->
+    <nav aria-label="Main menu">
+        <ul>
+            <f:for each="{menuItems}" as="item">
+                <li>
+                    <f:link.page pageUid="{item.uid}">{item.title}</f:link.page>
+                </li>
+            </f:for>
+        </ul>
+    </nav>
+    
+    <!-- Test with Fluid table generation -->
+    <table>
+        <caption>User List</caption>
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            <f:for each="{users}" as="user">
+                <tr>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.role}</td>
+                </tr>
+            </f:for>
+        </tbody>
+    </table>
+    
+    <!-- Test with conditional list items -->
+    <ul>
+        <f:if condition="{showItems}">
+            <f:then>
+                <li>Conditional item 1</li>
+                <li>Conditional item 2</li>
+            </f:then>
+            <f:else>
+                <li>Alternative item</li>
+            </f:else>
+        </f:if>
+    </ul>
+    
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<!-- ERROR: Missing lang attribute on html element -->
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Phase 1 Accessibility Tests - Comprehensive Coverage</title>
+</head>
+<body>
+    <h1>Phase 1: Core WCAG Level A Accessibility Tests</h1>
+    
+    <!-- ============================================= -->
+    <!-- SECTION 1: ENHANCED IMAGE ACCESSIBILITY -->
+    <!-- ============================================= -->
+    <h2>1. Image Accessibility Tests</h2>
+    
+    <h3>1.1 Missing Alt Attributes (ERRORS)</h3>
+    <!-- ERROR: img missing alt -->
+    <img src="logo.png">
+    
+    <!-- ERROR: Fluid image missing alt -->
+    <f:image src="{image.uid}" width="300" />
+    
+    <!-- ERROR: Input image missing alt -->
+    <input type="image" src="submit.png">
+    
+    <h3>1.2 Alt Text Quality Issues (WARNINGS)</h3>
+    <!-- WARNING: Alt text looks like filename -->
+    <img src="banner.jpg" alt="banner_header_2023.jpg">
+    
+    <!-- WARNING: Redundant phrase -->
+    <img src="team.jpg" alt="image of our team">
+    <img src="chart.png" alt="picture of sales chart">
+    
+    <!-- WARNING: Alt text too long (>125 chars) -->
+    <img src="complex.png" alt="This is an extremely detailed description of a complex diagram showing quarterly sales data broken down by region, product category, customer segment, and various other metrics that really should be in the surrounding text">
+    
+    <!-- WARNING: Generic alt text -->
+    <img src="important.jpg" alt="image">
+    <img src="data.png" alt="click here">
+    
+    <!-- WEAK WARNING: Empty alt (might be decorative) -->
+    <img src="decoration.png" alt="">
+    
+    <h3>1.3 SVG Accessibility (ERRORS/WARNINGS)</h3>
+    <!-- ERROR: SVG missing role and accessible name -->
+    <svg width="100" height="100">
+        <circle cx="50" cy="50" r="40" fill="blue"/>
+    </svg>
+    
+    <!-- WARNING: SVG missing role="img" -->
+    <svg aria-label="Company logo" width="100" height="100">
+        <rect width="100" height="100" fill="red"/>
+    </svg>
+    
+    <!-- GOOD: Properly accessible SVG -->
+    <svg role="img" aria-label="Success checkmark" width="20" height="20">
+        <path d="M0 10 L8 18 L20 0"/>
+    </svg>
+    
+    <!-- GOOD: Decorative SVG -->
+    <svg aria-hidden="true" width="50" height="50">
+        <circle cx="25" cy="25" r="20"/>
+    </svg>
+    
+    <!-- ============================================= -->
+    <!-- SECTION 2: FORM ACCESSIBILITY -->
+    <!-- ============================================= -->
+    <h2>2. Form Label Tests</h2>
+    
+    <h3>2.1 Missing Labels (ERRORS)</h3>
+    <form>
+        <!-- ERROR: Input missing label -->
+        <input type="text" name="username">
+        
+        <!-- ERROR: Textarea missing label -->
+        <textarea name="comments"></textarea>
+        
+        <!-- ERROR: Select missing label -->
+        <select name="country">
+            <option>USA</option>
+            <option>Germany</option>
+        </select>
+        
+        <!-- ERROR: Fluid form field missing label -->
+        <f:form.textfield name="email" />
+        
+        <!-- GOOD: Input with label -->
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone">
+        
+        <!-- GOOD: Implicit label -->
+        <label>
+            Age: <input type="number" name="age">
+        </label>
+        
+        <!-- GOOD: ARIA labeled -->
+        <input type="text" aria-label="Search" name="search">
+        
+        <!-- GOOD: Button/submit with value -->
+        <input type="submit" value="Send Form">
+        <input type="button" value="Calculate">
+    </form>
+    
+    <h3>2.2 Radio Groups Without Fieldset (ERRORS)</h3>
+    <!-- ERROR: Radio group without fieldset -->
+    <input type="radio" name="payment" id="card" value="card">
+    <label for="card">Credit Card</label>
+    <input type="radio" name="payment" id="paypal" value="paypal">
+    <label for="paypal">PayPal</label>
+    <input type="radio" name="payment" id="bank" value="bank">
+    <label for="bank">Bank Transfer</label>
+    
+    <!-- ERROR: Fluid radio group without fieldset -->
+    <f:form.radio name="shipping" value="standard" />Standard
+    <f:form.radio name="shipping" value="express" />Express
+    <f:form.radio name="shipping" value="overnight" />Overnight
+    
+    <!-- GOOD: Radio group with fieldset -->
+    <fieldset>
+        <legend>Select delivery option</legend>
+        <input type="radio" name="delivery" id="pickup" value="pickup">
+        <label for="pickup">Store Pickup</label>
+        <input type="radio" name="delivery" id="home" value="home">
+        <label for="home">Home Delivery</label>
+    </fieldset>
+    
+    <h3>2.3 Checkbox Groups (WARNINGS)</h3>
+    <!-- WARNING: Related checkboxes should be in fieldset -->
+    <input type="checkbox" id="feat1" name="features" value="wifi">
+    <label for="feat1">WiFi</label>
+    <input type="checkbox" id="feat2" name="features" value="parking">
+    <label for="feat2">Parking</label>
+    <input type="checkbox" id="feat3" name="features" value="pool">
+    <label for="feat3">Pool</label>
+    <input type="checkbox" id="feat4" name="features" value="gym">
+    <label for="feat4">Gym</label>
+    
+    <!-- ERROR: Fieldset without legend -->
+    <fieldset>
+        <input type="checkbox" id="opt1" value="1">
+        <label for="opt1">Option 1</label>
+    </fieldset>
+    
+    <!-- ============================================= -->
+    <!-- SECTION 3: HEADING HIERARCHY -->
+    <!-- ============================================= -->
+    <!-- ERROR: Second H1 on the page -->
+    <h1>Another H1 Element</h1>
+    
+    <!-- WARNING: Skipped heading level (H2 to H4) -->
+    <h4>Subsection without H3</h4>
+    
+    <!-- ERROR: Empty heading -->
+    <h3></h3>
+    
+    <!-- ERROR: Heading with only whitespace -->
+    <h2>   </h2>
+    
+    <!-- ERROR: Heading with only image (needs alt text context) -->
+    <h3><img src="section.png"></h3>
+    
+    <!-- WARNING: Generic heading text -->
+    <h2>Title</h2>
+    <h3>More</h3>
+    <h4>Click here</h4>
+    
+    <!-- WARNING: Non-descriptive heading -->
+    <h3>1</h3>
+    <h4>A</h4>
+    
+    <!-- GOOD: Proper heading hierarchy -->
+    <h2>Well-Structured Section</h2>
+    <h3>Subsection with Clear Title</h3>
+    <h4>Detailed Topic Under Subsection</h4>
+    
+    <!-- ============================================= -->
+    <!-- SECTION 4: LANGUAGE ATTRIBUTES -->
+    <!-- ============================================= -->
+    
+    <!-- INFO: Language change in document (good for accessibility) -->
+    <p>This is English text. <span lang="de">Dies ist deutscher Text.</span></p>
+    
+    <p>Mixed content: <span lang="fr">Bonjour</span> and <span lang="es">Hola</span>!</p>
+    
+    <!-- ERROR: Invalid language code -->
+    <div lang="english">This has invalid language code</div>
+    
+    <!-- ERROR: Empty lang attribute -->
+    <section lang="">Content with empty lang</section>
+    
+    <!-- WARNING: xml:lang doesn't match lang -->
+    <div lang="en" xml:lang="de">Mismatched language attributes</div>
+    
+    <!-- WARNING: xml:lang without lang -->
+    <div xml:lang="fr">Only XML language specified</div>
+    
+    <!-- ============================================= -->
+    <!-- SECTION 5: VALID/GOOD EXAMPLES -->
+    <!-- ============================================= -->
+    <h2>Good Accessibility Examples</h2>
+    
+    <!-- Properly labeled form -->
+    <form>
+        <fieldset>
+            <legend>Personal Information</legend>
+            <label for="firstname">First Name:</label>
+            <input type="text" id="firstname" name="firstname" required>
+            
+            <label for="lastname">Last Name:</label>
+            <input type="text" id="lastname" name="lastname" required>
+        </fieldset>
+        
+        <fieldset>
+            <legend>Preferred Contact Method</legend>
+            <input type="radio" id="contact-email" name="contact" value="email">
+            <label for="contact-email">Email</label>
+            <input type="radio" id="contact-phone" name="contact" value="phone">
+            <label for="contact-phone">Phone</label>
+        </fieldset>
+    </form>
+    
+    <!-- Properly structured images -->
+    <figure>
+        <img src="chart.jpg" alt="Sales increased 25% year-over-year">
+        <figcaption>Annual sales performance chart</figcaption>
+    </figure>
+    
+    <!-- Accessible Fluid ViewHelpers -->
+    <f:image src="{product.image}" alt="{product.title}" />
+    
+    <f:form.textfield 
+        id="search-field" 
+        name="q" 
+        aria-label="Search products" />
+    
+    <!-- ============================================= -->
+    <!-- SECTION 6: FLUID-SPECIFIC PATTERNS -->
+    <!-- ============================================= -->
+    <h2>Fluid Template Patterns</h2>
+    
+    <!-- List structure is tested separately in InvalidListStructureInspection -->
+    <ul>
+        <f:for each="{items}" as="item">
+            <li>{item.title}</li>
+        </f:for>
+    </ul>
+    
+    <!-- Conditional content -->
+    <f:if condition="{showImages}">
+        <!-- ERROR: Images in condition still need alt -->
+        <f:then>
+            <img src="conditional1.jpg">
+            <f:image src="conditional2.jpg" />
+        </f:then>
+        <f:else>
+            <p>No images to display</p>
+        </f:else>
+    </f:if>
+    
+    <!-- Form with Fluid ViewHelpers -->
+    <f:form action="submit">
+        <!-- ERROR: Missing label association -->
+        <f:form.textfield name="username" />
+        
+        <!-- GOOD: With property (auto-generates label in some contexts) -->
+        <f:form.textfield property="email" />
+        
+        <!-- GOOD: With explicit label -->
+        <label for="pwd">Password:</label>
+        <f:form.password id="pwd" name="password" />
+    </f:form>
+</body>
+</html>

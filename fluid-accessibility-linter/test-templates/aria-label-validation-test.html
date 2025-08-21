@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enhanced aria-label Validation Test</title>
+</head>
+<body>
+    <h1>Comprehensive aria-label Validation Tests</h1>
+    
+    <!-- ================================= -->
+    <!-- UNNECESSARY aria-label (WARNINGS) -->
+    <!-- ================================= -->
+    <h2>Unnecessary aria-label Usage</h2>
+    
+    <!-- WARNING: aria-label on non-interactive elements -->
+    <p aria-label="Paragraph text">
+        This paragraph already has text content - aria-label is unnecessary
+    </p>
+    
+    <div aria-label="Content section">
+        Regular div content doesn't need aria-label
+    </div>
+    
+    <span aria-label="Text span">Inline text</span>
+    
+    <h3 aria-label="Heading">Section Heading</h3>
+    
+    <ul aria-label="List">
+        <li>List items don't need aria-label</li>
+    </ul>
+    
+    <!-- ================================= -->
+    <!-- REDUNDANT aria-label (WARNINGS) -->
+    <!-- ================================= -->
+    <h2>Redundant aria-label Usage</h2>
+    
+    <!-- WARNING: aria-label duplicates visible text -->
+    <button aria-label="Submit">Submit</button>
+    <button aria-label="cancel">Cancel</button>
+    
+    <a href="/home" aria-label="Home">Home</a>
+    <a href="/about" aria-label="About Us">About Us</a>
+    
+    <!-- WARNING: aria-label with visible label -->
+    <label for="email">Email Address</label>
+    <input id="email" type="email" aria-label="Email Address">
+    
+    <label for="username">Username</label>
+    <input id="username" aria-label="Username">
+    
+    <!-- WARNING: Less descriptive aria-label overrides better visible text -->
+    <button aria-label="Button">Add to Shopping Cart</button>
+    <button aria-label="Click">Save and Continue</button>
+    
+    <!-- WARNING: Generic aria-label overrides specific text -->
+    <a href="/products/laptop" aria-label="Link">MacBook Pro 16-inch</a>
+    <button aria-label="Button">Delete Account</button>
+    
+    <!-- ======================================= -->
+    <!-- CONFLICTING Labels (WARNINGS) -->
+    <!-- ======================================= -->
+    <h2>Conflicting Label Mechanisms</h2>
+    
+    <!-- WARNING: Both aria-label and aria-labelledby -->
+    <input aria-label="Search" aria-labelledby="search-label" type="search">
+    <span id="search-label">Search Products</span>
+    
+    <!-- WARNING: aria-label overrides visible label -->
+    <label for="phone">Phone Number</label>
+    <input id="phone" aria-label="Contact Number" type="tel">
+    
+    <!-- WARNING: Multiple labeling methods -->
+    <button aria-label="Close" aria-labelledby="close-text" title="Close Dialog">
+        <span id="close-text">×</span>
+    </button>
+    
+    <!-- ======================================= -->
+    <!-- PROBLEMATIC aria-label (ERRORS) -->
+    <!-- ======================================= -->
+    <h2>Problematic aria-label Usage</h2>
+    
+    <!-- ERROR: Empty aria-label -->
+    <button aria-label="">Empty Label</button>
+    <input aria-label="" type="text">
+    
+    <!-- WARNING: aria-label on hidden element -->
+    <div aria-hidden="true" aria-label="Hidden content">
+        This won't be read anyway
+    </div>
+    
+    <!-- WARNING: aria-label on input with value -->
+    <input type="submit" value="Submit Form" aria-label="Submit Form">
+    <input type="button" value="Reset" aria-label="Reset">
+    
+    <!-- ======================================= -->
+    <!-- CORRECT aria-label Usage (NO WARNINGS) -->
+    <!-- ======================================= -->
+    <h2>Correct aria-label Usage</h2>
+    
+    <!-- GOOD: Icon-only buttons need aria-label -->
+    <button aria-label="Close dialog">×</button>
+    <button aria-label="Settings">⚙️</button>
+    <button aria-label="Delete item">🗑️</button>
+    <a href="/search" aria-label="Search">🔍</a>
+    
+    <!-- GOOD: Input without visible label -->
+    <input type="search" aria-label="Search products" placeholder="Search...">
+    
+    <!-- GOOD: aria-label provides additional context -->
+    <button aria-label="Remove item from cart">Remove</button>
+    
+    <!-- GOOD: Landmark with aria-label for differentiation -->
+    <nav aria-label="Main navigation">
+        <ul>
+            <li><a href="/">Home</a></li>
+        </ul>
+    </nav>
+    
+    <nav aria-label="Breadcrumb">
+        <ol>
+            <li><a href="/">Home</a></li>
+        </ol>
+    </nav>
+    
+    <!-- GOOD: Using aria-labelledby without aria-label -->
+    <div role="region" aria-labelledby="section-heading">
+        <h2 id="section-heading">Important Section</h2>
+        <p>Content here</p>
+    </div>
+    
+    <!-- GOOD: Complex widget with aria-label -->
+    <div role="slider" aria-label="Volume control" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+    </div>
+    
+    <!-- ======================================= -->
+    <!-- FORM-SPECIFIC Tests -->
+    <!-- ======================================= -->
+    <h2>Form Element Labeling</h2>
+    
+    <!-- WARNING: Placeholder as only label -->
+    <input type="text" placeholder="Enter your name">
+    
+    <!-- WARNING: Redundant aria-label with label -->
+    <label for="city">City</label>
+    <input id="city" aria-label="City">
+    
+    <!-- GOOD: aria-label when no visible label -->
+    <input type="email" aria-label="Newsletter email">
+    
+    <!-- GOOD: Label without aria-label -->
+    <label for="country">Country</label>
+    <input id="country">
+    
+    <!-- ======================================= -->
+    <!-- Fluid ViewHelper Tests -->
+    <!-- ======================================= -->
+    <h2>Fluid ViewHelper Patterns</h2>
+    
+    <!-- These patterns should be detected in Fluid templates too -->
+    <f:form.textfield property="name" aria-label="Name" />
+    
+    <f:link.action action="delete" aria-label="Delete">
+        Delete
+    </f:link.action>
+    
+    <f:form.button aria-label="Submit">Submit</f:form.button>
+    
+    <!-- ======================================= -->
+    <!-- Summary -->
+    <!-- ======================================= -->
+    <h2>Test Coverage Summary</h2>
+    <p>This test file validates the enhanced AriaLabelValidationInspection which detects:</p>
+    <ul>
+        <li>Unnecessary aria-labels on non-interactive elements</li>
+        <li>Redundant aria-labels that duplicate visible text</li>
+        <li>aria-labels that override better visible text</li>
+        <li>Conflicting labeling mechanisms</li>
+        <li>Empty or problematic aria-labels</li>
+        <li>Correct usage patterns that should NOT trigger warnings</li>
+    </ul>
+</body>
+</html>
