@@ -3,7 +3,12 @@ package com.typo3.fluid.linter.inspections;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -416,7 +421,28 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove the aria-label attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove aria-label attribute with various possible formats
+            String cleanedText = text.replaceAll("\\s*\\baria-label\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
     
@@ -429,7 +455,43 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Check if it's a self-closing tag or opening tag
+            final String newText;
+            if (text.endsWith("/>")) {
+                // Self-closing tag - insert before />
+                newText = text.substring(0, text.length() - 2) + " aria-label=\"\" />";
+            } else if (text.endsWith(">")) {
+                // Opening tag - insert before >
+                newText = text.substring(0, text.length() - 1) + " aria-label=\"\">";
+            } else {
+                // Shouldn't happen, but handle it
+                newText = text + " aria-label=\"\"";
+            }
+            
+            // Replace the element text and position cursor in the empty aria-label
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                if (document != null) {
+                    int startOffset = element.getTextRange().getStartOffset();
+                    int endOffset = element.getTextRange().getEndOffset();
+                    document.replaceString(startOffset, endOffset, newText);
+                    
+                    // Try to position cursor inside the quotes
+                    Editor editor = FileEditorManager
+                            .getInstance(project).getSelectedTextEditor();
+                    if (editor != null) {
+                        int ariaLabelPos = newText.indexOf("aria-label=\"");
+                        if (ariaLabelPos >= 0) {
+                            editor.getCaretModel().moveToOffset(startOffset + ariaLabelPos + 12);
+                        }
+                    }
+                }
+            });
         }
     }
     
@@ -442,7 +504,28 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove aria-label and keep aria-labelledby
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove aria-label but keep aria-labelledby
+            String cleanedText = text.replaceAll("\\s*\\baria-label\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
 }

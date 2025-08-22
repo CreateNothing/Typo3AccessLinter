@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Missing Alt Text Issues - Test Data</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <!-- Test cases for MissingAltTextInspection -->
+    
+    <section id="html-images-missing-alt">
+        <h2>HTML Images Missing Alt Attributes</h2>
+        
+        <!-- Basic missing alt -->
+        <img src="photo1.jpg">
+        
+        <!-- Missing alt with multiple attributes -->
+        <img src="photo2.jpg" width="200" height="150" class="responsive">
+        
+        <!-- Self-closing missing alt -->
+        <img src="photo3.jpg" />
+        
+        <!-- Missing alt with title (title is not substitute for alt) -->
+        <img src="photo4.jpg" title="Beautiful landscape">
+        
+        <!-- Missing alt in complex structure -->
+        <div class="gallery">
+            <figure>
+                <img src="photo5.jpg" class="featured">
+                <figcaption>Featured Photo</figcaption>
+            </figure>
+        </div>
+        
+        <!-- Missing alt in link -->
+        <a href="/gallery">
+            <img src="thumbnail.jpg">
+        </a>
+        
+        <!-- Missing alt with data attributes -->
+        <img src="lazy.jpg" data-src="full-image.jpg" loading="lazy">
+    </section>
+    
+    <section id="input-images-missing-alt">
+        <h2>Input Type=Image Missing Alt</h2>
+        
+        <!-- Basic input image missing alt -->
+        <form>
+            <input type="image" src="submit-button.png">
+        </form>
+        
+        <!-- Input image with other attributes but missing alt -->
+        <form>
+            <input type="image" src="search-button.png" name="search" value="Search">
+        </form>
+        
+        <!-- Case variations -->
+        <form>
+            <INPUT TYPE="IMAGE" SRC="button.png">
+        </form>
+        
+        <!-- Input with spaces in type -->
+        <form>
+            <input type = "image" src="submit.png">
+        </form>
+    </section>
+    
+    <section id="fluid-images-missing-alt">
+        <h2>Fluid Images Missing Alt Attributes</h2>
+        
+        <!-- Basic Fluid image missing alt -->
+        <f:image src="photo.jpg" />
+        
+        <!-- Fluid image with attributes but missing alt -->
+        <f:image src="banner.jpg" width="800" height="200" class="hero-image" />
+        
+        <!-- Fluid image in loop -->
+        <f:for each="{images}" as="image">
+            <f:image src="{image.src}" class="gallery-item" />
+        </f:for>
+        
+        <!-- Non-self-closing Fluid image -->
+        <f:image src="complex.jpg">
+            <!-- Some content -->
+        </f:image>
+        
+        <!-- Fluid image in conditional -->
+        <f:if condition="{showImage}">
+            <f:image src="conditional.jpg" />
+        </f:if>
+    </section>
+    
+    <section id="mixed-scenarios">
+        <h2>Mixed HTML and Fluid Scenarios</h2>
+        
+        <div class="content">
+            <!-- Mix of missing and valid alt attributes -->
+            <img src="header.jpg" alt="Website header image">
+            <img src="content1.jpg">
+            <f:image src="sidebar.jpg" alt="Sidebar content" />
+            <f:image src="footer.jpg" />
+            <img src="icon.png">
+        </div>
+        
+        <!-- Complex nested structure -->
+        <article>
+            <header>
+                <h1>Article Title</h1>
+                <img src="author-photo.jpg" class="author-avatar">
+            </header>
+            <div class="content">
+                <p>Article content...</p>
+                <f:image src="article-image.jpg" class="inline-image" />
+            </div>
+        </article>
+    </section>
+    
+    <section id="edge-cases">
+        <h2>Edge Cases</h2>
+        
+        <!-- Malformed tags -->
+        <img src="malformed.jpg" class>
+        
+        <!-- Images with ARIA (but still need alt for img tags) -->
+        <img src="aria-image.jpg" aria-label="This has ARIA but still needs alt">
+        
+        <!-- Very long src -->
+        <img src="https://example.com/very/long/path/to/image/file/with/many/directories/image.jpg">
+        
+        <!-- Images in unusual contexts -->
+        <div data-content="This div has an image: <img src='embedded.jpg'>">
+            <img src="actual-image.jpg">
+        </div>
+    </section>
+</body>
+</html>

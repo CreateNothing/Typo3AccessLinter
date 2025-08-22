@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Enhanced Image Accessibility Issues - Test Data</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <!-- Test cases for EnhancedImageAccessibilityInspection issues -->
+    
+    <section id="redundant-phrases">
+        <h2>Redundant Phrases in Alt Text</h2>
+        
+        <!-- "image of" variations -->
+        <img src="sunset.jpg" alt="image of beautiful sunset">
+        <img src="sunset.jpg" alt="Image of mountains at dawn">
+        <img src="sunset.jpg" alt="IMAGE OF ocean waves">
+        
+        <!-- "picture of" variations -->
+        <img src="family.jpg" alt="picture of happy family">
+        <img src="family.jpg" alt="Picture of children playing">
+        <img src="family.jpg" alt="PICTURE OF wedding ceremony">
+        
+        <!-- "photo of" variations -->
+        <img src="landscape.jpg" alt="photo of scenic landscape">
+        <img src="landscape.jpg" alt="Photo of mountain trail">
+        <img src="landscape.jpg" alt="PHOTO OF forest path">
+        
+        <!-- "graphic of" variations -->
+        <img src="chart.jpg" alt="graphic of sales data">
+        <img src="chart.jpg" alt="Graphic of quarterly results">
+        
+        <!-- "icon of" variations -->
+        <img src="home.png" alt="icon of house">
+        <img src="home.png" alt="Icon of home button">
+        
+        <!-- Single word redundant phrases -->
+        <img src="diagram.jpg" alt="graphic showing process flow">
+        <img src="button.png" alt="icon for navigation">
+        <img src="artwork.jpg" alt="illustration depicting story">
+        
+        <!-- Fluid images with redundant phrases -->
+        <f:image src="hero.jpg" alt="image of company building" />
+        <f:image src="product.jpg" alt="picture of our latest product" />
+    </section>
+    
+    <section id="filename-alt-text">
+        <h2>Filename as Alt Text</h2>
+        
+        <!-- Exact filename matches -->
+        <img src="IMG_1234.jpg" alt="IMG_1234.jpg">
+        <img src="photo.png" alt="photo.png">
+        <img src="banner.gif" alt="banner.gif">
+        <img src="document.pdf" alt="document.pdf">
+        
+        <!-- Filename without extension -->
+        <img src="IMG_5678.jpg" alt="IMG_5678">
+        <img src="header-image.png" alt="header-image">
+        
+        <!-- Camera-style filenames -->
+        <img src="DSC_0012.jpg" alt="DSC_0012.jpg">
+        <img src="P1010234.jpg" alt="P1010234.jpg">
+        
+        <!-- Generic filenames -->
+        <img src="untitled.jpg" alt="untitled.jpg">
+        <img src="image001.png" alt="image001.png">
+        
+        <!-- Fluid images -->
+        <f:image src="screenshot.png" alt="screenshot.png" />
+        <f:image src="temp_file.jpg" alt="temp_file" />
+    </section>
+    
+    <section id="placeholder-alt-text">
+        <h2>Placeholder Alt Text</h2>
+        
+        <!-- Generic placeholders -->
+        <img src="photo.jpg" alt="image">
+        <img src="photo.jpg" alt="Image">
+        <img src="photo.jpg" alt="IMAGE">
+        
+        <img src="banner.jpg" alt="picture">
+        <img src="banner.jpg" alt="Picture">
+        
+        <img src="icon.png" alt="graphic">
+        <img src="icon.png" alt="icon">
+        <img src="icon.png" alt="Icon">
+        
+        <!-- Placeholder with numbers -->
+        <img src="temp.jpg" alt="img1">
+        <img src="temp.jpg" alt="image123">
+        <img src="temp.jpg" alt="pic2">
+        <img src="temp.jpg" alt="photo456">
+        
+        <!-- "Untitled" variations -->
+        <img src="art.jpg" alt="untitled">
+        <img src="art.jpg" alt="Untitled">
+        <img src="art.jpg" alt="UNTITLED">
+        
+        <!-- Test/temp placeholders -->
+        <img src="sample.jpg" alt="test">
+        <img src="sample.jpg" alt="temp">
+        <img src="sample.jpg" alt="dummy">
+        <img src="sample.jpg" alt="sample123">
+        <img src="sample.jpg" alt="placeholder">
+        
+        <!-- Fluid placeholders -->
+        <f:image src="content.jpg" alt="img" />
+        <f:image src="hero.jpg" alt="untitled1" />
+    </section>
+    
+    <section id="very-short-alt-text">
+        <h2>Very Short/Brief Alt Text</h2>
+        
+        <!-- Single characters -->
+        <img src="arrow.png" alt="x">
+        <img src="bullet.png" alt="•">
+        <img src="dash.png" alt="-">
+        <img src="question.png" alt="?">
+        
+        <!-- Two characters -->
+        <img src="logo.png" alt="ok">
+        <img src="status.png" alt="hi">
+        <img src="emoji.png" alt=":)">
+        
+        <!-- Single letters that aren't meaningful -->
+        <img src="initial.png" alt="a">
+        <img src="grade.png" alt="b">
+        
+        <!-- Numbers (might be meaningful depending on context) -->
+        <img src="rating.png" alt="5">
+        <img src="page.png" alt="1">
+        
+        <!-- Fluid short alt -->
+        <f:image src="tiny-icon.png" alt="x" />
+        <f:image src="marker.png" alt="." />
+    </section>
+    
+    <section id="very-long-alt-text">
+        <h2>Excessively Long Alt Text</h2>
+        
+        <!-- Over 125 characters -->
+        <img src="complex.jpg" alt="This is an extremely detailed description of a complex image that contains multiple elements including people, buildings, trees, cars, signs, and various other objects that would be better described using aria-describedby instead of this very long alt text that exceeds the recommended character limit for alternative text which should be concise and to the point">
+        
+        <!-- Another long example -->
+        <img src="infographic.jpg" alt="Comprehensive infographic displaying detailed statistical information about climate change impacts including temperature variations across different geographical regions, precipitation patterns, sea level changes, biodiversity effects, economic implications, and proposed mitigation strategies with corresponding graphs, charts, and visual representations">
+        
+        <!-- Fluid long alt -->
+        <f:image src="detailed-chart.png" alt="Complex business intelligence dashboard showing quarterly performance metrics, revenue breakdowns by product category, customer acquisition costs, lifetime value calculations, market penetration analysis, competitive positioning data, and strategic recommendations for the next fiscal year based on current trends and forecasted growth patterns" />
+    </section>
+    
+    <section id="decorative-images-wrong-alt">
+        <h2>Decorative Images with Non-Empty Alt</h2>
+        
+        <!-- Small decorative images with alt text -->
+        <img src="spacer.gif" width="10" height="10" alt="spacer image">
+        <img src="divider.png" width="100" height="2" alt="line">
+        <img src="bullet.gif" width="8" height="8" alt="bullet point">
+        
+        <!-- Images with decorative classes -->
+        <img src="pattern.png" class="decorative" alt="background pattern">
+        <img src="ornament.svg" class="decoration pattern" alt="decorative element">
+        <img src="separator.png" class="divider" alt="section separator">
+        
+        <!-- Decorative by filename -->
+        <img src="background-texture.png" alt="texture">
+        <img src="border-pattern.gif" alt="border">
+        <img src="ornamental-flourish.svg" alt="flourish">
+        
+        <!-- Role indicates decorative but has alt -->
+        <img src="decoration.png" role="presentation" alt="pretty decoration">
+        <img src="ornament.gif" role="none" alt="ornamental design">
+        
+        <!-- Fluid decorative with alt -->
+        <f:image src="spacer.gif" width="20" height="1" alt="spacer" />
+        <f:image src="bg-pattern.png" class="decorative" alt="background" />
+    </section>
+    
+    <section id="svg-accessibility-issues">
+        <h2>SVG Accessibility Issues</h2>
+        
+        <!-- SVG without any accessibility features -->
+        <svg width="100" height="100">
+            <circle cx="50" cy="50" r="40" fill="red" />
+        </svg>
+        
+        <!-- SVG with role="img" but no accessible text -->
+        <svg role="img" width="100" height="100">
+            <rect x="10" y="10" width="80" height="80" fill="blue" />
+        </svg>
+        
+        <!-- Complex SVG without accessibility -->
+        <svg width="200" height="100" viewBox="0 0 200 100">
+            <rect x="0" y="0" width="50" height="100" fill="#ff0000"/>
+            <rect x="50" y="0" width="50" height="100" fill="#00ff00"/>
+            <rect x="100" y="0" width="50" height="100" fill="#0000ff"/>
+            <rect x="150" y="0" width="50" height="100" fill="#ffff00"/>
+            <text x="100" y="50" text-anchor="middle" fill="white">Chart</text>
+        </svg>
+        
+        <!-- Interactive SVG without accessibility -->
+        <svg width="50" height="50" onclick="doSomething()">
+            <circle cx="25" cy="25" r="20" fill="green" />
+        </svg>
+        
+        <!-- Icon SVG without accessibility -->
+        <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+    </section>
+    
+    <section id="input-image-issues">
+        <h2>Input Type=Image Issues</h2>
+        
+        <!-- Input image without any accessible text -->
+        <form>
+            <input type="image" src="submit.png">
+        </form>
+        
+        <!-- Input image without alt but with other attributes -->
+        <form>
+            <input type="image" src="search.png" name="search" value="Go">
+        </form>
+        
+        <!-- Case variations -->
+        <form>
+            <INPUT TYPE="IMAGE" SRC="button.png" NAME="action">
+        </form>
+    </section>
+    
+    <section id="context-specific-issues">
+        <h2>Context-Specific Issues</h2>
+        
+        <!-- Images in links without descriptive alt -->
+        <a href="/products">
+            <img src="arrow.png" alt="arrow">
+        </a>
+        
+        <a href="/download/report.pdf">
+            <img src="pdf-icon.png" alt="PDF icon">
+        </a>
+        
+        <!-- Image as only content in link -->
+        <a href="/home">
+            <img src="logo.png" alt="logo">
+        </a>
+        
+        <!-- Multiple issues combined -->
+        <div class="gallery">
+            <img src="IMG_001.jpg" alt="image of IMG_001.jpg">
+            <img src="spacer.gif" width="10" height="1" alt="spacer">
+            <f:image src="photo.png" alt="picture of something very detailed that goes on for a very long time and exceeds the character limit recommendations" />
+        </div>
+    </section>
+    
+    <section id="missing-alt-enhanced">
+        <h2>Missing Alt (Enhanced Detection)</h2>
+        
+        <!-- Images that need alt text -->
+        <img src="content-image.jpg">
+        <f:image src="hero-banner.jpg" />
+        
+        <!-- Input images needing alt -->
+        <form>
+            <input type="image" src="submit-button.png">
+        </form>
+        
+        <!-- Images in links needing descriptive alt -->
+        <a href="/gallery">
+            <img src="thumbnail.jpg">
+        </a>
+    </section>
+</body>
+</html>

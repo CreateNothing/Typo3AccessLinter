@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Valid Alt Text Examples - Test Data</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <!-- Test cases for valid alt text scenarios (should NOT trigger MissingAltTextInspection) -->
+    
+    <section id="valid-html-images">
+        <h2>Valid HTML Images</h2>
+        
+        <!-- Basic img with alt -->
+        <img src="landscape.jpg" alt="Mountain landscape at sunset">
+        
+        <!-- Empty alt for decorative image -->
+        <img src="spacer.gif" alt="">
+        
+        <!-- Alt with special characters -->
+        <img src="cafe.jpg" alt="José's café on 5th Street">
+        
+        <!-- Alt with quotes -->
+        <img src="quote.jpg" alt="Sign reading 'Welcome to Paradise'">
+        
+        <!-- Alt with numbers -->
+        <img src="chart.jpg" alt="Sales increased 25% from Q1 to Q2 2024">
+        
+        <!-- Mixed quote styles -->
+        <img src='photo.jpg' alt="Beautiful ocean view">
+        <img src="photo2.jpg" alt='Sunset over the mountains'>
+        
+        <!-- Long but reasonable alt text -->
+        <img src="complex-scene.jpg" alt="Children playing soccer in a park while parents watch from benches under oak trees">
+        
+        <!-- Alt with newlines (should be fine) -->
+        <img src="description.jpg" alt="First line
+        Second line of description">
+        
+        <!-- Unicode in alt -->
+        <img src="international.jpg" alt="国際会議の様子 (International conference scene)">
+    </section>
+    
+    <section id="valid-input-images">
+        <h2>Valid Input Type=Image</h2>
+        
+        <!-- Input with alt -->
+        <form>
+            <input type="image" src="submit.png" alt="Submit form">
+        </form>
+        
+        <!-- Input with different quote styles -->
+        <form>
+            <input type="image" src="search.png" alt='Search products'>
+        </form>
+        
+        <!-- Input with descriptive alt -->
+        <form>
+            <input type="image" src="login-button.png" alt="Log in to your account">
+        </form>
+        
+        <!-- Case insensitive -->
+        <form>
+            <INPUT TYPE="IMAGE" SRC="button.png" ALT="Click to continue">
+        </form>
+    </section>
+    
+    <section id="valid-fluid-images">
+        <h2>Valid Fluid Images</h2>
+        
+        <!-- Basic Fluid image with alt -->
+        <f:image src="photo.jpg" alt="Descriptive alternative text" />
+        
+        <!-- Fluid image with empty alt -->
+        <f:image src="decoration.png" alt="" />
+        
+        <!-- Fluid image with complex alt -->
+        <f:image src="infographic.jpg" alt="Infographic showing 3 steps: Plan, Execute, Review" />
+        
+        <!-- Fluid image in loop with dynamic alt -->
+        <f:for each="{products}" as="product">
+            <f:image src="{product.image}" alt="{product.description}" />
+        </f:for>
+        
+        <!-- Fluid image with conditional alt -->
+        <f:image src="status.png" alt="{f:if(condition: product.available, then: 'Product available', else: 'Product out of stock')}" />
+        
+        <!-- Non-self-closing with alt -->
+        <f:image src="banner.jpg" alt="Welcome banner">
+            <!-- Additional content -->
+        </f:image>
+    </section>
+    
+    <section id="mixed-valid-scenarios">
+        <h2>Mixed Valid Scenarios</h2>
+        
+        <article>
+            <h1>Photography Article</h1>
+            <img src="hero-image.jpg" alt="Golden hour photography in mountain valley">
+            
+            <p>Photography tips...</p>
+            
+            <figure>
+                <f:image src="example-shot.jpg" alt="Example photo showing rule of thirds composition" />
+                <figcaption>Rule of thirds in action</figcaption>
+            </figure>
+            
+            <div class="gallery">
+                <img src="photo1.jpg" alt="Landscape photo with foreground rocks">
+                <img src="photo2.jpg" alt="Portrait with natural lighting">
+                <f:image src="photo3.jpg" alt="Macro shot of water droplet on leaf" />
+                <f:image src="divider.png" alt="" />
+            </div>
+        </article>
+        
+        <!-- Form with valid inputs -->
+        <form>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email">
+            <input type="image" src="submit-arrow.png" alt="Submit registration">
+        </form>
+    </section>
+    
+    <section id="accessibility-features">
+        <h2>Images with Additional Accessibility</h2>
+        
+        <!-- Image with both alt and title -->
+        <img src="complex.jpg" alt="Complex diagram showing data flow" title="Data Flow Diagram">
+        
+        <!-- Image with role (alt still required for img tags) -->
+        <img src="presentation.jpg" alt="Decorative border pattern" role="presentation">
+        
+        <!-- Image in link with descriptive alt -->
+        <a href="/gallery/sunsets">
+            <img src="sunset-thumb.jpg" alt="View sunset photography gallery">
+        </a>
+        
+        <!-- Multiple images in link -->
+        <a href="/product/camera">
+            <img src="camera-thumb.jpg" alt="Professional DSLR camera">
+            <span>Camera Details</span>
+        </a>
+    </section>
+    
+    <section id="edge-case-valid">
+        <h2>Edge Case Valid Examples</h2>
+        
+        <!-- Empty alt is valid for decorative -->
+        <img src="bullet-point.gif" alt="">
+        <img src="spacer.gif" alt="" width="1" height="10">
+        
+        <!-- Alt with only spaces (technically has alt attribute) -->
+        <img src="minimal.jpg" alt="   ">
+        
+        <!-- Very short but meaningful alt -->
+        <img src="logo.png" alt="ACME">
+        
+        <!-- Single meaningful character -->
+        <img src="arrow.png" alt="→">
+        
+        <!-- Numbers as alt -->
+        <img src="number.png" alt="42">
+    </section>
+</body>
+</html>

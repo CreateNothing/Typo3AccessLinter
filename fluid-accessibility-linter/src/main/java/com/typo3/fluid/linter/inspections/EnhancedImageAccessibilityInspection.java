@@ -3,6 +3,7 @@ package com.typo3.fluid.linter.inspections;
 import com.intellij.codeInspection.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.xml.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -27,9 +28,9 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
     
     // Attribute patterns
     private static final Pattern ALT_ATTR_PATTERN = Pattern.compile(
-        "\\salt\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
+        "\\balt\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
     private static final Pattern ROLE_ATTR_PATTERN = Pattern.compile(
-        "\\srole\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
+        "\\brole\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
     private static final Pattern ARIA_LABEL_PATTERN = Pattern.compile(
         "\\saria-label\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
     private static final Pattern ARIA_LABELLEDBY_PATTERN = Pattern.compile(
@@ -39,7 +40,7 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
     private static final Pattern CLASS_ATTR_PATTERN = Pattern.compile(
         "\\sclass\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
     private static final Pattern SRC_ATTR_PATTERN = Pattern.compile(
-        "\\ssrc\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
+        "\\bsrc\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
     private static final Pattern WIDTH_ATTR_PATTERN = Pattern.compile(
         "\\swidth\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
     private static final Pattern HEIGHT_ATTR_PATTERN = Pattern.compile(
@@ -60,7 +61,7 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
     ));
     
     private static final Set<String> DECORATIVE_FILENAMES = new HashSet<>(Arrays.asList(
-        "spacer", "divider", "separator", "bullet", "arrow", "decoration",
+        "spacer", "divider", "separator", "bullet", "decoration",
         "pattern", "background", "bg", "ornament", "dot", "line"
     ));
     
@@ -71,10 +72,10 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
     ));
     
     private static final Pattern FILENAME_PATTERN = Pattern.compile(
-        "\\.(jpg|jpeg|png|gif|svg|webp|bmp|ico)$", Pattern.CASE_INSENSITIVE);
+        "\\.(jpg|jpeg|png|gif|svg|webp|bmp|ico)\\b", Pattern.CASE_INSENSITIVE);
     
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile(
-        "^(img|image|pic|photo|untitled|placeholder|temp|test|dummy|sample)\\d*$", 
+        "^(img|image|pic|photo|untitled|placeholder|temp|test|dummy|sample|icon)\\d*$", 
         Pattern.CASE_INSENSITIVE);
     
     @NotNull
@@ -140,9 +141,12 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
             Matcher roleMatcher = ROLE_ATTR_PATTERN.matcher(attributes);
             String role = roleMatcher.find() ? roleMatcher.group(1) : null;
             
-            if ("img".equals(role) || "presentation".equals(role) || "none".equals(role)) {
-                // Role is explicitly set
-                if ("img".equals(role) && !hasAriaLabel && !hasAriaLabelledby && !hasTitle) {
+            if ("presentation".equals(role) || "none".equals(role)) {
+                // SVG is decorative - no warning needed
+                continue;
+            } else if ("img".equals(role)) {
+                // SVG explicitly marked as an image
+                if (!hasAriaLabel && !hasAriaLabelledby && !hasTitle) {
                     registerProblem(holder, file, start, end,
                         "SVG with role='img' needs accessible text (aria-label, aria-labelledby, or <title>)",
                         new AddSvgTitleFix());
@@ -315,6 +319,17 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
         
         // Check decorative images
         if (context.isLikelyDecorative) {
+            // If role="presentation" or role="none", no alt attribute is needed
+            if ("presentation".equals(context.role) || "none".equals(context.role)) {
+                // Don't require alt attribute when role indicates decorative
+                if (context.altText != null && !context.altText.isEmpty()) {
+                    registerProblem(holder, file, start, end,
+                        "Decorative image with role=\"" + context.role + "\" should not have alt text",
+                        new RemoveAltAttributeFix());
+                }
+                return;
+            }
+            
             if (context.altText == null) {
                 registerProblem(holder, file, start, end,
                     "Decorative image should have empty alt=\"\" attribute",
@@ -344,36 +359,55 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
                                        ProblemsHolder holder, int start, int end) {
         
         String trimmedAlt = altText.trim().toLowerCase();
+        boolean hasIssue = false;
         
-        // Check for filename as alt text
-        if (FILENAME_PATTERN.matcher(altText).find() || 
-            (context.src != null && altText.equals(context.src.substring(context.src.lastIndexOf('/') + 1)))) {
+        // Check for whitespace-only alt text
+        if (altText.trim().isEmpty()) {
             registerProblem(holder, file, start, end,
-                "Alt text appears to be a filename - provide descriptive text instead",
-                ProblemHighlightType.WARNING, null);
+                "Image needs alt text - alt attribute contains only whitespace",
+                new AddAltAttributeFix(""));
             return;
         }
         
-        // Check for placeholder text
+        // Check for placeholder text first (takes precedence over redundant phrases for single words)
         if (PLACEHOLDER_PATTERN.matcher(trimmedAlt).matches()) {
             registerProblem(holder, file, start, end,
                 "Alt text contains placeholder text - provide meaningful description",
                 ProblemHighlightType.WARNING, null);
-            return;
+            hasIssue = true;
         }
         
-        // Check for redundant phrases
-        for (String redundant : REDUNDANT_PHRASES) {
-            if (trimmedAlt.startsWith(redundant + " ") || trimmedAlt.equals(redundant)) {
-                registerProblem(holder, file, start, end,
-                    "Alt text contains redundant phrase '" + redundant + "' - screen readers already announce images",
-                    new RemoveRedundantPhraseFix(redundant));
-                return;
+        // Check for filename as alt text (can coexist with other issues)
+        boolean hasFilenamePattern = FILENAME_PATTERN.matcher(altText).find();
+        boolean matchesSrcFilename = context.src != null && altText.equals(context.src.substring(context.src.lastIndexOf('/') + 1));
+        
+        if (hasFilenamePattern || matchesSrcFilename) {
+            registerProblem(holder, file, start, end,
+                "Alt text appears to be a filename - provide descriptive text instead",
+                ProblemHighlightType.WARNING, null);
+            hasIssue = true;
+        }
+        
+        // Check for redundant phrases (skip single words that are already identified as placeholders)
+        if (!PLACEHOLDER_PATTERN.matcher(trimmedAlt).matches()) {
+            for (String redundant : REDUNDANT_PHRASES) {
+                if (trimmedAlt.startsWith(redundant + " ") || trimmedAlt.equals(redundant)) {
+                    // Check if it's a phrase like "photo of" or just "photo"
+                    String displayPhrase = redundant;
+                    if (trimmedAlt.startsWith(redundant + " of ")) {
+                        displayPhrase = redundant + " of";
+                    }
+                    registerProblem(holder, file, start, end,
+                        "Alt text contains redundant phrase '" + displayPhrase + "' - screen readers already announce images",
+                        new RemoveRedundantPhraseFix(redundant));
+                    hasIssue = true;
+                    break;
+                }
             }
         }
         
         // Check for single word/very short alt text (might be insufficient)
-        if (trimmedAlt.length() < 3 && !context.isInLink) {
+        if (!hasIssue && trimmedAlt.length() < 3 && !context.isInLink) {
             registerProblem(holder, file, start, end,
                 "Alt text might be too brief - consider providing more descriptive text",
                 ProblemHighlightType.WEAK_WARNING, null);
@@ -426,7 +460,26 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add alt attribute to the tag
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            // Find the XML tag
+            XmlTag tag = findContainingTag(element);
+            if (tag == null) return;
+            
+            // Add the alt attribute
+            tag.setAttribute("alt", defaultText);
+        }
+        
+        private XmlTag findContainingTag(PsiElement element) {
+            PsiElement current = element;
+            while (current != null) {
+                if (current instanceof XmlTag) {
+                    return (XmlTag) current;
+                }
+                current = current.getParent();
+            }
+            return null;
         }
     }
     
@@ -445,7 +498,26 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add alt="" to the tag
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            // Find the XML tag
+            XmlTag tag = findContainingTag(element);
+            if (tag == null) return;
+            
+            // Add empty alt attribute
+            tag.setAttribute("alt", "");
+        }
+        
+        private XmlTag findContainingTag(PsiElement element) {
+            PsiElement current = element;
+            while (current != null) {
+                if (current instanceof XmlTag) {
+                    return (XmlTag) current;
+                }
+                current = current.getParent();
+            }
+            return null;
         }
     }
     
@@ -464,7 +536,73 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would change existing alt to alt=""
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            // Find the XML tag
+            XmlTag tag = findContainingTag(element);
+            if (tag == null) return;
+            
+            // Change existing alt attribute to empty
+            XmlAttribute altAttr = tag.getAttribute("alt");
+            if (altAttr != null) {
+                altAttr.setValue("");
+            } else {
+                // If alt doesn't exist, add it
+                tag.setAttribute("alt", "");
+            }
+        }
+        
+        private XmlTag findContainingTag(PsiElement element) {
+            PsiElement current = element;
+            while (current != null) {
+                if (current instanceof XmlTag) {
+                    return (XmlTag) current;
+                }
+                current = current.getParent();
+            }
+            return null;
+        }
+    }
+    
+    private static class RemoveAltAttributeFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() {
+            return "Remove alt attribute";
+        }
+        
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Remove alt attribute";
+        }
+        
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            // Find the XML tag
+            XmlTag tag = findContainingTag(element);
+            if (tag == null) return;
+            
+            // Remove the alt attribute
+            XmlAttribute altAttr = tag.getAttribute("alt");
+            if (altAttr != null) {
+                altAttr.delete();
+            }
+        }
+        
+        private XmlTag findContainingTag(PsiElement element) {
+            PsiElement current = element;
+            while (current != null) {
+                if (current instanceof XmlTag) {
+                    return (XmlTag) current;
+                }
+                current = current.getParent();
+            }
+            return null;
         }
     }
     
@@ -489,7 +627,49 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove the redundant phrase from alt text
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            // Find the XML tag
+            XmlTag tag = findContainingTag(element);
+            if (tag == null) return;
+            
+            // Get the alt attribute and modify its value
+            XmlAttribute altAttr = tag.getAttribute("alt");
+            if (altAttr != null && altAttr.getValue() != null) {
+                String currentValue = altAttr.getValue();
+                String newValue;
+                
+                // Handle different removal patterns
+                String lowerValue = currentValue.toLowerCase();
+                String lowerPhrase = phrase.toLowerCase();
+                
+                if (lowerValue.startsWith(lowerPhrase + " ")) {
+                    // Remove phrase and following space from beginning
+                    newValue = currentValue.substring(phrase.length() + 1).trim();
+                } else if (lowerValue.equals(lowerPhrase)) {
+                    // Replace entire value
+                    newValue = "";
+                } else {
+                    // Replace all occurrences
+                    newValue = currentValue.replaceAll("(?i)" + Pattern.quote(phrase), "").trim();
+                    // Clean up multiple spaces
+                    newValue = newValue.replaceAll("\\s+", " ");
+                }
+                
+                altAttr.setValue(newValue);
+            }
+        }
+        
+        private XmlTag findContainingTag(PsiElement element) {
+            PsiElement current = element;
+            while (current != null) {
+                if (current instanceof XmlTag) {
+                    return (XmlTag) current;
+                }
+                current = current.getParent();
+            }
+            return null;
         }
     }
     
@@ -508,7 +688,59 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add <title> element inside SVG
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            // Find the SVG tag
+            XmlTag svgTag = findContainingSvgTag(element);
+            if (svgTag == null) return;
+            
+            // Check if title element already exists
+            XmlTag[] existingChildren = svgTag.getSubTags();
+            for (XmlTag child : existingChildren) {
+                if ("title".equals(child.getName())) {
+                    // Title already exists, don't add another
+                    return;
+                }
+            }
+            
+            try {
+                // Create a temporary XML file with the title element
+                PsiFile tempFile = PsiFileFactory.getInstance(project)
+                    .createFileFromText("temp.xml", svgTag.getContainingFile().getFileType(), 
+                        "<svg><title>Accessible description</title></svg>");
+                
+                // Find the created title tag in the temporary file
+                XmlTag rootTag = (XmlTag) tempFile.getFirstChild();
+                if (rootTag != null && rootTag.getSubTags().length > 0) {
+                    XmlTag titleTag = rootTag.getSubTags()[0];
+                    
+                    // Add as first child to make it accessible immediately
+                    if (svgTag.getSubTags().length > 0) {
+                        svgTag.addBefore(titleTag, svgTag.getSubTags()[0]);
+                    } else {
+                        svgTag.add(titleTag);
+                    }
+                }
+            } catch (Exception e) {
+                // Fallback: if XML creation fails, at least try to add role attribute
+                svgTag.setAttribute("role", "img");
+                svgTag.setAttribute("aria-label", "Accessible description");
+            }
+        }
+        
+        private XmlTag findContainingSvgTag(PsiElement element) {
+            PsiElement current = element;
+            while (current != null) {
+                if (current instanceof XmlTag) {
+                    XmlTag tag = (XmlTag) current;
+                    if ("svg".equals(tag.getName())) {
+                        return tag;
+                    }
+                }
+                current = current.getParent();
+            }
+            return null;
         }
     }
 }

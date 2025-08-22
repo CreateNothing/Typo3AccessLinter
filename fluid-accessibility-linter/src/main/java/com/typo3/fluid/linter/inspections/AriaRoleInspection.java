@@ -3,7 +3,10 @@ package com.typo3.fluid.linter.inspections;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -373,7 +376,28 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove the role attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove role attribute with various possible formats
+            String cleanedText = text.replaceAll("\\s*\\brole\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
     
@@ -426,7 +450,28 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove the redundant role attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove role attribute with various possible formats
+            String cleanedText = text.replaceAll("\\s*\\brole\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
     
@@ -439,7 +484,28 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove aria-hidden attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove aria-hidden attribute with various possible formats
+            String cleanedText = text.replaceAll("\\s*\\baria-hidden\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
     
@@ -874,7 +940,28 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove the redundant role attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove role attribute with various possible formats
+            String cleanedText = text.replaceAll("\\s*\\brole\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
     
