@@ -63,6 +63,13 @@ public class FixRegistry {
             register(new WrapElementFixStrategy());
             register(new ChangeAttributeFixStrategy());
             register(new AddChildElementFixStrategy());
+            register(new MarkImageDecorativeFixStrategy());
+            register(new DeriveAltFromFilenameFixStrategy());
+            register(new GenerateTableHeaderScaffoldFixStrategy());
+            register(new GenerateLabelForInputFixStrategy());
+            register(new AddAriaRequiredAttributesFixStrategy());
+            register(new AddSkipLinkFixStrategy());
+            register(new AdjustHeadingLevelFixStrategy());
         }
     }
 }

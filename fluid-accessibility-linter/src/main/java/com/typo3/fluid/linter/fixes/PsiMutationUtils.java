@@ -47,4 +47,51 @@ public final class PsiMutationUtils {
         }
         return (XmlTag) cur;
     }
+
+    /**
+     * Insert the given XML/text right after the opening tag of the target XmlTag.
+     */
+    public static void insertAfterStartTag(Project project, PsiFile file, XmlTag target, String xml) {
+        Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+        if (doc == null) return;
+        int start = target.getTextRange().getStartOffset();
+        String text = target.getText();
+        int gt = text.indexOf('>');
+        if (gt < 0) return;
+        int insertOffset = start + gt + 1;
+        WriteCommandAction.runWriteCommandAction(project, "Insert after start tag", null, () -> {
+            doc.insertString(insertOffset, xml);
+            PsiDocumentManager.getInstance(project).commitDocument(doc);
+        });
+    }
+
+    /**
+     * Insert the given XML/text before the target PsiElement.
+     */
+    public static void insertBeforeElement(Project project, PsiFile file, PsiElement target, String xml) {
+        Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+        if (doc == null) return;
+        int insertOffset = target.getTextRange().getStartOffset();
+        WriteCommandAction.runWriteCommandAction(project, "Insert before element", null, () -> {
+            doc.insertString(insertOffset, xml);
+            PsiDocumentManager.getInstance(project).commitDocument(doc);
+        });
+    }
+
+    /**
+     * Change the tag name (e.g., h3 -> h2). Closing tag is updated by PSI.
+     */
+    public static void changeTagName(Project project, XmlTag tag, String newName) {
+        WriteCommandAction.runWriteCommandAction(project, "Change tag name", null, () -> tag.setName(newName));
+    }
+
+    /**
+     * Ensure an attribute exists with a default value, without overwriting existing value.
+     */
+    public static void ensureAttribute(Project project, XmlTag tag, String name, String defaultValue) {
+        String val = tag.getAttributeValue(name);
+        if (val == null) {
+            setAttribute(project, tag, name, defaultValue);
+        }
+    }
 }

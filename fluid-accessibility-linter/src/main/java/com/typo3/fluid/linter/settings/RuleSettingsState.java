@@ -22,6 +22,7 @@ public class RuleSettingsState implements PersistentStateComponent<RuleSettingsS
     }
 
     private State state = new State();
+    private long version = 0L;
 
     public static RuleSettingsState getInstance(Project project) {
         return project.getService(RuleSettingsState.class);
@@ -36,6 +37,7 @@ public class RuleSettingsState implements PersistentStateComponent<RuleSettingsS
     @Override
     public void loadState(State state) {
         this.state = state != null ? state : new State();
+        version++;
     }
 
     public Boolean getEnabledOverride(String ruleId) {
@@ -52,14 +54,20 @@ public class RuleSettingsState implements PersistentStateComponent<RuleSettingsS
 
     public void setRuleEnabled(String ruleId, boolean enabled) {
         state.enabled.put(ruleId, enabled);
+        version++;
     }
 
     public void setSeverity(String ruleId, String severity) {
         state.severity.put(ruleId, severity);
+        version++;
     }
 
     public void setRuleConfig(String ruleId, Map<String, String> cfg) {
         state.config.put(ruleId, cfg);
+        version++;
+    }
+
+    public long getVersion() {
+        return version;
     }
 }
-

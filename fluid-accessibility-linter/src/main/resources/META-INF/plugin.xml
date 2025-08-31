@@ -194,6 +194,13 @@
         <fixStrategy implementation="com.typo3.fluid.linter.fixes.WrapElementFixStrategy"/>
         <fixStrategy implementation="com.typo3.fluid.linter.fixes.ChangeAttributeFixStrategy"/>
         <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddChildElementFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.MarkImageDecorativeFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.DeriveAltFromFilenameFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.GenerateTableHeaderScaffoldFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.GenerateLabelForInputFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddAriaRequiredAttributesFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddSkipLinkFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AdjustHeadingLevelFixStrategy"/>
     </extensions>
 
     <!-- Settings UI (project-level) -->

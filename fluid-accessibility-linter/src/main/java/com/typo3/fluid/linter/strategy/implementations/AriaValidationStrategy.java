@@ -78,12 +78,21 @@ public class AriaValidationStrategy extends BaseValidationStrategy {
                                 // one-of requirement, e.g., aria-label|aria-labelledby
                                 String[] options = required.split("\\|");
                                 if (!hasAny(tag, options)) {
+                                    // Offer fix to add aria-label as a simple default
+                                    com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
+                                    ctx.setAttribute("attributeName", "aria-label");
+                                    com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                                            .getFixes(file, start, end, ctx);
                                     results.add(new ValidationResult(start, end,
-                                            "Role '" + role + "' requires one of: " + String.join(", ", options)));
+                                            "Role '" + role + "' requires one of: " + String.join(", ", options), fixes));
                                 }
                             } else if (tag.getAttributeValue(required) == null) {
+                                // Offer to add missing required attributes for role
+                                com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("aria-missing-required");
+                                com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                                        .getFixes(file, start, end, ctx);
                                 results.add(new ValidationResult(start, end,
-                                        "Role '" + role + "' requires attribute '" + required + "'"));
+                                        "Role '" + role + "' requires attribute '" + required + "'", fixes));
                             }
                         }
                     }

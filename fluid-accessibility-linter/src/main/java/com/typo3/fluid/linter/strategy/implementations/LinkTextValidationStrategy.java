@@ -39,11 +39,17 @@ public class LinkTextValidationStrategy implements ValidationStrategy {
         for (LinkInfo link : links) {
             if (link.linkText.isEmpty()) {
                 if (!link.hasValidAriaLabel()) {
+                    // Offer to add aria-label
+                    com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
+                    ctx.setAttribute("attributeName", "aria-label");
+                    com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                            .getFixes(file, link.start, link.end, ctx);
                     results.add(new ValidationResult(
                             link.start, link.end,
                             link.hasIcon ?
                                     "Icon-only link must have aria-label or meaningful text to be accessible" :
-                                    "Link has no text content and no accessible label"
+                                    "Link has no text content and no accessible label",
+                            fixes
                     ));
                 }
             } else {
@@ -51,30 +57,51 @@ public class LinkTextValidationStrategy implements ValidationStrategy {
                 if (NON_DESCRIPTIVE_PHRASES.contains(lowerText)) {
                     if (CONTEXTUAL_PHRASES.contains(lowerText)) {
                         if (!hasDescriptiveContext(content, link.start)) {
+                            // Offer to add aria-label for better accessible name
+                            com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
+                            ctx.setAttribute("attributeName", "aria-label");
+                            com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                                    .getFixes(file, link.start, link.end, ctx);
                             results.add(new ValidationResult(
                                     link.start, link.end,
-                                    String.format("Link text '%s' needs context. Either improve the link text or ensure preceding text describes the destination", link.linkText)
+                                    String.format("Link text '%s' needs context. Either improve the link text or ensure preceding text describes the destination", link.linkText),
+                                    fixes
                             ));
                         }
                     } else {
+                        com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
+                        ctx.setAttribute("attributeName", "aria-label");
+                        com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                                .getFixes(file, link.start, link.end, ctx);
                         results.add(new ValidationResult(
                                 link.start, link.end,
-                                String.format("Link text '%s' is not descriptive. Links should clearly describe their destination or purpose", link.linkText)
+                                String.format("Link text '%s' is not descriptive. Links should clearly describe their destination or purpose", link.linkText),
+                                fixes
                         ));
                     }
                 }
 
                 if (link.linkText.matches("^[a-zA-Z]$") && !link.hasValidAriaLabel()) {
+                    com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
+                    ctx.setAttribute("attributeName", "aria-label");
+                    com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                            .getFixes(file, link.start, link.end, ctx);
                     results.add(new ValidationResult(
                             link.start, link.end,
-                            String.format("Single character '%s' as link text is not descriptive. Add aria-label or use descriptive text", link.linkText)
+                            String.format("Single character '%s' as link text is not descriptive. Add aria-label or use descriptive text", link.linkText),
+                            fixes
                     ));
                 }
 
                 if (isUrlText(lowerText)) {
+                    com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
+                    ctx.setAttribute("attributeName", "aria-label");
+                    com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
+                            .getFixes(file, link.start, link.end, ctx);
                     results.add(new ValidationResult(
                             link.start, link.end,
-                            "URL as link text is not user-friendly. Use descriptive text that explains the link's purpose"
+                            "URL as link text is not user-friendly. Use descriptive text that explains the link's purpose",
+                            fixes
                     ));
                 }
 

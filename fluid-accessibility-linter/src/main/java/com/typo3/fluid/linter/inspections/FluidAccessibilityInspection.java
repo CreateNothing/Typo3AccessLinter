@@ -251,6 +251,20 @@ public abstract class FluidAccessibilityInspection extends LocalInspectionTool {
             }
         }
     }
+
+    // Multi-fix variant with distinct name to avoid overload ambiguity
+    protected void registerProblems(ProblemsHolder holder, PsiFile file, int start, int end,
+                                    String message, LocalQuickFix[] fixes) {
+        PsiElement startElement = file.findElementAt(start);
+        if (startElement != null) {
+            PsiElement targetElement = findElementForRange(startElement, start, end);
+            if (fixes != null && fixes.length > 0) {
+                holder.registerProblem(targetElement, message, fixes);
+            } else {
+                holder.registerProblem(targetElement, message);
+            }
+        }
+    }
     
     /**
      * Register a problem with the given parameters and highlight type
@@ -265,6 +279,20 @@ public abstract class FluidAccessibilityInspection extends LocalInspectionTool {
             
             if (fix != null) {
                 holder.registerProblem(targetElement, message, highlightType, fix);
+            } else {
+                holder.registerProblem(targetElement, message, highlightType);
+            }
+        }
+    }
+
+    // Multi-fix variant with distinct name to avoid overload ambiguity
+    protected void registerProblems(ProblemsHolder holder, PsiFile file, int start, int end,
+                                    String message, ProblemHighlightType highlightType, LocalQuickFix[] fixes) {
+        PsiElement startElement = file.findElementAt(start);
+        if (startElement != null) {
+            PsiElement targetElement = findElementForRange(startElement, start, end);
+            if (fixes != null && fixes.length > 0) {
+                holder.registerProblem(targetElement, message, highlightType, fixes);
             } else {
                 holder.registerProblem(targetElement, message, highlightType);
             }

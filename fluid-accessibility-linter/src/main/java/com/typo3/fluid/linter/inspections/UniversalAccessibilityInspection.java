@@ -47,15 +47,15 @@ public class UniversalAccessibilityInspection extends FluidAccessibilityInspecti
             );
         }
         
-        // Register the problem
-        registerProblem(
+        // Register the problem with all available fixes
+        registerProblems(
             holder,
             file,
             violation.getResult().getStartOffset(),
             violation.getResult().getEndOffset(),
             violation.getMessage(),
             violation.getSeverity().getHighlightType(),
-            fixes.length > 0 ? fixes[0] : null
+            fixes
         );
     }
     

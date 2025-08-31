@@ -72,6 +72,7 @@ Example profile JSON shape:
 
 - Universal inspection: The plugin now registers a single rule‑engine based inspection (`Universal Fluid Accessibility Check`) in `plugin.xml`, which aggregates all checks. Legacy inspections remain available during the migration period.
 - No custom file type in release: The main `plugin.xml` targets `language="HTML"` only. The alternative `plugin-universal.xml` (with custom Fluid language/file type) is reserved for internal experiments and must not be used for release builds.
+- Performance: Results are cached per file and invalidated on edits, rule changes, or settings updates to keep inspections fast while staying accurate.
 
 ## Roadmap for Future Versions
 

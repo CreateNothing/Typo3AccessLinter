@@ -19,6 +19,21 @@ public class RuleEngine {
     private final List<RuleProvider> providers = new ArrayList<>();
     private static final ExtensionPointName<RuleProvider> RULE_PROVIDER_EP =
             ExtensionPointName.create("com.typo3.fluid.linter.ruleProvider");
+
+    private static class CacheEntry {
+        final long fileStamp;
+        final long settingsVersion;
+        final long engineVersion;
+        final List<RuleViolation> violations;
+        CacheEntry(long fileStamp, long settingsVersion, long engineVersion, List<RuleViolation> violations) {
+            this.fileStamp = fileStamp;
+            this.settingsVersion = settingsVersion;
+            this.engineVersion = engineVersion;
+            this.violations = violations;
+        }
+    }
+    private final Map<PsiFile, CacheEntry> cache = new java.util.WeakHashMap<>();
+    private long engineVersion = 0L;
     
     private RuleEngine() {
         initialize();
@@ -34,6 +49,8 @@ public class RuleEngine {
     public void registerRule(AccessibilityRule rule, ValidationStrategy strategy) {
         rules.put(rule.getId(), rule);
         strategies.put(rule.getId(), strategy);
+        engineVersion++;
+        cache.clear();
     }
     
     /**
@@ -42,16 +59,26 @@ public class RuleEngine {
     public void registerProvider(RuleProvider provider) {
         providers.add(provider);
         provider.loadRules(this);
+        engineVersion++;
+        cache.clear();
     }
     
     /**
      * Execute all enabled rules on a file
      */
     public List<RuleViolation> execute(PsiFile file) {
-        List<RuleViolation> violations = new ArrayList<>();
         String content = file.getText();
         Project project = file.getProject();
         RuleSettingsState settings = RuleSettingsState.getInstance(project);
+
+        long fileStamp = file.getModificationStamp();
+        long settingsVersion = settings != null ? settings.getVersion() : 0L;
+        CacheEntry ce = cache.get(file);
+        if (ce != null && ce.fileStamp == fileStamp && ce.settingsVersion == settingsVersion && ce.engineVersion == engineVersion) {
+            return ce.violations;
+        }
+
+        List<RuleViolation> violations = new ArrayList<>();
         
         for (Map.Entry<String, AccessibilityRule> entry : rules.entrySet()) {
             AccessibilityRule rule = entry.getValue();
@@ -85,8 +112,10 @@ public class RuleEngine {
         
         // Sort by priority/severity
         violations.sort(Comparator.comparing(RuleViolation::getSeverity));
-        
-        return violations;
+
+        // Cache results per file/settings/engine version
+        cache.put(file, new CacheEntry(fileStamp, settingsVersion, engineVersion, java.util.Collections.unmodifiableList(violations)));
+        return cache.get(file).violations;
     }
     
     /**
@@ -168,5 +197,7 @@ public class RuleEngine {
         for (RuleProvider provider : providers) {
             provider.loadRules(this);
         }
+        engineVersion++;
+        cache.clear();
     }
 }
