@@ -1,0 +1,25 @@
+package com.typo3.fluid.linter.inspections;
+
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import org.junit.Test;
+
+/**
+ * Test for {@link ListSemanticInspection}.
+ */
+public class ListSemanticInspectionTest extends LightJavaCodeInsightFixtureTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/testData";
+    }
+
+    @Test
+    public void testDummy() {
+        assertTrue(true);
+    }
+}

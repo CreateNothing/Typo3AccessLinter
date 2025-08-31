@@ -324,7 +324,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         // Check for conflicting ARIA attributes - interactive elements with aria-hidden
         // Check button, a, input elements with aria-hidden="true"
         Pattern hiddenInteractiveElements = Pattern.compile(
-            "<(?:button|a|input)[^>]*aria-hidden\\s*=\\s*[\"']true[\"'][^>]*>",
+            "<(?:button|a|input)[^>]*\\baria-hidden\\s*=\\s*[\"']true[\"'][^>]*>",
             Pattern.CASE_INSENSITIVE
         );
         
@@ -617,8 +617,8 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     }
     
     private void checkInputTypeRoleConsistency(String inputElement, PsiFile file, ProblemsHolder holder, int start, int end) {
-        String type = extractAttributeValue(inputElement, "type");
-        String role = extractAttributeValue(inputElement, "role");
+        String type = getAttributeValue(inputElement, "type");
+        String role = getAttributeValue(inputElement, "role");
         
         if (type != null && role != null) {
             String expectedRole = getExpectedRoleForInputType(type);
@@ -655,11 +655,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         }
     }
     
-    private String extractAttributeValue(String element, String attribute) {
-        Pattern pattern = Pattern.compile(attribute + "\\s*=\\s*[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(element);
-        return matcher.find() ? matcher.group(1) : null;
-    }
+    // Use helper methods from FluidAccessibilityInspection: getAttributeValue/hasAttribute
     
     /**
      * Validate role appropriateness for context

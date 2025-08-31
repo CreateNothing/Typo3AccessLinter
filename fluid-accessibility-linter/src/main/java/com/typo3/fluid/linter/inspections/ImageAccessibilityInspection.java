@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * Enhanced image accessibility inspection that provides context-aware validation
  * including decorative image detection, alt text quality validation, and SVG support.
  */
-public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInspection {
+public class ImageAccessibilityInspection extends FluidAccessibilityInspection {
     
     // Image patterns
     private static final Pattern IMG_TAG_PATTERN = Pattern.compile(
@@ -81,13 +81,13 @@ public class EnhancedImageAccessibilityInspection extends FluidAccessibilityInsp
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Enhanced image accessibility validation";
+        return "Image accessibility validation";
     }
     
     @NotNull
     @Override
     public String getShortName() {
-        return "EnhancedImageAccessibility";
+        return "ImageAccessibility";
     }
     
     @Override

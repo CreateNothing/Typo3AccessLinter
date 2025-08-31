@@ -30,12 +30,12 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
     );
     
     private static final Pattern ROLE_NAV_PATTERN = Pattern.compile(
-        "<([^>]+)\\s+role\\s*=\\s*[\"']navigation[\"']([^>]*)>",
+        "<([^>]+)\\s+[^>]*\\brole\\s*=\\s*[\"']navigation[\"'][^>]*>",
         Pattern.CASE_INSENSITIVE
     );
     
     private static final Pattern ARIA_LABEL_PATTERN = Pattern.compile(
-        "aria-label(?:ledby)?\\s*=\\s*[\"']([^\"']+)[\"']",
+        "\\baria-label(?:ledby)?\\s*=\\s*[\"']([^\"']+)[\"']",
         Pattern.CASE_INSENSITIVE
     );
     

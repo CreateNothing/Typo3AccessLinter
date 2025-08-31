@@ -47,10 +47,12 @@ Click on the highlighted issue and press `Alt+Enter` to see available quick fixe
 
 ## Roadmap for Future Versions
 
-### v1.1.0 - Enhanced Image Checking
+### v1.1.0 - Image Checking
 - Decorative image detection (alt="" validation)
 - SVG accessibility attributes
 - Figure/figcaption validation
+
+Note: As of v1.4.0 these capabilities are merged into the base image inspection (no separate "Enhanced" variant).
 
 ### v1.2.0 - Form Accessibility
 - Label association for form inputs
@@ -106,6 +108,26 @@ Run test templates through the plugin:
 ```
 
 Then open `test-templates/sample-with-issues.html` to see the linting in action.
+
+### Regex Guidelines
+
+When matching HTML/Fluid with regex in inspections, follow these conventions:
+
+- Attribute boundaries: use `\b` before names (e.g., `\brole\s*=`, `\baria-label\s*=`) to avoid partial matches.
+- Attribute clusters: match "any attrs" with `[^>]*` instead of quote-heavy negations.
+- Values: match quotes portably with `[\"']` and contents with `[^\"']*`.
+- Roles/ARIA: prefer patterns like `\brole\s*=\s*[\"']([^\"']+)[\"']` and `\baria-label(?:ledby)?\s*=\s*[\"']([^\"']+)[\"']`.
+- IDs/classes: add word boundaries (`\bid\b`, `\bclass\b`) when filtering on specific attributes.
+- Content spans: avoid giant "start-tag…end-tag" regex. Instead, find the opening tag and compute the end with parsing helpers (see `findElementEnd(...)`).
+- Escaping: do not over-escape quotes. Only escape where Java strings require (`"` becomes `\"`).
+- Flags: add `Pattern.CASE_INSENSITIVE` (and `DOTALL` only when the pattern truly spans newlines).
+- Helpers: favor `getAttributeValue(tag, name)` and `hasAttribute(tag, name)` from `FluidAccessibilityInspection` over ad‑hoc regex.
+- Performance: compile patterns as `private static final Pattern` and keep them specific to reduce backtracking.
+
+Example snippets:
+
+- Any `<ul|ol>` with menu intent: `"<(?:ul|ol)[^>]*\b(class|role)\b[^>]*>"`
+- Redundant list role on `<ul>`: `"<ul[^>]*" + ROLE_LIST_PATTERN.pattern() + "[^>]*>"`
 
 ## Contributing
 

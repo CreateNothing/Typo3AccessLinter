@@ -4,7 +4,7 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Test;
 
 /**
- * Comprehensive test suite for EnhancedImageAccessibilityInspection.
+ * Comprehensive test suite for ImageAccessibilityInspection.
  * Tests advanced WCAG 2.1 Success Criteria including:
  * - Alt text quality validation (redundant phrases, filenames, placeholders)
  * - Decorative image detection and validation
@@ -14,7 +14,7 @@ import org.junit.Test;
  * - Alt text length limits and recommendations
  * - Complex image scenarios and edge cases
  */
-public class EnhancedImageAccessibilityInspectionTest extends LightJavaCodeInsightFixtureTestCase {
+public class ImageAccessibilityInspectionTest extends LightJavaCodeInsightFixtureTestCase {
     
     @Override
     protected void setUp() throws Exception {
@@ -28,7 +28,7 @@ public class EnhancedImageAccessibilityInspectionTest extends LightJavaCodeInsig
     
     private void doTest(String htmlContent, String... expectedPatterns) {
         myFixture.configureByText("test.html", htmlContent);
-        myFixture.enableInspections(new EnhancedImageAccessibilityInspection());
+        myFixture.enableInspections(new ImageAccessibilityInspection());
         
         var highlights = myFixture.doHighlighting();
         
@@ -49,7 +49,7 @@ public class EnhancedImageAccessibilityInspectionTest extends LightJavaCodeInsig
     
     private void doTestNoWarnings(String htmlContent) {
         myFixture.configureByText("test.html", htmlContent);
-        myFixture.enableInspections(new EnhancedImageAccessibilityInspection());
+        myFixture.enableInspections(new ImageAccessibilityInspection());
         
         var highlights = myFixture.doHighlighting();
         
@@ -538,7 +538,7 @@ public class EnhancedImageAccessibilityInspectionTest extends LightJavaCodeInsig
         // Both issues are detected by the inspection, but the test framework may only show one
         // We'll test that at least the issues are found
         myFixture.configureByText("test.html", html);
-        myFixture.enableInspections(new EnhancedImageAccessibilityInspection());
+        myFixture.enableInspections(new ImageAccessibilityInspection());
         
         var highlights = myFixture.doHighlighting();
         

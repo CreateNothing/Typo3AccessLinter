@@ -3,6 +3,8 @@
 ## Overview
 This guide documents the architectural improvements made to address critical issues identified in the architectural analysis.
 
+> Status (v1.4.0): Enhanced* inspection classes have been merged into their base inspections. Plugin registrations now reference the base inspections only. The longer-term migration toward a universal, rule/strategy-based inspection remains planned work.
+
 ## Issues Addressed
 
 ### 1. ✅ Code Duplication (FIXED)
@@ -86,9 +88,9 @@ This guide documents the architectural improvements made to address critical iss
 3. Test thoroughly with existing test files
 
 ### Phase 3: Cleanup
-1. Remove Enhanced* inspection classes
-2. Replace old inspections with UniversalAccessibilityInspection
-3. Update plugin.xml to use new architecture
+1. Remove Enhanced* inspection classes — Completed in v1.4.0 (merged into base)
+2. Replace old inspections with UniversalAccessibilityInspection — Planned
+3. Update plugin.xml to use new architecture — Planned
 
 ## Benefits of New Architecture
 

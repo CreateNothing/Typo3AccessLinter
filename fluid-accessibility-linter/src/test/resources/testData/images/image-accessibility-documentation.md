@@ -17,7 +17,7 @@ This directory contains comprehensive test cases for image accessibility inspect
   - Performance testing with multiple images
   - Mixed HTML/Fluid scenarios
 
-#### `EnhancedImageAccessibilityInspectionTest.java`
+#### `ImageAccessibilityInspectionTest.java`
 - **Purpose**: Tests advanced image accessibility validation
 - **Test Count**: 45+ comprehensive test methods
 - **Coverage Areas**:
@@ -48,7 +48,7 @@ Contains examples of images that should NOT trigger the MissingAltTextInspection
 - Valid edge cases
 
 #### `enhanced-accessibility-issues.html`
-Contains examples that SHOULD trigger the EnhancedImageAccessibilityInspection:
+Contains examples that SHOULD trigger the ImageAccessibilityInspection:
 - Images with redundant phrases in alt text ("image of", "picture of", etc.)
 - Images using filenames as alt text
 - Images with placeholder alt text ("image", "untitled", etc.)
@@ -58,7 +58,7 @@ Contains examples that SHOULD trigger the EnhancedImageAccessibilityInspection:
 - Input type="image" without accessible text
 
 #### `enhanced-accessibility-valid.html`
-Contains examples that should NOT trigger the EnhancedImageAccessibilityInspection:
+Contains examples that should NOT trigger the ImageAccessibilityInspection:
 - High-quality, descriptive alt text
 - Properly marked decorative images (empty alt, role="presentation/none")
 - SVG elements with proper accessibility (title, desc, aria-label, etc.)
@@ -128,7 +128,7 @@ Specialized test file focusing on SVG accessibility:
 
 ### Decorative Image Detection
 
-The enhanced inspection detects decorative images by:
+The inspection detects decorative images by:
 - **Role attributes**: `role="presentation"` or `role="none"`
 - **CSS classes**: Contains words like "decorative", "ornament", "spacer"
 - **Filenames**: Contains words like "spacer", "divider", "background"
@@ -157,8 +157,8 @@ The enhanced inspection detects decorative images by:
 # Run MissingAltTextInspection tests
 ./gradlew test --tests "*MissingAltTextInspectionTest*"
 
-# Run EnhancedImageAccessibilityInspection tests  
-./gradlew test --tests "*EnhancedImageAccessibilityInspectionTest*"
+# Run ImageAccessibilityInspection tests  
+./gradlew test --tests "*ImageAccessibilityInspectionTest*"
 ```
 
 ### Running Specific Test Methods
@@ -167,7 +167,7 @@ The enhanced inspection detects decorative images by:
 ./gradlew test --tests "*MissingAltTextInspectionTest.testBasicMissingAlt"
 
 # Test redundant phrases detection
-./gradlew test --tests "*EnhancedImageAccessibilityInspectionTest.testRedundantPhraseImage"
+./gradlew test --tests "*ImageAccessibilityInspectionTest.testRedundantPhraseImage"
 ```
 
 ### Running All Image Accessibility Tests
@@ -179,7 +179,7 @@ The enhanced inspection detects decorative images by:
 ## Expected Test Results
 
 - **MissingAltTextInspectionTest**: 43 tests covering basic alt attribute detection
-- **EnhancedImageAccessibilityInspectionTest**: 45+ tests covering advanced accessibility validation
+- **ImageAccessibilityInspectionTest**: 45+ tests covering advanced accessibility validation
 - **Total**: 88+ test methods providing comprehensive coverage
 
 ## Maintenance Notes
@@ -202,7 +202,7 @@ The enhanced inspection detects decorative images by:
 
 These tests validate the behavior of:
 - `MissingAltTextInspection.java` - Basic alt attribute detection
-- `EnhancedImageAccessibilityInspection.java` - Advanced quality validation
+- `ImageAccessibilityInspection.java` - Advanced quality validation
 
 The test framework uses IntelliJ Platform's test infrastructure to:
 - Configure test files as PSI elements
