@@ -4,20 +4,19 @@
     <vendor email="inboxstuff@proton.me">CreateNothing</vendor>
     <version>0.5.1</version>
     
-    <description><![CDATA[
-        A fast, context‑aware accessibility linter for TYPO3 Fluid templates in PhpStorm and other IntelliJ‑based IDEs. It flags issues as you type and offers focused quick‑fixes that align with WCAG and ARIA best practices.
-        <br/><br/>
-        <b>Key features</b>
-        <ul>
-            <li><b>Real‑time inspections:</b> images (alt text, decorative/SVG), links (meaningful text), forms (labels, required/state), headings (hierarchy & sectioning), tables (data vs layout, header scope), landmarks & navigation (skip links, redundancy), ARIA roles/attributes (implicit roles, misuse), interactive UI (modals, accordions, tabs), live regions, language attributes, list semantics, and radio/checkbox groups.</li>
-            <li><b>Fluid‑aware analysis:</b> understands common TYPO3/Fluid patterns embedded in HTML templates.</li>
-            <li><b>One‑click quick‑fixes:</b> add missing labels/attributes, generate table scaffolds, adjust heading levels, mark decorative images, and more.</li>
-            <li><b>Configurable rules:</b> sensible defaults with options under <i>Settings | Tools | Fluid Accessibility</i>.</li>
-            <li><b>Compatible:</b> tested with PhpStorm and IntelliJ IDEA 2023.3 and newer.</li>
-        </ul>
-        <br/>
-        Built and maintained by CreateNothing for the TYPO3 community. Not affiliated with or endorsed by the TYPO3 Association.
-    ]]></description>
+    <description><![CDATA[A fast, context-aware accessibility linter for TYPO3 Fluid templates in PhpStorm and other IntelliJ-based IDEs. It flags issues as you type and offers focused quick-fixes that align with WCAG and ARIA best practices.
+
+<br/><br/>
+<b>Key features</b>
+<ul>
+    <li><b>Real-time inspections:</b> images (alt text, decorative/SVG), links (meaningful text), forms (labels, required/state), headings (hierarchy & sectioning), tables (data vs layout, header scope), landmarks & navigation (skip links, redundancy), ARIA roles/attributes (implicit roles, misuse), interactive UI (modals, accordions, tabs), live regions, language attributes, list semantics, and radio/checkbox groups.</li>
+    <li><b>Fluid-aware analysis:</b> understands common TYPO3/Fluid patterns embedded in HTML templates.</li>
+    <li><b>One-click quick-fixes:</b> add missing labels/attributes, generate table scaffolds, adjust heading levels, mark decorative images, and more.</li>
+    <li><b>Configurable rules:</b> sensible defaults with options under <i>Settings | Tools | Fluid Accessibility</i>.</li>
+    <li><b>Compatible:</b> tested with PhpStorm and IntelliJ IDEA 2023.3 and newer.</li>
+</ul>
+<br/>
+Built and maintained by CreateNothing for the TYPO3 community. Not affiliated with or endorsed by the TYPO3 Association.]]></description>
     
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
