@@ -50,6 +50,10 @@ public class MissingAltTextInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        com.typo3.fluid.linter.settings.RuleSettingsState st = holder.getProject() != null ? com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(holder.getProject()) : null;
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return new PsiElementVisitor() { };// suppressed
+        }
         return new PsiElementVisitor() {
             @Override
             public void visitFile(@NotNull PsiFile file) {
@@ -106,17 +110,23 @@ public class MissingAltTextInspection extends LocalInspectionTool {
             }
         }
         
-        // Check Fluid f:image ViewHelpers using PSI
+        // Check Fluid image-like ViewHelpers using PSI (f:image, f:media, namespaced :image/:media, VHS v:media.image)
         List<PsiElement> fluidImages = PsiElementParser.findElements(file, 
             el -> {
                 String tagName = PsiElementParser.getTagName(el);
                 if (tagName == null) return false;
-                // Case insensitive check for f:image or F:IMAGE
-                return tagName.equalsIgnoreCase("f:image");
+                String lower = tagName.toLowerCase();
+                // f:image or f:media
+                if (lower.equals("f:image") || lower.equals("f:media")) return true;
+                // namespaced image/media (e.g., my:image, typo3:media)
+                if (lower.endsWith(":image") || lower.endsWith(":media")) return true;
+                // dotted VHS-style image (e.g., v:media.image)
+                if (lower.endsWith(".image") || lower.contains(":image.")) return true;
+                return false;
             });
         
         for (PsiElement element : fluidImages) {
-            // Only check self-closing f:image tags (per test expectations)
+            // Only check self-closing tags (per test expectations)
             if (!element.getText().endsWith("/>")) {
                 continue;
             }
@@ -124,9 +134,12 @@ public class MissingAltTextInspection extends LocalInspectionTool {
             if (!PsiElementParser.hasAttribute(element, "alt")) {
                 String ariaLabel = PsiElementParser.getAttributeValue(element, "aria-label");
                 String role = PsiElementParser.getAttributeValue(element, "role");
+                String ariaHidden = PsiElementParser.getAttributeValue(element, "aria-hidden");
+                boolean decorative = (role != null && ("presentation".equals(role) || "none".equals(role))) ||
+                                     (ariaHidden != null && "true".equalsIgnoreCase(ariaHidden));
                 
                 // Skip if decorative or has aria-label
-                if (ariaLabel == null && !"presentation".equals(role) && !"none".equals(role)) {
+                if (ariaLabel == null && !decorative) {
                     holder.registerProblem(
                         element,
                         "Fluid image ViewHelper missing alt attribute",

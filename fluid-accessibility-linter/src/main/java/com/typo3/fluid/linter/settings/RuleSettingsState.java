@@ -19,6 +19,8 @@ public class RuleSettingsState implements PersistentStateComponent<RuleSettingsS
         public Map<String, Boolean> enabled = new HashMap<>();
         public Map<String, String> severity = new HashMap<>();
         public Map<String, Map<String, String>> config = new HashMap<>();
+        public boolean universalEnabled = true;
+        public boolean suppressLegacyDuplicates = false;
     }
 
     private State state = new State();
@@ -69,5 +71,24 @@ public class RuleSettingsState implements PersistentStateComponent<RuleSettingsS
 
     public long getVersion() {
         return version;
+    }
+
+    // Global toggles
+    public boolean isUniversalEnabled() {
+        return state.universalEnabled;
+    }
+
+    public void setUniversalEnabled(boolean enabled) {
+        state.universalEnabled = enabled;
+        version++;
+    }
+
+    public boolean isSuppressLegacyDuplicates() {
+        return state.suppressLegacyDuplicates;
+    }
+
+    public void setSuppressLegacyDuplicates(boolean suppress) {
+        state.suppressLegacyDuplicates = suppress;
+        version++;
     }
 }

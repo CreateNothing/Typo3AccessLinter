@@ -89,7 +89,7 @@
         <localInspection language="HTML"
                          displayName="Non-descriptive link text"
                          groupName="Fluid Accessibility"
-                         enabledByDefault="true"
+                         enabledByDefault="false"
                          level="WARNING"
                          implementationClass="com.typo3.fluid.linter.inspections.LinkTextInspection"/>
         

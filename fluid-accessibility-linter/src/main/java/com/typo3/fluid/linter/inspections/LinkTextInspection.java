@@ -73,7 +73,15 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     ));
     
     private static final Pattern LINK_PATTERN = Pattern.compile(
-        "<(a\\s+[^>]*|f:link(?:\\.[^\\s>]+)?[^>]*)>(.*?)</(a|f:link(?:\\.[^>]*)?)>",
+        "<(" +
+            "a\\s+[^>]*" +
+            "|f:link(?:\\.[^\\s>]+)?[^>]*" +
+            "|[a-zA-Z0-9_.-]+:link(?:\\.[^\\s>]+)?[^>]*" +
+        ")>(.*?)</(" +
+            "a" +
+            "|f:link(?:\\.[^>]*)?" +
+            "|[a-zA-Z0-9_.-]+:link(?:\\.[^>]*)?" +
+        ")>",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     
@@ -118,6 +126,10 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     
     @Override
     protected void inspectFile(@NotNull PsiFile file, @NotNull ProblemsHolder holder) {
+        com.typo3.fluid.linter.settings.RuleSettingsState st = com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(file.getProject());
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return; // suppressed when Universal is enabled and suppression is active
+        }
         String content = file.getText();
         
         // Collect all links for context analysis and duplicate detection

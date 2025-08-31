@@ -21,6 +21,10 @@ public class UniversalAccessibilityInspection extends FluidAccessibilityInspecti
     
     @Override
     protected void inspectFile(@NotNull PsiFile file, @NotNull ProblemsHolder holder) {
+        com.typo3.fluid.linter.settings.RuleSettingsState settings = com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(file.getProject());
+        if (settings != null && !settings.isUniversalEnabled()) {
+            return; // toggled off in settings
+        }
         // Execute all enabled rules
         List<RuleViolation> violations = ruleEngine.execute(file);
         

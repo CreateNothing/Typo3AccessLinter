@@ -29,14 +29,15 @@ public class ImageAltTextValidationStrategy implements ValidationStrategy {
             }
         }
 
-        // Fluid f:image
+        // Fluid f:image, f:media, namespaced :image/:media, VHS dotted .image
         file.accept(new com.intellij.psi.PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(@org.jetbrains.annotations.NotNull PsiElement element) {
                 if (element instanceof XmlTag) {
                     XmlTag tag = (XmlTag) element;
                     String name = tag.getName();
-                    if (name.equalsIgnoreCase("f:image") || name.endsWith(":image")) {
+                    String lower = name.toLowerCase();
+                    if (lower.equals("f:image") || lower.equals("f:media") || lower.endsWith(":image") || lower.endsWith(":media") || lower.endsWith(".image") || lower.contains(":image.")) {
                         results.addAll(checkOneImageTag(file, tag));
                     }
                 }

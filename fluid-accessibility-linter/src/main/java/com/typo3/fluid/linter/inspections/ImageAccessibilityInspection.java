@@ -92,6 +92,10 @@ public class ImageAccessibilityInspection extends FluidAccessibilityInspection {
     
     @Override
     protected void inspectFile(@NotNull PsiFile file, @NotNull ProblemsHolder holder) {
+        com.typo3.fluid.linter.settings.RuleSettingsState st = com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(file.getProject());
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return; // suppressed when Universal is enabled and suppression is active
+        }
         String content = file.getText();
         
         // Check different types of images

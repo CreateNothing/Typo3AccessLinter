@@ -22,6 +22,8 @@ import java.util.*;
 public class RuleSettingsConfigurable implements SearchableConfigurable {
     private final Project project;
     private JPanel panel;
+    private JCheckBox universalEnabled;
+    private JCheckBox suppressLegacy;
     private static class Row {
         JCheckBox enabled;
         JComboBox<String> severity;
@@ -45,8 +47,17 @@ public class RuleSettingsConfigurable implements SearchableConfigurable {
         JScrollPane scroll = new JScrollPane(listPanel);
         scroll.setBorder(BorderFactory.createEmptyBorder());
 
-        // Toolbar with Presets + Import/Export
+        // Toolbar with toggles + Presets/Import/Export
         JPanel toolbar = new JPanel();
+        universalEnabled = new JCheckBox("Enable Universal inspection (rule engine)");
+        suppressLegacy = new JCheckBox("Suppress legacy duplicates (Link Text, Skip Links, Tables)");
+        RuleSettingsState st0 = RuleSettingsState.getInstance(project);
+        if (st0 != null) {
+            universalEnabled.setSelected(st0.isUniversalEnabled());
+            suppressLegacy.setSelected(st0.isSuppressLegacyDuplicates());
+        }
+        toolbar.add(universalEnabled);
+        toolbar.add(suppressLegacy);
         JComboBox<String> presets = new JComboBox<>(Presets.names());
         javax.swing.JButton applyPreset = new javax.swing.JButton("Apply Preset");
         javax.swing.JButton importBtn = new javax.swing.JButton("Import Profile...");
@@ -167,6 +178,8 @@ public class RuleSettingsConfigurable implements SearchableConfigurable {
     @Override
     public boolean isModified() {
         RuleSettingsState state = RuleSettingsState.getInstance(project);
+        if (state.isUniversalEnabled() != universalEnabled.isSelected()) return true;
+        if (state.isSuppressLegacyDuplicates() != suppressLegacy.isSelected()) return true;
         for (Map.Entry<String, Row> e : ruleRows.entrySet()) {
             String id = e.getKey();
             Row row = e.getValue();
@@ -186,6 +199,8 @@ public class RuleSettingsConfigurable implements SearchableConfigurable {
     @Override
     public void apply() {
         RuleSettingsState state = RuleSettingsState.getInstance(project);
+        state.setUniversalEnabled(universalEnabled.isSelected());
+        state.setSuppressLegacyDuplicates(suppressLegacy.isSelected());
         for (Map.Entry<String, Row> e : ruleRows.entrySet()) {
             state.setRuleEnabled(e.getKey(), e.getValue().enabled.isSelected());
             state.setSeverity(e.getKey(), Objects.toString(e.getValue().severity.getSelectedItem(), null));
@@ -195,6 +210,8 @@ public class RuleSettingsConfigurable implements SearchableConfigurable {
     @Override
     public void reset() {
         RuleSettingsState state = RuleSettingsState.getInstance(project);
+        universalEnabled.setSelected(state.isUniversalEnabled());
+        suppressLegacy.setSelected(state.isSuppressLegacyDuplicates());
         for (Map.Entry<String, Row> e : ruleRows.entrySet()) {
             AccessibilityRule rule = RuleEngine.getInstance().getRule(e.getKey());
             Row row = e.getValue();
