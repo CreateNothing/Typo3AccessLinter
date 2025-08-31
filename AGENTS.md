@@ -34,3 +34,20 @@
 ## Security & Configuration Tips
 - Use JDK 17; run via Gradle wrapper.
 - Respect `intellij` version and `sinceBuild/untilBuild` in `build.gradle`/`plugin.xml` when adding APIs.
+
+## Architecture Overview (brief)
+- Inspections live in `com.typo3.fluid.linter.inspections` with quick-fixes; validation strategies in `com.typo3.fluid.linter.strategy`.
+- PSI helpers under `parser/`; shared utilities under `utils/`.
+- Plugin registration in `src/main/resources/META-INF/plugin.xml`.
+
+## Release Process
+- Bump versions: update plugin version in `build.gradle` (Gradle IntelliJ plugin block) and, if needed, `META-INF/plugin.xml` (since/untilBuild).
+- Verify locally: `./gradlew clean build` and `./gradlew runIde` to sanity‑check inspections and quick‑fixes.
+- Build artifact: `./gradlew buildPlugin` → ZIP at `build/distributions/*.zip`.
+- Tag and publish: create a Git tag (e.g., `vX.Y.Z`) and attach the ZIP to the release notes or upload to the IntelliJ Marketplace (requires proper plugin metadata and changelog).
+
+## Troubleshooting
+- Gradle issues: run `./gradlew --no-daemon clean build --stacktrace`. If caches are corrupt, delete `fluid-accessibility-linter/.gradle` and `build/`.
+- IntelliJ sandbox: if `runIde` fails, ensure JDK 17 is selected and platform/version in `build.gradle` matches `plugin.xml`.
+- Stale indexes during tests: re-run `./gradlew clean test`. If persistent, remove `build/` and retry.
+- Missing ZIP: ensure you executed `./gradlew buildPlugin` inside `fluid-accessibility-linter/` and check `build/distributions/`.

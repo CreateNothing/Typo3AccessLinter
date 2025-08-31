@@ -364,7 +364,20 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-expanded='false'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = element.getText();
+            if (text.contains("aria-expanded")) return;
+            String updated = text.replaceFirst(">", " aria-expanded=\"false\">");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -380,7 +393,18 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the value to 'true' or 'false'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String updated = element.getText().replaceAll("(?i)aria-expanded\\s*=\\s*[\"'][^\"']*[\"']", "aria-expanded=\"false\"");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -396,7 +420,21 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-controls
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = element.getText();
+            if (text.contains("aria-controls")) return;
+            String id = "acc-panel-" + element.getTextOffset();
+            String updated = text.replaceFirst(">", " aria-controls=\"" + id + "\">");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -412,7 +450,20 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role='button'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = element.getText();
+            if (text.toLowerCase().startsWith("<button") || text.matches("(?is).*\\brole\\s*=.*button.*")) return;
+            String updated = text.replaceFirst(">", " role=\"button\">");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -428,7 +479,21 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add unique id
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = element.getText();
+            if (text.matches("(?is).*\\bid\\s*=.*")) return;
+            String id = "acc-panel-" + element.getTextOffset();
+            String updated = text.replaceFirst(">", " id=\"" + id + "\">");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -444,7 +509,21 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-labelledby
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = element.getText();
+            if (text.matches("(?is).*aria-labelledby\\s*=.*")) return;
+            String labelId = "acc-trigger-" + element.getTextOffset();
+            String updated = text.replaceFirst(">", " aria-labelledby=\"" + labelId + "\">");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -460,7 +539,20 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add tabindex='0'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = element.getText();
+            if (text.matches("(?is).*\\btabindex\\s*=.*")) return;
+            String updated = text.replaceFirst(">", " tabindex=\"0\">");
+            final int s = element.getTextRange().getStartOffset();
+            final int e = element.getTextRange().getEndOffset();
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(s, e, updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     

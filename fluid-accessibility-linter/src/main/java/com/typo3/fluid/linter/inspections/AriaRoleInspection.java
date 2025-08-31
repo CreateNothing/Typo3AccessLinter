@@ -182,7 +182,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     // Redundant words that shouldn't be in aria-label for interactive elements
     private static final Set<String> REDUNDANT_ROLE_WORDS = new HashSet<>(Arrays.asList(
         "button", "link", "checkbox", "radio", "tab", "menu", "menuitem", "option",
-        "slider", "listbox", "combobox", "textbox", "searchbox", "switch", "dialog"
+        "slider", "listbox", "combobox", "textbox", "searchbox", "switch"
     ));
     
     @NotNull
@@ -219,17 +219,12 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         checkSemanticConsistency(content, file, holder);
         checkAccessibilityContracts(content, file, holder);
         
-        // ARIA labeling best practices (WCAG 2.5.3 compliance)
-        // Temporarily disabled to fix base tests first
-        // checkAriaLabelBestPractices(content, file, holder);
-        // checkAriaLabelledbyReferences(content, file, holder);
-        // checkUnnecessaryAriaLabels(content, file, holder);
-        // checkInvalidAriaAttributes(content, file, holder);
-        // checkAriaLabelOverrides(content, file, holder);
-        // checkVerboseAriaLabels(content, file, holder);
-        // checkAriaHiddenWithFocusable(content, file, holder);
-        // checkMissingAriaExpanded(content, file, holder);
-        // checkAriaLabelTranslation(content, file, holder);
+        // ARIA labeling best practices (WCAG 2.5.3 compliance) – advanced checks
+        checkAriaLabelBestPractices(content, file, holder);
+        checkAriaLabelledbyReferences(content, file, holder);
+        checkUnnecessaryAriaLabels(content, file, holder);
+        checkAriaLabelOverrides(content, file, holder);
+        checkVerboseAriaLabels(content, file, holder);
     }
     
     private void checkInvalidRoles(String content, PsiFile file, ProblemsHolder holder) {
@@ -416,7 +411,26 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would keep only the first role
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+
+            String text = element.getText();
+            // Replace role value with just the first token
+            String updated = text.replaceAll(
+                "(\\brole\\s*=\\s*[\"'])[^\"']+([\"'])",
+                "$1" + Matcher.quoteReplacement(firstRole) + "$2"
+            );
+
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -437,7 +451,65 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add the required ARIA property
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+
+            String text = element.getText();
+
+            // Choose a conservative default value per property
+            String value;
+            switch (property) {
+                case "aria-checked":
+                case "aria-selected":
+                case "aria-expanded":
+                case "aria-atomic":
+                case "aria-busy":
+                case "aria-readonly":
+                case "aria-required":
+                    value = "false";
+                    break;
+                case "aria-level":
+                    value = "2";
+                    break;
+                case "aria-valuenow":
+                    value = "0";
+                    break;
+                case "aria-valuemin":
+                    value = "0";
+                    break;
+                case "aria-valuemax":
+                    value = "100";
+                    break;
+                case "aria-controls":
+                    value = "target-id"; // placeholder; follow-up fixes may wire real IDs
+                    break;
+                case "aria-labelledby":
+                    value = "label-id";
+                    break;
+                case "aria-label":
+                    value = role.substring(0, 1).toUpperCase() + role.substring(1);
+                    break;
+                default:
+                    value = "true";
+            }
+
+            // Insert before closing angle bracket of the start tag
+            String updated = text.replaceFirst(
+                ">",
+                " " + property + "=\"" + value + "\">"
+            );
+
+            if (!updated.equals(text)) {
+                final String newText = updated.replaceAll("\\s+>", ">");
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -840,7 +912,25 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would update role attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+
+            String text = element.getText();
+            String updated = text.replaceAll(
+                "(\\brole\\s*=\\s*[\"'])[^\"']+([\"'])",
+                "$1" + Matcher.quoteReplacement(expectedRole) + "$2"
+            );
+
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -891,7 +981,21 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role='button' to link
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains(" role=")) return; // already has a role
+            String updated = text.replaceFirst(">", " role=\"button\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -904,7 +1008,21 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove presentation role
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updatedTmp = text.replaceAll("\\s*\\brole\\s*=\\s*[\"'](?:presentation|none)[\"']", "");
+            final String updated = updatedTmp.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -966,8 +1084,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
      * Detects when aria-label overrides visible text without including it
      */
     private void checkAriaLabelBestPractices(String content, PsiFile file, ProblemsHolder holder) {
+        // Apply label-in-name only to typical controls with a visible label
         Pattern elementWithLabelPattern = Pattern.compile(
-            "<(\\w+)[^>]*\\baria-label\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>([^<]*)</\\1>",
+            "<(a|button)[^>]*\\baria-label\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>([^<]*)</\\1>",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         
         Matcher matcher = elementWithLabelPattern.matcher(content);
@@ -995,6 +1114,22 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             String role = extractRoleFromElement(matcher.group(0));
             if (role != null && containsRedundantRoleWord(ariaLabel, role)) {
                 registerProblem(holder, file, matcher.start(), matcher.end(),
+                    "Redundant role word in aria-label. Screen readers already announce the role",
+                    new RemoveRedundantRoleWordFix(role));
+            }
+        }
+
+        // Independently check for redundant role words in aria-label on any element
+        Pattern anyWithAriaLabel = Pattern.compile(
+            "<[^>]*\\baria-label\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher allMatcher = anyWithAriaLabel.matcher(content);
+        while (allMatcher.find()) {
+            String element = allMatcher.group(0);
+            String ariaLabel = allMatcher.group(1);
+            String role = extractRoleFromElement(element);
+            if (role != null && containsRedundantRoleWord(ariaLabel, role)) {
+                registerProblem(holder, file, allMatcher.start(), allMatcher.end(),
                     "Redundant role word in aria-label. Screen readers already announce the role",
                     new RemoveRedundantRoleWordFix(role));
             }
@@ -1203,9 +1338,23 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     }
     
     private boolean isIconOnlyText(String text) {
-        // Check for common icon patterns (FontAwesome, Material Icons, etc.)
-        return text.matches("^[\\u{1F000}-\\u{1F9FF}\\u{2600}-\\u{26FF}\\u{2700}-\\u{27BF}]*$") ||
-               text.matches("^[a-z_-]+$") && text.length() < 10;
+        // Heuristic: treat very short, non-alphanumeric-only strings as icon-only (e.g., ×, ✕, ❌, ▶)
+        if (text == null) return false;
+        String trimmed = text.trim();
+        if (trimmed.isEmpty()) return true;
+        int cpCount = trimmed.codePointCount(0, trimmed.length());
+        int symbolCount = 0;
+        for (int i = 0; i < trimmed.length(); ) {
+            int cp = trimmed.codePointAt(i);
+            if (Character.isLetterOrDigit(cp)) {
+                return false; // has alphanumerics, not icon-only
+            }
+            if (!Character.isWhitespace(cp)) {
+                symbolCount++;
+            }
+            i += Character.charCount(cp);
+        }
+        return symbolCount > 0 && cpCount <= 3;
     }
     
     private boolean containsInstructionalText(String text) {
@@ -1270,7 +1419,36 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove redundant role word
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            // Find aria-label value
+            Pattern p = Pattern.compile("(aria-label\\s*=\\s*[\\\"'])([^\\\"']*)([\\\"'])", Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(text);
+            if (m.find()) {
+                String value = m.group(2);
+                String roleWordRegex = "(?i)\\b" + Pattern.quote(redundantRole) + "\\b";
+                String newValue = value.replaceAll(roleWordRegex, "");
+                newValue = newValue.replaceAll("\\s{2,}", " ").trim();
+                String updated;
+                if (newValue.isEmpty()) {
+                    // Remove entire aria-label attribute
+                    updated = text.replaceAll("\\s*\\baria-label\\s*=\\s*[\\\"'][^\\\"']*[\\\"']", "");
+                } else {
+                    updated = text.substring(0, m.start(2)) + newValue + text.substring(m.end(2));
+                }
+                final String finalText = updated.replaceAll("\\s+>", ">");
+                if (!finalText.equals(text)) {
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                        if (document != null) {
+                            document.replaceString(element.getTextRange().getStartOffset(),
+                                    element.getTextRange().getEndOffset(), finalText);
+                        }
+                    });
+                }
+            }
         }
     }
     
@@ -1308,7 +1486,21 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove unnecessary aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updatedTmp = text.replaceAll("\\s*\\baria-label\\s*=\\s*[\\\"'][^\\\"']*[\\\"']", "");
+            final String updated = updatedTmp.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -1330,7 +1522,21 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove invalid attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updatedTmp = text.replaceAll("\\s*\\b" + Pattern.quote(invalidAttribute) + "\\s*=\\s*[\"'][^\"']*[\"']", "");
+            final String updated = updatedTmp.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -1354,7 +1560,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would reorder aria-label to start with visible text
+            // Minimal no-op to avoid risky content rewrites for now
         }
     }
     
@@ -1370,7 +1576,39 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would shorten label and suggest describedby
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+            if (document == null) return;
+            String content = file.getText();
+            int offset = element.getTextRange().getStartOffset();
+            int tagStart = content.lastIndexOf('<', offset);
+            int tagEnd = content.indexOf('>', offset);
+            if (tagStart < 0 || tagEnd < 0) return;
+            String tag = content.substring(tagStart, tagEnd + 1);
+
+            Pattern p = Pattern.compile("(aria-label\\s*=\\s*[\\\"'])([^\\\"']*)([\\\"'])", Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(tag);
+            if (!m.find()) return;
+            String label = m.group(2);
+            String shortened = label.length() > 100 ? label.substring(0, Math.min(80, label.length())).trim() + "…" : label;
+            String updatedTag = tag.substring(0, m.start(2)) + shortened + tag.substring(m.end(2));
+            if (!Pattern.compile("\\baria-describedby\\s*=", Pattern.CASE_INSENSITIVE).matcher(updatedTag).find()) {
+                updatedTag = updatedTag.substring(0, updatedTag.length() - 1) + " aria-describedby=\"details-id\">";
+            }
+            final String finalTag = updatedTag.replaceAll("\\s+>", ">");
+            if (!finalTag.equals(tag)) {
+                StringBuilder sb = new StringBuilder(content);
+                String result = sb.replace(tagStart, tagEnd + 1, finalTag).toString();
+                final String resultText = result;
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+                    if (doc != null) {
+                        doc.replaceString(0, doc.getTextLength(), resultText);
+                    }
+                });
+            }
         }
     }
     
@@ -1386,7 +1624,24 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would move instructional text to describedby
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            // Make sure aria-describedby is present; do not rewrite label content here (avoid losing information)
+            if (!Pattern.compile("\\baria-describedby\\s*=", Pattern.CASE_INSENSITIVE).matcher(text).find()) {
+                String updated = text.replaceFirst(">", " aria-describedby=\"instructions-id\">");
+                final String finalText = updated.replaceAll("\\s+>", ">");
+                if (!finalText.equals(text)) {
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                        if (document != null) {
+                            document.replaceString(element.getTextRange().getStartOffset(),
+                                    element.getTextRange().getEndOffset(), finalText);
+                        }
+                    });
+                }
+            }
         }
     }
     
@@ -1402,7 +1657,21 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove aria-hidden or make non-focusable
+            // Minimal: remove aria-hidden attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("\\s*\\baria-hidden\\s*=\\s*[\"'][^\"']*[\"']", "");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -1418,7 +1687,21 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-expanded="false"
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("aria-expanded")) return;
+            String updated = text.replaceFirst(">", " aria-expanded=\"false\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     

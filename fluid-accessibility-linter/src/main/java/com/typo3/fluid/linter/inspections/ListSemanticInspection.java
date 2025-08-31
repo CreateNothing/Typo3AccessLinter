@@ -274,9 +274,13 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
             String listContent = singleMatcher.group(0);
             int liCount = countOccurrences(listContent, "<li");
             if (liCount == 1) {
-                registerProblem(holder, file, singleMatcher.start(), singleMatcher.end(),
+                LocalQuickFix[] fixes = new LocalQuickFix[] {
+                    new ConvertSingleItemListFix(),
+                    new ConvertSingleItemListToParagraphFix()
+                };
+                registerProblems(holder, file, singleMatcher.start(), singleMatcher.end(),
                     "List with only one item. Consider if a list is appropriate here",
-                    null);
+                    fixes);
             }
         }
     }
@@ -329,7 +333,30 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would wrap element in li
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int start = element.getTextRange().getStartOffset();
+
+            // Find the start of the offending tag
+            ListSemanticInspection self = new ListSemanticInspection();
+            int elemStart = self.findElementStart(content, start);
+            int elemEnd = self.findElementEnd(content, elemStart);
+            if (elemStart < 0 || elemEnd <= elemStart) return;
+
+            String before = content.substring(0, elemStart);
+            String middle = content.substring(elemStart, elemEnd);
+            String after = content.substring(elemEnd);
+
+            String replacement = "<li>" + middle + "</li>";
+            String newContent = before + replacement + after;
+
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -342,7 +369,23 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove empty li
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int liStart = content.lastIndexOf("<li", caret);
+            if (liStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int liEnd = self.findElementEnd(content, liStart);
+            if (liEnd <= liStart) return;
+
+            String newContent = content.substring(0, liStart) + content.substring(liEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -355,7 +398,23 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove role attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int listStart = Math.max(content.lastIndexOf("<ul", caret), content.lastIndexOf("<ol", caret));
+            if (listStart < 0) return;
+            int tagEnd = content.indexOf('>', listStart);
+            if (tagEnd < 0) return;
+            String openTag = content.substring(listStart, tagEnd + 1);
+            String updated = openTag.replaceAll("\\srole\\s*=\\s*\"list\"", "").replaceAll("\\srole\\s*=\\s*'list'", "");
+            String newContent = content.substring(0, listStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -619,9 +678,13 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
     
     private void checkNestedListDepth(String content, PsiFile file, ProblemsHolder holder, int startPos, int depth) {
         if (depth > 4) {
-            registerProblem(holder, file, startPos, startPos + 100,
+            LocalQuickFix[] fixes = new LocalQuickFix[] {
+                new FlattenDeepNestingFix(),
+                new FlattenDeepNestingToItemsFix()
+            };
+            registerProblems(holder, file, startPos, startPos + 100,
                 String.format("List nesting is %d levels deep. Consider flattening for better accessibility and usability", depth),
-                new FlattenDeepNestingFix());
+                fixes);
             return;
         }
         
@@ -716,7 +779,24 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would change ul to ol
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int ulStart = content.lastIndexOf("<ul", caret);
+            if (ulStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, ulStart);
+            if (listEnd <= ulStart) return;
+            String outer = content.substring(ulStart, listEnd);
+            String converted = outer.replaceFirst("(?i)^<ul", "<ol").replaceFirst("(?i)</ul>$", "</ol>");
+            String newContent = content.substring(0, ulStart) + converted + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -729,7 +809,24 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would change ol to ul
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int olStart = content.lastIndexOf("<ol", caret);
+            if (olStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, olStart);
+            if (listEnd <= olStart) return;
+            String outer = content.substring(olStart, listEnd);
+            String converted = outer.replaceFirst("(?i)^<ol", "<ul").replaceFirst("(?i)</ol>$", "</ul>");
+            String newContent = content.substring(0, olStart) + converted + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -846,7 +943,26 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove bullet character
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int liStart = content.lastIndexOf("<li", caret);
+            if (liStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int liEnd = self.findElementEnd(content, liStart);
+            if (liEnd <= liStart) return;
+            String li = content.substring(liStart, liEnd);
+
+            // Remove leading bullet-like characters inside the <li> content
+            String cleaned = li.replaceFirst("(?is)(<li[^>]*>\\s*)([•·\\-+*–—]{1,3}\\s*)(?=\\S)", "$1");
+            String newContent = content.substring(0, liStart) + cleaned + content.substring(liEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -859,7 +975,25 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix numbered item
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            // Convert surrounding <ul> to <ol>
+            int ulStart = content.lastIndexOf("<ul", caret);
+            if (ulStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, ulStart);
+            if (listEnd <= ulStart) return;
+            String outer = content.substring(ulStart, listEnd);
+            String converted = outer.replaceFirst("(?i)^<ul", "<ol").replaceFirst("(?i)</ul>$", "</ol>");
+            String newContent = content.substring(0, ulStart) + converted + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -872,7 +1006,27 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix colon usage
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int liStart = content.lastIndexOf("<li", caret);
+            if (liStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int liEnd = self.findElementEnd(content, liStart);
+            if (liEnd <= liStart) return;
+            String li = content.substring(liStart, liEnd);
+            // Remove trailing colon before </li> if no nested lists inside
+            if (!li.matches("(?is).*<(?:ul|ol)[^>]*>.*")) {
+                String cleaned = li.replaceFirst("(?is):\\s*</li>\s*$", "</li>");
+                String newContent = content.substring(0, liStart) + cleaned + content.substring(liEnd);
+                com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                    .createFileFromText(file.getName(), file.getFileType(), newContent);
+                file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
+            }
         }
     }
     
@@ -885,7 +1039,38 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add labels
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int liStart = content.lastIndexOf("<li", caret);
+            if (liStart < 0) return;
+            ListSemanticInspection self = new ListSemanticInspection();
+            int liEnd = self.findElementEnd(content, liStart);
+            if (liEnd <= liStart) return;
+            String li = content.substring(liStart, liEnd);
+
+            // Add aria-label="Action" to first interactive element lacking accessible name
+            java.util.regex.Pattern interactive = java.util.regex.Pattern.compile(
+                "<(input|button|select)([^>]*)>", java.util.regex.Pattern.CASE_INSENSITIVE);
+            java.util.regex.Matcher m = interactive.matcher(li);
+            if (m.find()) {
+                String attrs = m.group(2) != null ? m.group(2) : "";
+                boolean hasLabel = attrs.matches("(?is).*aria-label\\s*=.*|.*aria-labelledby\\s*=.*|.*title\\s*=.*");
+                if (!hasLabel) {
+                    String before = li.substring(0, m.start(2));
+                    String after = li.substring(m.end(2));
+                    String newAttrs = attrs + " aria-label=\"Action\"";
+                    li = before + newAttrs + after;
+                    String newContent = content.substring(0, liStart) + li + content.substring(liEnd);
+                    com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                        .createFileFromText(file.getName(), file.getFileType(), newContent);
+                    file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
+                }
+            }
         }
     }
     
@@ -898,7 +1083,365 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would suggest flattening
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+
+            // Find nearest enclosing list start (<ul or <ol>) before caret
+            int ulStart = content.lastIndexOf("<ul", caret);
+            int olStart = content.lastIndexOf("<ol", caret);
+            int listStart = Math.max(ulStart, olStart);
+            if (listStart < 0) return;
+
+            // Determine end of this list
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, listStart);
+            if (listEnd <= listStart) return;
+
+            String outer = content.substring(listStart, Math.min(listEnd, content.length()));
+
+            // Capture parent opening tag and attributes
+            java.util.regex.Matcher parentOpen = java.util.regex.Pattern
+                .compile("^<(ul|ol)([^>]*)>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL)
+                .matcher(outer);
+            if (!parentOpen.find()) return;
+            String parentTag = parentOpen.group(1);
+            String parentAttrs = parentOpen.group(2) != null ? parentOpen.group(2) : "";
+
+            java.util.LinkedHashSet<String> mergedClasses = new java.util.LinkedHashSet<>();
+            addClassesFromAttr(parentAttrs, mergedClasses);
+            java.util.Map<String,String> inheritedAria = new java.util.HashMap<>();
+
+            // Scan nested list opening tags to collect classes/ARIA
+            java.util.regex.Matcher nestedOpen = java.util.regex.Pattern
+                .compile("<(ul|ol)([^>]*)>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL)
+                .matcher(outer);
+            boolean skippedParent = false;
+            while (nestedOpen.find()) {
+                if (!skippedParent) { skippedParent = true; continue; }
+                String attrs = nestedOpen.group(2) != null ? nestedOpen.group(2) : "";
+                addClassesFromAttr(attrs, mergedClasses);
+                inheritIfAbsent(attrs, "role", inheritedAria);
+                inheritIfAbsent(attrs, "aria-label", inheritedAria);
+                inheritIfAbsent(attrs, "aria-labelledby", inheritedAria);
+                inheritIfAbsent(attrs, "aria-describedby", inheritedAria);
+            }
+
+            // Repeatedly lift nested <ul>/<ol> <li> items into the parent list
+            String flattened = outer;
+            java.util.regex.Pattern nested = java.util.regex.Pattern.compile(
+                "(<li[^>]*>)(.*?)<(?:ul|ol)[^>]*>(.*?)</(?:ul|ol)>(.*?)</li>",
+                java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL
+            );
+
+            boolean changed = true;
+            int passes = 0;
+            while (changed && passes < 10) {
+                java.util.regex.Matcher m = nested.matcher(flattened);
+                if (m.find()) {
+                    // Replace each nested list with: <li>prefix</li> + inner <li>...
+                    flattened = m.replaceAll("$1$2</li>$3");
+                } else {
+                    changed = false;
+                }
+                passes++;
+            }
+
+            // Rebuild parent opening tag with merged class/ARIA
+            String mergedAttrStr = parentAttrs;
+            if (!mergedClasses.isEmpty()) {
+                String merged = String.join(" ", mergedClasses);
+                mergedAttrStr = replaceOrAppendAttr(mergedAttrStr, "class", merged);
+            }
+            for (java.util.Map.Entry<String,String> e : inheritedAria.entrySet()) {
+                // Only add if not already present on parent
+                if (!hasAttr(mergedAttrStr, e.getKey())) {
+                    mergedAttrStr = replaceOrAppendAttr(mergedAttrStr, e.getKey(), e.getValue());
+                }
+            }
+            String newParentOpen = "<" + parentTag + mergedAttrStr + ">";
+            flattened = newParentOpen + flattened.substring(parentOpen.end());
+
+            // Write back to file
+            String newContent = content.substring(0, listStart) + flattened + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
+        }
+
+        private static void addClassesFromAttr(String attrs, java.util.Set<String> out) {
+            java.util.regex.Matcher cm = java.util.regex.Pattern
+                .compile("\\bclass\\s*=\\s*\"([^\"]*)\"|\\bclass\\s*=\\s*'([^']*)'", java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(attrs);
+            if (cm.find()) {
+                String val = cm.group(1) != null ? cm.group(1) : cm.group(2);
+                if (val != null) {
+                    for (String c : val.trim().split("\\s+")) {
+                        if (!c.isEmpty()) out.add(c);
+                    }
+                }
+            }
+        }
+
+        private static void inheritIfAbsent(String attrs, String name, java.util.Map<String,String> out) {
+            String v = getAttr(attrs, name);
+            if (v != null && !out.containsKey(name)) out.put(name, v);
+        }
+
+        private static String getAttr(String attrs, String name) {
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\b" + java.util.regex.Pattern.quote(name) + "\\s*=\\s*\"([^\"]*)\"|\\b" + java.util.regex.Pattern.quote(name) + "\\s*=\\s*'([^']*)'",
+                        java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(attrs);
+            if (m.find()) return m.group(1) != null ? m.group(1) : m.group(2);
+            return null;
+        }
+
+        private static boolean hasAttr(String attrs, String name) {
+            return java.util.regex.Pattern.compile("\\b" + java.util.regex.Pattern.quote(name) + "\\s*=", java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(attrs).find();
+        }
+
+        private static String replaceOrAppendAttr(String attrs, String name, String value) {
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile(
+                "(\\b" + java.util.regex.Pattern.quote(name) + "\\s*=\\s*)(\"[^\"]*\"|'[^']*')",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
+            java.util.regex.Matcher m = p.matcher(attrs);
+            if (m.find()) {
+                return m.replaceFirst(m.group(1) + '"' + java.util.regex.Matcher.quoteReplacement(value) + '"');
+            }
+            // append with a leading space
+            return attrs + " " + name + "=\"" + value.replace("\"", "&quot;") + "\"";
+        }
+    }
+
+    private static class FlattenDeepNestingToItemsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Flatten nesting and move classes to items";
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+
+            // Locate current list
+            int ulStart = content.lastIndexOf("<ul", caret);
+            int olStart = content.lastIndexOf("<ol", caret);
+            int listStart = Math.max(ulStart, olStart);
+            if (listStart < 0) return;
+
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, listStart);
+            if (listEnd <= listStart) return;
+
+            String outer = content.substring(listStart, Math.min(listEnd, content.length()));
+
+            // Capture parent opening tag and inner segment
+            java.util.regex.Matcher parentOpen = java.util.regex.Pattern
+                .compile("^<(ul|ol)([^>]*)>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL)
+                .matcher(outer);
+            if (!parentOpen.find()) return;
+            int openEnd = parentOpen.end();
+            String parentAttrs = parentOpen.group(2) != null ? parentOpen.group(2) : "";
+
+            // Collect classes from nested lists (excluding the parent)
+            java.util.LinkedHashSet<String> mergedClasses = new java.util.LinkedHashSet<>();
+            // Do NOT add parent's classes; we want parent minimal
+            java.util.regex.Matcher nestedOpen = java.util.regex.Pattern
+                .compile("<(ul|ol)([^>]*)>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL)
+                .matcher(outer);
+            boolean skippedParent = false;
+            while (nestedOpen.find()) {
+                if (!skippedParent) { skippedParent = true; continue; }
+                String attrs = nestedOpen.group(2) != null ? nestedOpen.group(2) : "";
+                addClassesFromAttr(attrs, mergedClasses);
+            }
+
+            // Flatten nested lists by lifting inner <li> items
+            String flattened = outer;
+            java.util.regex.Pattern nested = java.util.regex.Pattern.compile(
+                "(<li[^>]*>)(.*?)<(?:ul|ol)[^>]*>(.*?)</(?:ul|ol)>(.*?)</li>",
+                java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL
+            );
+            boolean changed = true; int passes = 0;
+            while (changed && passes < 10) {
+                java.util.regex.Matcher m = nested.matcher(flattened);
+                if (m.find()) {
+                    flattened = m.replaceAll("$1$2</li>$3");
+                } else { changed = false; }
+                passes++;
+            }
+
+            // Push merged classes down to first-level <li> children
+            if (!mergedClasses.isEmpty()) {
+                String merged = String.join(" ", mergedClasses);
+                String beforeItems = flattened.substring(0, openEnd);
+                String itemsAndClose = flattened.substring(openEnd);
+                // Replace immediate <li ...> occurrences (best-effort regex)
+                java.util.regex.Matcher lim = java.util.regex.Pattern
+                    .compile("<li([^>]*)>", java.util.regex.Pattern.CASE_INSENSITIVE)
+                    .matcher(itemsAndClose);
+                StringBuffer sb = new StringBuffer();
+                while (lim.find()) {
+                    String liAttrs = lim.group(1) != null ? lim.group(1) : "";
+                    String newAttrs = replaceOrAppendAttr(liAttrs, "class", mergeClassVals(getAttr(liAttrs, "class"), merged));
+                    lim.appendReplacement(sb, "<li" + java.util.regex.Matcher.quoteReplacement(newAttrs) + ">");
+                }
+                lim.appendTail(sb);
+                flattened = beforeItems + sb.toString();
+            }
+
+            // Keep parent minimal — optionally could remove redundant class attr spaces
+            String newContent = content.substring(0, listStart) + flattened + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
+        }
+
+        private static void addClassesFromAttr(String attrs, java.util.Set<String> out) {
+            java.util.regex.Matcher cm = java.util.regex.Pattern
+                .compile("\\bclass\\s*=\\s*\"([^\"]*)\"|\\bclass\\s*=\\s*'([^']*)'", java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(attrs);
+            if (cm.find()) {
+                String val = cm.group(1) != null ? cm.group(1) : cm.group(2);
+                if (val != null) {
+                    for (String c : val.trim().split("\\s+")) {
+                        if (!c.isEmpty()) out.add(c);
+                    }
+                }
+            }
+        }
+
+        private static String replaceOrAppendAttr(String attrs, String name, String value) {
+            if (value == null || value.trim().isEmpty()) return attrs; // nothing to add
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile(
+                "(\\b" + java.util.regex.Pattern.quote(name) + "\\s*=\\s*)(\"[^\"]*\"|'[^']*')",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
+            java.util.regex.Matcher m = p.matcher(attrs);
+            if (m.find()) {
+                return m.replaceFirst(m.group(1) + '"' + java.util.regex.Matcher.quoteReplacement(value) + '"');
+            }
+            return attrs + " " + name + "=\"" + value.replace("\"", "&quot;") + "\"";
+        }
+
+        private static String getAttr(String attrs, String name) {
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\b" + java.util.regex.Pattern.quote(name) + "\\s*=\\s*\"([^\"]*)\"|\\b" + java.util.regex.Pattern.quote(name) + "\\s*=\\s*'([^']*)'",
+                        java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(attrs);
+            if (m.find()) return m.group(1) != null ? m.group(1) : m.group(2);
+            return null;
+        }
+
+        private static String mergeClassVals(String existing, String add) {
+            java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+            if (existing != null) {
+                for (String c : existing.trim().split("\\s+")) if (!c.isEmpty()) set.add(c);
+            }
+            if (add != null) {
+                for (String c : add.trim().split("\\s+")) if (!c.isEmpty()) set.add(c);
+            }
+            if (set.isEmpty()) return existing != null ? existing : "";
+            return " " + String.join(" ", set); // leading space keeps spacing when reinserted
+        }
+    }
+
+    private static class ConvertSingleItemListFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Convert single-item list to plain content";
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+
+            int ulStart = content.lastIndexOf("<ul", caret);
+            int olStart = content.lastIndexOf("<ol", caret);
+            int listStart = Math.max(ulStart, olStart);
+            if (listStart < 0) return;
+
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, listStart);
+            if (listEnd <= listStart) return;
+
+            String outer = content.substring(listStart, Math.min(listEnd, content.length()));
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("<li[^>]*>(.*?)</li>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL).matcher(outer);
+            if (!m.find()) return;
+            String inner = m.group(1);
+
+            // Replace the whole list with inner content (unwrapped). Keep whitespace intact around.
+            String newContent = content.substring(0, listStart) + inner + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
+        }
+    }
+
+    private static class ConvertSingleItemListToParagraphFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Convert single-item list to <p> paragraph";
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+
+            int ulStart = content.lastIndexOf("<ul", caret);
+            int olStart = content.lastIndexOf("<ol", caret);
+            int listStart = Math.max(ulStart, olStart);
+            if (listStart < 0) return;
+
+            ListSemanticInspection self = new ListSemanticInspection();
+            int listEnd = self.findElementEnd(content, listStart);
+            if (listEnd <= listStart) return;
+
+            String outer = content.substring(listStart, Math.min(listEnd, content.length()));
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("<li[^>]*>(.*?)</li>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL).matcher(outer);
+            if (!m.find()) return;
+            String inner = m.group(1).trim();
+
+            // If inner already contains block-level elements, fall back to plain unwrap
+            if (inner.matches("(?is).*</?(p|div|section|article|header|footer|ul|ol|table|figure|nav)[^>]*>.*")) {
+                String newContentFallback = content.substring(0, listStart) + inner + content.substring(listEnd);
+                com.intellij.psi.PsiFile newFileFallback = com.intellij.psi.PsiFileFactory.getInstance(project)
+                    .createFileFromText(file.getName(), file.getFileType(), newContentFallback);
+                file.getNode().replaceAllChildrenToChildrenOf(newFileFallback.getNode());
+                return;
+            }
+
+            String wrapped = "<p>" + inner + "</p>";
+            String newContent = content.substring(0, listStart) + wrapped + content.substring(listEnd);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     

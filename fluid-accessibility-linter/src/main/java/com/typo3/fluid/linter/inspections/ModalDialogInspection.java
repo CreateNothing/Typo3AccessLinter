@@ -3,9 +3,12 @@ package com.typo3.fluid.linter.inspections;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiDocumentManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
@@ -190,9 +193,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         Matcher focusableMatcher = FOCUSABLE_ELEMENTS_PATTERN.matcher(dialogContent);
         
         if (!focusableMatcher.find()) {
-            registerProblem(holder, file, baseOffset, baseOffset + Math.min(100, dialogContent.length()),
+            registerProblems(holder, file, baseOffset, baseOffset + Math.min(100, dialogContent.length()),
                 "Dialog should contain at least one focusable element",
-                new AddFocusableElementFix());
+                new LocalQuickFix[]{ new AddFocusableElementFix(), new AddProgrammaticFocusFix() });
         }
     }
     
@@ -317,7 +320,21 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-modal='true'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("aria-modal")) return;
+            String updated = text.replaceFirst(">", " aria-modal=\"true\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -333,7 +350,20 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the aria-modal value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\baria-modal\\s*=\\s*[\"'])[^\"']+([\"'])", "$1true$2");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -349,7 +379,23 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("aria-label") || text.contains("aria-labelledby")) return;
+            // Prefer a minimal aria-label. If element inner text is simple, reuse it; otherwise use 'Dialog'
+            String labelValue = "Dialog";
+            String updated = text.replaceFirst(">", " aria-label=\"" + labelValue + "\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -365,7 +411,22 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would suggest adding a focusable element
+            // Conservative: make container focusable instead of injecting elements
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("tabindex=")) return;
+            String updated = text.replaceFirst(">", " tabindex=\"-1\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -397,7 +458,20 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the tabindex
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\btabindex\\s*=\\s*[\"'])[^\"']+([\"'])", "$1-1$2");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -413,7 +487,52 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role='dialog'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains(" role=")) return;
+            String updated = text.replaceFirst(">", " role=\"dialog\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
+        }
+    }
+
+    // New quick-fix: programmatic focus fallback
+    private static class AddProgrammaticFocusFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Make dialog programmatically focusable";
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("tabindex=")) return;
+            String updated = text.replaceFirst(">", " tabindex=\"-1\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     

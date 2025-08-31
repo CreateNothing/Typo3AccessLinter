@@ -363,7 +363,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\baria-live\\s*=\\s*[\"'])[^\"']+([\"'])", "$1polite$2");
+            final String newText = updated;
+            if (!newText.equals(text)) {
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                    if (doc != null) {
+                        doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -379,7 +391,21 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would change to polite
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.contains("aria-live")
+                ? text.replaceAll("(?i)assertive", "polite")
+                : text;
+            final String newText = updated;
+            if (!newText.equals(text)) {
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                    if (doc != null) {
+                        doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -395,7 +421,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove redundant aria-live
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("\\s*\\baria-live\\s*=\\s*[\"'][^\"']*[\"']", "");
+            final String newText = updated.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
+            if (!newText.equals(text)) {
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                    if (doc != null) {
+                        doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -411,7 +449,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\baria-atomic\\s*=\\s*[\"'])[^\"']+([\"'])", "$1false$2");
+            final String newText = updated;
+            if (!newText.equals(text)) {
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                    if (doc != null) {
+                        doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -427,7 +477,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\baria-relevant\\s*=\\s*[\"'])[^\"']+([\"'])", "$1additions text$2");
+            final String newText = updated;
+            if (!newText.equals(text)) {
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                    if (doc != null) {
+                        doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -443,7 +505,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\baria-busy\\s*=\\s*[\"'])[^\"']+([\"'])", "$1true$2");
+            final String newText = updated;
+            if (!newText.equals(text)) {
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                    if (doc != null) {
+                        doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                    }
+                });
+            }
         }
     }
     
@@ -459,7 +533,18 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role='alert'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains(" role=")) return;
+            String updated = text.replaceFirst(">", " role=\"alert\">");
+            final String newText = updated;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                if (doc != null) {
+                    doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                }
+            });
         }
     }
     
@@ -475,7 +560,18 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role='status'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains(" role=")) return;
+            String updated = text.replaceFirst(">", " role=\"status\">");
+            final String newText = updated;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                if (doc != null) {
+                    doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                }
+            });
         }
     }
     
@@ -497,7 +593,18 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String label = role.equals("status") ? "Status" : role.equals("log") ? "Updates" : "Live region";
+            String text = element.getText();
+            String updated = text.replaceFirst(">", " aria-label=\"" + label + "\">");
+            final String newText = updated;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                if (doc != null) {
+                    doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                }
+            });
         }
     }
     
@@ -838,7 +945,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would change to polite
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.contains("aria-live")
+                ? text.replaceAll("(?i)aria-live\\s*=\\s*[\"']assertive[\"']", "aria-live=\"polite\"")
+                : text.replaceFirst(">", " aria-live=\"polite\">");
+            final String newText = updated;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                if (doc != null) {
+                    doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                }
+            });
         }
     }
     
@@ -860,7 +979,19 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would change to assertive
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.contains("aria-live")
+                ? text.replaceAll("(?i)aria-live\\s*=\\s*[\"']polite[\"']", "aria-live=\"assertive\"")
+                : text.replaceFirst(">", " aria-live=\"assertive\">");
+            final String newText = updated;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                if (doc != null) {
+                    doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                }
+            });
         }
     }
     
@@ -876,7 +1007,18 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-busy
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("aria-busy")) return;
+            String updated = text.replaceFirst(">", " aria-busy=\"true\">");
+            final String newText = updated;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
+                if (doc != null) {
+                    doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), newText);
+                }
+            });
         }
     }
     
@@ -892,7 +1034,8 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would help review priorities
+            // Minimal automated help: downgrade aria-live to polite
+            new ChangeToPoliteWithReasonFix("Reduce competing assertive regions").applyFix(project, descriptor);
         }
     }
     
@@ -908,7 +1051,8 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would consolidate regions
+            // Minimal automated help: downgrade aria-live to polite
+            new ChangeToPoliteWithReasonFix("Consolidate assertive regions").applyFix(project, descriptor);
         }
     }
     
@@ -924,7 +1068,12 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add placeholder
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag tag = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (tag == null) return;
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.insertAfterStartTag(project, element.getContainingFile(), tag,
+                "<span class=\"visually-hidden\">Updated</span>");
         }
     }
     
@@ -940,7 +1089,13 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove live region
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag tag = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (tag == null) return;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, "Remove aria-live", null, () -> {
+                tag.setAttribute("aria-live", null);
+            });
         }
     }
     
@@ -956,7 +1111,11 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add live region
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag tag = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (tag == null) return;
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "aria-live", "polite");
         }
     }
     
@@ -978,7 +1137,17 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add recommended live region
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag tag = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (tag == null) return;
+            if ("assertive".equalsIgnoreCase(priority)) {
+                com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "role", "alert");
+                com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "aria-live", "assertive");
+            } else {
+                com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "role", "status");
+                com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "aria-live", "polite");
+            }
         }
     }
     
@@ -994,7 +1163,12 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add loading attributes
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag tag = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (tag == null) return;
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "aria-busy", "true");
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.ensureAttribute(project, tag, "aria-live", "polite");
         }
     }
 }

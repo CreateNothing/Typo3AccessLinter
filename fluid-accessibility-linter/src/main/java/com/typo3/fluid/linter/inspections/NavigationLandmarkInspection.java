@@ -248,7 +248,31 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+
+            // Find nearest <nav ...> open tag before caret
+            int navStart = content.lastIndexOf("<nav", caret);
+            if (navStart < 0) return;
+            int tagEnd = content.indexOf('>', navStart);
+            if (tagEnd < 0) return;
+            String openTag = content.substring(navStart, tagEnd + 1);
+
+            // If aria-label or aria-labelledby already present, do nothing
+            if (openTag.toLowerCase().matches("(?s).*aria-label(ledby)?\\s*=.*")) return;
+
+            String labeled = openTag.substring(0, openTag.length() - 1) +
+                    " aria-label=\"Navigation\">"; // default label, user can edit
+
+            String newContent = content.substring(0, navStart) + labeled + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -267,7 +291,27 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove redundant role
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+
+            // Find element start (<tag ... role="navigation">)
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String openTag = content.substring(tagStart, tagEnd + 1);
+            String updated = openTag.replaceAll("(?i)\\srole\\s*=\\s*\"navigation\"", "")
+                                    .replaceAll("(?i)\\srole\\s*=\\s*'navigation'", "");
+
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
@@ -286,7 +330,27 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would suggest adding main element
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            // Insert <main> immediately after <body> if present; otherwise prepend to document
+            int bodyStart = content.toLowerCase().indexOf("<body");
+            int insertPos;
+            if (bodyStart >= 0) {
+                int bodyOpenEnd = content.indexOf('>', bodyStart);
+                insertPos = (bodyOpenEnd > 0) ? bodyOpenEnd + 1 : 0;
+            } else {
+                insertPos = 0;
+            }
+
+            String mainBlock = "\n<main role=\"main\">\n    <!-- Primary content -->\n</main>\n";
+            String newContent = content.substring(0, insertPos) + mainBlock + content.substring(insertPos);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
 }

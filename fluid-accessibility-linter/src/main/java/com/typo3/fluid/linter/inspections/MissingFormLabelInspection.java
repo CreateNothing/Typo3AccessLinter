@@ -139,6 +139,12 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         
         // Check Fluid form ViewHelpers
         checkFluidFormElements(content, file, holder, labelForMap);
+
+        // Grouping and anti-pattern checks
+        checkFieldsetGrouping(content, file, holder);
+        checkPlaceholderAntiPatterns(content, file, holder, labelForMap, implicitLabeledInputs);
+        checkRequiredFieldConsistency(content, file, holder);
+        checkRelatedFieldGroups(content, file, holder);
     }
     
     private Map<String, String> collectLabels(String content) {
@@ -204,10 +210,23 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
                     "%s missing label for accessibility",
                     AccessibilityUtils.getInputTypeDescription(type)
                 );
-                
-                registerProblem(file, holder, offset, description,
-                    ProblemHighlightType.ERROR,
-                    new AddLabelQuickFix(type));
+
+                java.util.List<LocalQuickFix> fixes = new java.util.ArrayList<>();
+                fixes.add(new AddLabelQuickFix(type));
+                // If placeholder exists, offer specialized placeholder fix too
+                Matcher ph = PLACEHOLDER_PATTERN.matcher(inputTag);
+                if (ph.find()) {
+                    String placeholderText = ph.group(1);
+                    if (isPlaceholderOnlyLabeling(inputTag, placeholderText)) {
+                        fixes.add(new ConvertPlaceholderToLabelQuickFix(placeholderText));
+                    }
+                    if (placeholderText.toLowerCase().contains("required") || placeholderText.contains("*")) {
+                        fixes.add(new FixRequiredIndicatorQuickFix());
+                    }
+                }
+
+                registerProblems(holder, file, offset, offset + inputTag.length(),
+                    description, ProblemHighlightType.ERROR, fixes.toArray(LocalQuickFix[]::new));
             }
         }
     }
@@ -677,7 +696,12 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add <legend> after <fieldset>
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            com.intellij.psi.xml.XmlTag fieldset = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (fieldset == null || !"fieldset".equalsIgnoreCase(fieldset.getName())) return;
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.insertAfterStartTag(project, file, fieldset, "<legend>Group</legend>\n");
         }
     }
     
@@ -705,7 +729,30 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add proper label and modify placeholder to be hint-only
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag input = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (input == null) return;
+            // Ensure input has an id
+            String id = input.getAttributeValue("id");
+            if (id == null || id.isBlank()) {
+                id = "fld-" + input.getTextOffset();
+            }
+            final String finalId = id;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, "Add label from placeholder", null, () -> {
+                if (input.getAttributeValue("id") == null) {
+                    input.setAttribute("id", finalId);
+                }
+                var file = input.getContainingFile();
+                var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+                if (doc != null) {
+                    com.intellij.psi.PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(doc);
+                    int insertOffset = input.getTextRange().getStartOffset();
+                    String labelXml = String.format("<label for=\"%s\">%s</label>\n", finalId, placeholderText);
+                    doc.insertString(insertOffset, labelXml);
+                    com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+                }
+            });
         }
     }
     
@@ -727,7 +774,15 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-required and visual indicators
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag input = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (input == null) return;
+            // Ensure native required and ARIA state
+            if (input.getAttributeValue("required") == null) {
+                com.typo3.fluid.linter.fixes.PsiMutationUtils.setAttribute(project, input, "required", "");
+            }
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.setAttribute(project, input, "aria-required", "true");
         }
     }
     
@@ -749,7 +804,15 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would align required and aria-required attributes
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag input = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (input == null) return;
+            String hasRequired = input.getAttributeValue("required");
+            String ariaRequired = input.getAttributeValue("aria-required");
+            boolean isRequired = hasRequired != null || (ariaRequired != null && ariaRequired.equalsIgnoreCase("true"));
+            // Mirror state onto aria-required
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.setAttribute(project, input, "aria-required", isRequired ? "true" : "false");
         }
     }
     
@@ -771,7 +834,16 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would wrap related fields in fieldset with legend
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            com.intellij.psi.xml.XmlTag container = com.typo3.fluid.linter.fixes.PsiMutationUtils.findNearestTag(element);
+            if (container == null) return;
+            PsiFile file = container.getContainingFile();
+            // Wrap the container with a fieldset and add a default legend
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.insertBeforeElement(project, file, container,
+                "<fieldset><legend>Group</legend>");
+            com.typo3.fluid.linter.fixes.PsiMutationUtils.insertAfterElement(project, file, container,
+                "</fieldset>");
         }
     }
 }

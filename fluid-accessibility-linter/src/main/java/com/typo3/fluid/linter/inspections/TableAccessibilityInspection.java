@@ -664,7 +664,31 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would convert td to th in first row
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            // Find first row
+            Matcher tr = TR_PATTERN.matcher(tableHtml);
+            if (!tr.find()) return;
+            String firstRow = tr.group(0);
+            String converted = firstRow
+                .replaceAll("<td(?![^>]*scope)[^>]*>", "<th scope=\"col\">")
+                .replace("</td>", "</th>");
+            final String newTable = tableHtml.substring(0, tr.start()) + converted + tableHtml.substring(tr.end());
+            final int fTableStart1 = tableStart; final int fTableEnd1 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart1, fTableEnd1, newTable);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -680,7 +704,22 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add caption element
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int openEnd = text.indexOf('>', tableStart);
+            if (tableStart < 0 || openEnd < 0) return;
+            int insertAt = openEnd + 1;
+            String caption = "<caption>Table</caption>";
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.insertString(insertAt, caption);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -696,7 +735,36 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would wrap rows in thead/tbody
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            // Extract inner content between <table...> and </table>
+            int openEnd = tableHtml.indexOf('>');
+            if (openEnd < 0) return;
+            String openTag = tableHtml.substring(0, openEnd + 1);
+            String inner = tableHtml.substring(openEnd + 1, tableHtml.length() - "</table>".length());
+            // Split rows
+            Matcher m = TR_PATTERN.matcher(inner);
+            if (!m.find()) return;
+            int firstStart = m.start();
+            int firstEnd = m.end();
+            String firstRow = inner.substring(firstStart, firstEnd);
+            String rest = inner.substring(firstEnd);
+            String rebuilt = openTag + "<thead>" + firstRow + "</thead><tbody>" + rest + "</tbody></table>";
+            final String newTable2 = rebuilt; final int fTableStart2 = tableStart; final int fTableEnd2 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart2, fTableEnd2, newTable2);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -718,7 +786,19 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add scope attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String tagText = element.getText();
+            if (!tagText.contains("<th")) return;
+            if (tagText.matches("(?is).*scope\\s*=.*")) return;
+            String updated = tagText.replaceFirst("<th", "<th scope=\"" + scopeValue + "\"");
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -734,7 +814,8 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would convert td to th
+            // Reuse AddTableHeadersFix behavior
+            new AddTableHeadersFix().applyFix(project, descriptor);
         }
     }
     
@@ -750,7 +831,30 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would convert summary to caption
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int openEnd = text.indexOf('>', tableStart);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || openEnd < 0 || tableEnd < 0) return;
+            String openTag = text.substring(tableStart, openEnd + 1);
+            Matcher sm = SUMMARY_PATTERN.matcher(openTag);
+            String summary = null;
+            if (sm.find()) {
+                summary = sm.group(1);
+            }
+            String openTagNoSummary = openTag.replaceAll("\\s*summary\\s*=\\s*[\"'][^\"']*[\"']", "");
+            String caption = "<caption>" + (summary != null ? summary : "Table") + "</caption>";
+            String rebuilt = openTagNoSummary + caption + text.substring(openEnd + 1, tableEnd) + "</table>";
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(tableStart, tableEnd + "</table>".length(), rebuilt);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -882,7 +986,26 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove th and caption elements
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            final String tableHtml = text.substring(tableStart, tableEnd)
+                .replaceAll("(?is)<caption[^>]*>.*?</caption>", "")
+                .replace("<th", "<td")
+                .replace("</th>", "</td>");
+            final String newTable3 = tableHtml; final int fTableStart3 = tableStart; final int fTableEnd3 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart3, fTableEnd3, newTable3);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -898,7 +1021,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would provide CSS alternatives
+            // Non-destructive suggestion: no file changes
         }
     }
     
@@ -914,7 +1037,24 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role attribute or headers
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int openEnd = text.indexOf('>', tableStart);
+            if (tableStart < 0 || openEnd < 0) return;
+            String openTag = text.substring(tableStart, openEnd + 1);
+            if (!openTag.matches("(?is).*\\brole\\s*=.*")) {
+                String newOpen = openTag.replaceFirst("<table", "<table role=\"presentation\"");
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    doc.replaceString(tableStart, openEnd + 1, newOpen);
+                    com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+                });
+            }
         }
     }
     
@@ -930,7 +1070,25 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add scope or headers attributes
+            // Minimal: ensure all <th> have scope; prefer 'col'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            final String updated2 = tableHtml.replaceAll("<th(?![^>]*scope)([^>]*)>", "<th scope=\"col\"$1>");
+            final int fTableStart4 = tableStart; final int fTableEnd4 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart4, fTableEnd4, updated2);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -946,7 +1104,42 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add id attributes to headers
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            // Add ids incrementally
+            StringBuilder sb = new StringBuilder();
+            Matcher m = TH_PATTERN.matcher(tableHtml);
+            int last = 0; int i = 1;
+            while (m.find()) {
+                String attrs = m.group(1);
+                String full = m.group(0);
+                boolean hasId = ID_PATTERN.matcher(attrs).find();
+                sb.append(tableHtml, last, m.start());
+                if (!hasId) {
+                    String replaced = full.replaceFirst("<th", "<th id=\"th-" + i + "\"");
+                    sb.append(replaced);
+                    i++;
+                } else {
+                    sb.append(full);
+                }
+                last = m.end();
+            }
+            sb.append(tableHtml.substring(last));
+            final String updated3 = sb.toString(); final int fTableStart5 = tableStart; final int fTableEnd5 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart5, fTableEnd5, updated3);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
 }

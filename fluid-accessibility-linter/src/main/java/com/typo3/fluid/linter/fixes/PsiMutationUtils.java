@@ -79,6 +79,19 @@ public final class PsiMutationUtils {
     }
 
     /**
+     * Insert the given XML/text after the target PsiElement.
+     */
+    public static void insertAfterElement(Project project, PsiFile file, PsiElement target, String xml) {
+        Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+        if (doc == null) return;
+        int insertOffset = target.getTextRange().getEndOffset();
+        WriteCommandAction.runWriteCommandAction(project, "Insert after element", null, () -> {
+            doc.insertString(insertOffset, xml);
+            PsiDocumentManager.getInstance(project).commitDocument(doc);
+        });
+    }
+
+    /**
      * Change the tag name (e.g., h3 -> h2). Closing tag is updated by PSI.
      */
     public static void changeTagName(Project project, XmlTag tag, String newName) {
