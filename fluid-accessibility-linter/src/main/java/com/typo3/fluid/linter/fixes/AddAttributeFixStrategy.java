@@ -3,7 +3,9 @@ package com.typo3.fluid.linter.fixes;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -62,8 +64,11 @@ public class AddAttributeFixStrategy implements FixStrategy {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add the attribute to the element
-            // This is simplified - actual implementation would use PSI manipulation
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            XmlTag tag = PsiMutationUtils.findNearestTag(element);
+            if (tag == null) return;
+            PsiMutationUtils.setAttribute(project, tag, attributeName, attributeValue != null ? attributeValue : "");
         }
     }
 }

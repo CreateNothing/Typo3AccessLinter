@@ -1,8 +1,11 @@
 package com.typo3.fluid.linter.rules;
 
 import com.intellij.psi.PsiFile;
+import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.project.Project;
 import com.typo3.fluid.linter.strategy.ValidationResult;
 import com.typo3.fluid.linter.strategy.ValidationStrategy;
+import com.typo3.fluid.linter.settings.RuleSettingsState;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +17,8 @@ public class RuleEngine {
     private final Map<String, AccessibilityRule> rules = new ConcurrentHashMap<>();
     private final Map<String, ValidationStrategy> strategies = new ConcurrentHashMap<>();
     private final List<RuleProvider> providers = new ArrayList<>();
+    private static final ExtensionPointName<RuleProvider> RULE_PROVIDER_EP =
+            ExtensionPointName.create("com.typo3.fluid.linter.ruleProvider");
     
     private RuleEngine() {
         initialize();
@@ -45,10 +50,18 @@ public class RuleEngine {
     public List<RuleViolation> execute(PsiFile file) {
         List<RuleViolation> violations = new ArrayList<>();
         String content = file.getText();
+        Project project = file.getProject();
+        RuleSettingsState settings = RuleSettingsState.getInstance(project);
         
         for (Map.Entry<String, AccessibilityRule> entry : rules.entrySet()) {
             AccessibilityRule rule = entry.getValue();
-            if (!rule.isEnabled()) {
+            // Apply enabled override
+            boolean enabled = rule.isEnabled();
+            Boolean override = settings != null ? settings.getEnabledOverride(rule.getId()) : null;
+            if (override != null) {
+                enabled = override;
+            }
+            if (!enabled) {
                 continue;
             }
             
@@ -56,13 +69,22 @@ public class RuleEngine {
             if (strategy != null && strategy.shouldApply(file)) {
                 List<ValidationResult> results = strategy.validate(file, content);
                 for (ValidationResult result : results) {
-                    violations.add(new RuleViolation(rule, result));
+                    AccessibilityRule.RuleSeverity sev = rule.getSeverity();
+                    if (settings != null) {
+                        String sevOverride = settings.getSeverityOverride(rule.getId());
+                        if (sevOverride != null) {
+                            try {
+                                sev = AccessibilityRule.RuleSeverity.valueOf(sevOverride);
+                            } catch (IllegalArgumentException ignored) {}
+                        }
+                    }
+                    violations.add(new RuleViolation(rule, result, sev));
                 }
             }
         }
         
         // Sort by priority/severity
-        violations.sort(Comparator.comparing(v -> v.getRule().getSeverity()));
+        violations.sort(Comparator.comparing(RuleViolation::getSeverity));
         
         return violations;
     }
@@ -118,9 +140,23 @@ public class RuleEngine {
      * Initialize with default rules
      */
     private void initialize() {
-        // Register default providers
-        registerProvider(new DefaultRuleProvider());
-        registerProvider(new FluidRuleProvider());
+        // Load from extension point when available
+        try {
+            RuleProvider[] epProviders = RULE_PROVIDER_EP.getExtensions();
+            if (epProviders != null && epProviders.length > 0) {
+                for (RuleProvider rp : epProviders) {
+                    registerProvider(rp);
+                }
+            }
+        } catch (Throwable ignored) {
+            // EP area may be unavailable in some test contexts; fall back below
+        }
+
+        // Fallback to built-ins if none loaded
+        if (providers.isEmpty()) {
+            registerProvider(new DefaultRuleProvider());
+            registerProvider(new FluidRuleProvider());
+        }
     }
     
     /**

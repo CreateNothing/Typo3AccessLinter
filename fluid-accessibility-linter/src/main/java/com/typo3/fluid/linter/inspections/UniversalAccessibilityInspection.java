@@ -36,13 +36,16 @@ public class UniversalAccessibilityInspection extends FluidAccessibilityInspecti
         fixContext.setAttribute("rule", violation.getRule());
         fixContext.setAttribute("result", violation.getResult());
         
-        // Get applicable fixes
-        LocalQuickFix[] fixes = fixRegistry.getFixes(
-            file,
-            violation.getResult().getStartOffset(),
-            violation.getResult().getEndOffset(),
-            fixContext
-        );
+        // Prefer strategy-provided fixes when available; otherwise, consult registry
+        LocalQuickFix[] fixes = violation.getResult().getFixes();
+        if (fixes == null || fixes.length == 0) {
+            fixes = fixRegistry.getFixes(
+                file,
+                violation.getResult().getStartOffset(),
+                violation.getResult().getEndOffset(),
+                fixContext
+            );
+        }
         
         // Register the problem
         registerProblem(
@@ -51,7 +54,7 @@ public class UniversalAccessibilityInspection extends FluidAccessibilityInspecti
             violation.getResult().getStartOffset(),
             violation.getResult().getEndOffset(),
             violation.getMessage(),
-            violation.getRule().getSeverity().getHighlightType(),
+            violation.getSeverity().getHighlightType(),
             fixes.length > 0 ? fixes[0] : null
         );
     }

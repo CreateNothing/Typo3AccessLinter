@@ -1,91 +1,92 @@
 package com.typo3.fluid.linter.strategy.implementations;
 
 import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlTag;
 import com.typo3.fluid.linter.fixes.FixContext;
 import com.typo3.fluid.linter.fixes.FixRegistry;
+import com.typo3.fluid.linter.parser.FluidPsiUtils;
 import com.typo3.fluid.linter.strategy.ValidationResult;
 import com.typo3.fluid.linter.strategy.ValidationStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Strategy for validating alt text on images
+ * PSI-first strategy for validating alt text on images (HTML <img> and Fluid f:image).
  */
 public class ImageAltTextValidationStrategy implements ValidationStrategy {
-    
-    private static final Pattern IMG_TAG_PATTERN = Pattern.compile(
-        "<img\\s+([^>]*)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-    private static final Pattern ALT_ATTR_PATTERN = Pattern.compile(
-        "\\salt\\s*=\\s*[\"']([^\"']*)[\"']", Pattern.CASE_INSENSITIVE);
-    private static final Pattern ROLE_ATTR_PATTERN = Pattern.compile(
-        "\\srole\\s*=\\s*[\"']presentation[\"']", Pattern.CASE_INSENSITIVE);
-    
+
     @Override
     public List<ValidationResult> validate(PsiFile file, String content) {
         List<ValidationResult> results = new ArrayList<>();
-        
-        Matcher matcher = IMG_TAG_PATTERN.matcher(content);
-        while (matcher.find()) {
-            String imgTag = matcher.group(0);
-            String attributes = matcher.group(1);
-            
-            boolean hasAlt = ALT_ATTR_PATTERN.matcher(attributes).find();
-            boolean isDecorative = ROLE_ATTR_PATTERN.matcher(attributes).find();
-            
-            if (!hasAlt && !isDecorative) {
-                // Create fix context
-                FixContext fixContext = new FixContext("missing-alt");
-                fixContext.setAttribute("attributeName", "alt");
-                fixContext.setAttribute("elementType", "img");
-                
-                LocalQuickFix[] fixes = FixRegistry.getInstance().getFixes(
-                    file, matcher.start(), matcher.end(), fixContext
-                );
-                
-                results.add(new ValidationResult(
-                    matcher.start(),
-                    matcher.end(),
-                    "Image missing alt attribute",
-                    fixes
-                ));
-            } else if (hasAlt) {
-                // Check for empty or poor quality alt text
-                Matcher altMatcher = ALT_ATTR_PATTERN.matcher(attributes);
-                if (altMatcher.find()) {
-                    String altText = altMatcher.group(1).trim();
-                    if (altText.isEmpty()) {
-                        results.add(new ValidationResult(
-                            matcher.start(),
-                            matcher.end(),
-                            "Alt attribute should not be empty (use role='presentation' for decorative images)"
-                        ));
-                    } else if (isLowQualityAltText(altText)) {
-                        results.add(new ValidationResult(
-                            matcher.start(),
-                            matcher.end(),
-                            "Alt text appears to be low quality: " + altText
-                        ));
+
+        // HTML <img>
+        for (XmlTag img : com.typo3.fluid.linter.parser.FluidPsiUtils.findTagsByName(file, "img")) {
+            results.addAll(checkOneImageTag(file, img));
+        }
+
+        // Fluid f:image
+        file.accept(new com.intellij.psi.PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(@org.jetbrains.annotations.NotNull PsiElement element) {
+                if (element instanceof XmlTag) {
+                    XmlTag tag = (XmlTag) element;
+                    String name = tag.getName();
+                    if (name.equalsIgnoreCase("f:image") || name.endsWith(":image")) {
+                        results.addAll(checkOneImageTag(file, tag));
                     }
                 }
+                super.visitElement(element);
             }
-        }
-        
+        });
+
         return results;
     }
-    
+
+    private List<ValidationResult> checkOneImageTag(PsiFile file, XmlTag tag) {
+        List<ValidationResult> out = new ArrayList<>();
+        String alt = tag.getAttributeValue("alt");
+        String role = tag.getAttributeValue("role");
+        String ariaHidden = tag.getAttributeValue("aria-hidden");
+
+        boolean decorative = role != null && role.equalsIgnoreCase("presentation");
+        decorative = decorative || (ariaHidden != null && ariaHidden.equalsIgnoreCase("true"));
+
+        int start = tag.getTextRange().getStartOffset();
+        int end = tag.getTextRange().getEndOffset();
+
+        if (!decorative && (alt == null || alt.isEmpty())) {
+            FixContext ctx = new FixContext("missing-alt");
+            ctx.setAttribute("attributeName", "alt");
+            ctx.setAttribute("elementType", tag.getName());
+            LocalQuickFix[] fixes = FixRegistry.getInstance().getFixes(file, start, end, ctx);
+            out.add(new ValidationResult(start, end, "Image missing alt attribute", fixes));
+            return out;
+        }
+
+        if (alt != null) {
+            String trimmed = alt.trim();
+            if (trimmed.isEmpty()) {
+                out.add(new ValidationResult(start, end, "Alt attribute should not be empty (use role='presentation' for decorative images)"));
+            } else if (isLowQualityAltText(trimmed)) {
+                out.add(new ValidationResult(start, end, "Alt text appears to be low quality: " + trimmed));
+            }
+        }
+
+        return out;
+    }
+
     private boolean isLowQualityAltText(String altText) {
         String lower = altText.toLowerCase();
-        return lower.equals("image") || 
-               lower.equals("picture") || 
-               lower.equals("photo") ||
-               lower.matches("img\\d+") ||
-               lower.matches("image\\d+");
+        return lower.equals("image") ||
+                lower.equals("picture") ||
+                lower.equals("photo") ||
+                lower.matches("img\\d+") ||
+                lower.matches("image\\d+");
     }
-    
+
     @Override
     public int getPriority() {
         return 100; // High priority

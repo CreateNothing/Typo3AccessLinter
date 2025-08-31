@@ -1,6 +1,7 @@
 package com.typo3.fluid.linter.fixes;
 
 import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiFile;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.List;
 public class FixRegistry {
     private static final FixRegistry INSTANCE = new FixRegistry();
     private final List<FixStrategy> strategies = new ArrayList<>();
+    private static final ExtensionPointName<FixStrategy> FIX_STRATEGY_EP =
+            ExtensionPointName.create("com.typo3.fluid.linter.fixStrategy");
     
     private FixRegistry() {
         // Register default strategies
@@ -41,9 +44,25 @@ public class FixRegistry {
     }
     
     private void registerDefaultStrategies() {
-        // Register common fix strategies
-        register(new AddAttributeFixStrategy());
-        register(new ReplaceTextFixStrategy());
-        register(new WrapElementFixStrategy());
+        // Try to load from EP first
+        try {
+            FixStrategy[] epStrategies = FIX_STRATEGY_EP.getExtensions();
+            if (epStrategies != null && epStrategies.length > 0) {
+                for (FixStrategy fs : epStrategies) {
+                    register(fs);
+                }
+            }
+        } catch (Throwable ignored) {
+            // EP may be unavailable depending on context; fall back below
+        }
+
+        if (strategies.isEmpty()) {
+            // Fallback built-ins
+            register(new AddAttributeFixStrategy());
+            register(new ReplaceTextFixStrategy());
+            register(new WrapElementFixStrategy());
+            register(new ChangeAttributeFixStrategy());
+            register(new AddChildElementFixStrategy());
+        }
     }
 }

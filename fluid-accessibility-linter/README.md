@@ -4,7 +4,7 @@ A PhpStorm plugin that provides real-time accessibility linting for TYPO3 Fluid 
 
 ## Features
 
-### Current Implementation (v1.0.0)
+### Current Implementation
 
 - **Missing Alt Text Detection**: Identifies `<img>` tags and `f:image` ViewHelpers without alt attributes
 - **Invalid List Structure**: Detects when `<ul>` or `<ol>` elements contain invalid direct children (only `<li>` allowed)
@@ -44,6 +44,34 @@ The plugin automatically activates for all `.html` files in your project. Access
 - **Red underline**: Errors (e.g., invalid HTML structure)
 
 Click on the highlighted issue and press `Alt+Enter` to see available quick fixes.
+
+## Rule Profiles (Presets) and Settings
+
+- Open `Settings | Tools | Fluid Accessibility`.
+- Toggle rules on/off and adjust severity per rule.
+- Apply a preset profile via the Preset selector:
+  - `WCAG 2.1 AA`: Balanced defaults with critical issues as errors.
+  - `WCAG 2.1 AAA`: Stricter than AA; more warnings elevated.
+  - `Strict QA`: Treat most rules as errors for CI/QA.
+  - `Relaxed Dev`: Lower severities to reduce noise during development.
+  - `Fluid-Heavy`: Emphasizes Fluid ViewHelper checks.
+- Import/Export: Use the buttons to import/export profiles as JSON.
+- Project file: If `a11y-profile.json` exists in the project root, it is auto‑loaded when opening settings.
+- Sample profile: See `fluid-accessibility-linter/a11y-profile.json` for a ready-made starting point.
+
+Example profile JSON shape:
+```
+{
+  "enabled": { "img-alt-text": true, "list-structure": true },
+  "severity": { "img-alt-text": "ERROR", "link-text": "WARNING" },
+  "config": { "link-text": { "maxLength": "100" } }
+}
+```
+
+## Architecture
+
+- Universal inspection: The plugin now registers a single rule‑engine based inspection (`Universal Fluid Accessibility Check`) in `plugin.xml`, which aggregates all checks. Legacy inspections remain available during the migration period.
+- No custom file type in release: The main `plugin.xml` targets `language="HTML"` only. The alternative `plugin-universal.xml` (with custom Fluid language/file type) is reserved for internal experiments and must not be used for release builds.
 
 ## Roadmap for Future Versions
 

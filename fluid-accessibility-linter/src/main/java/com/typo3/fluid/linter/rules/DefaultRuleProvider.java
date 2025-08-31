@@ -63,6 +63,15 @@ public class DefaultRuleProvider implements RuleProvider {
         engine.registerRule(ariaValidRule, new AriaValidationStrategy());
         
         // Navigation rules
+        AccessibilityRule linkTextRule = createRule(
+            "link-text",
+            "Links must be descriptive",
+            "Anchor text should clearly describe the destination or purpose",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.NAVIGATION
+        );
+        engine.registerRule(linkTextRule, new LinkTextValidationStrategy());
+
         AccessibilityRule skipLinksRule = createRule(
             "skip-links",
             "Pages should have skip links",

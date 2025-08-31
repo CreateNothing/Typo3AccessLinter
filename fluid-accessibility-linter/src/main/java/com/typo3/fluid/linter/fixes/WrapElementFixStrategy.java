@@ -3,6 +3,7 @@ package com.typo3.fluid.linter.fixes;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
@@ -58,8 +59,13 @@ public class WrapElementFixStrategy implements FixStrategy {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would wrap the element
-            // This is simplified - actual implementation would use PSI manipulation
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            int start = element.getTextRange().getStartOffset();
+            int end = element.getTextRange().getEndOffset();
+            PsiMutationUtils.wrapRangeWithTag(project, file, start, end, wrapperTag, wrapperAttributes);
         }
     }
 }
