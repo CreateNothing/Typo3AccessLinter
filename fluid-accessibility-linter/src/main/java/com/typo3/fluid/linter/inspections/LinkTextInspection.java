@@ -103,7 +103,8 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     private static final Pattern ICON_PATTERN = Pattern.compile(
         "<(?:i|span)\\s+[^>]*class\\s*=\\s*[\"'][^\"']*(?:icon|fa-|fas|far|fab|glyphicon|material-icons|bi-|ion-)[^\"']*[\"'][^>]*>|" +
         "<img\\s+[^>]*(?:class\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"']|src\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"'])[^>]*>|" +
-        "<svg\\s+[^>]*(?:class\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"'])?[^>]*>.*?</svg>",
+        "<svg\\s+[^>]*(?:class\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"'])?[^>]*>.*?</svg>|" +
+        "<core:icon\\b[^>]*/?>",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     

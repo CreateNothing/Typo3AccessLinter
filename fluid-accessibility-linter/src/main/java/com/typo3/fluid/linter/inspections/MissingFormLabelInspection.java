@@ -36,9 +36,17 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
         "<select\\s+[^>]*>.*?</select>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     
-    // Fluid form ViewHelpers
+    // Fluid form ViewHelpers (common self-closing with attributes)
     private static final Pattern FLUID_INPUT_PATTERN = Pattern.compile(
         "<f:form\\.(?:textfield|password|hidden|submit|checkbox|radio|textarea|select|upload|datePicker|button)\\s+[^>]*/?\\s*>",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+    );
+    
+    // Broader matcher to catch any f:form.* opening tag (with or without attributes),
+    // including tags without attributes (e.g., <f:form.select>) and additional helpers
+    // like countrySelect, uploadDeleteCheckbox.
+    private static final Pattern FLUID_ANY_FORM_TAG_PATTERN = Pattern.compile(
+        "<(?!/)f:form\\.(\\w+)([^>]*)/?>",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     
@@ -240,39 +248,54 @@ public class MissingFormLabelInspection extends FluidAccessibilityInspection {
     
     private void checkFluidFormElements(String content, PsiFile file, ProblemsHolder holder,
                                        Map<String, String> labelForMap) {
-        Matcher matcher = FLUID_INPUT_PATTERN.matcher(content);
+        // Track offsets already handled to avoid duplicate reports
+        java.util.Set<Integer> processed = new java.util.HashSet<>();
         
-        while (matcher.find()) {
-            String viewHelper = matcher.group();
-            int offset = matcher.start();
-            
-            // Extract ViewHelper type
-            String tagName = extractTagName(viewHelper);
-            if (tagName == null) continue;
-            
-            // Check specific types that don't need labels
-            if (tagName.endsWith("submit") || tagName.endsWith("button") || tagName.endsWith("hidden")) {
-                continue;
-            }
-            
-            // Fluid ViewHelpers often have 'property' attribute that auto-generates labels
-            // But we should still check for explicit labeling
-            String id = getAttributeValue(viewHelper, "id");
-            String property = getAttributeValue(viewHelper, "property");
-            
-            // If no id and no property, it's likely missing label
-            if ((id == null || !labelForMap.containsKey(id)) && property == null) {
-                if (!hasAttribute(viewHelper, "aria-label") && 
-                    !hasAttribute(viewHelper, "aria-labelledby") &&
-                    !hasAttribute(viewHelper, "title")) {
-                    
-                    String type = tagName.replace("f:form.", "");
-                    registerProblem(file, holder, offset,
-                        String.format("Fluid form ViewHelper '%s' missing label", type),
-                        ProblemHighlightType.ERROR,
-                        new AddFluidLabelQuickFix());
-                }
-            }
+        // Pass 1: legacy/self-closing pattern with attributes
+        Matcher m1 = FLUID_INPUT_PATTERN.matcher(content);
+        while (m1.find()) {
+            handleFluidFormMatch(m1.group(), m1.start(), file, holder, labelForMap);
+            processed.add(m1.start());
+        }
+        
+        // Pass 2: broader catch-all for any <f:form.*> opening tag (with/without attributes)
+        Matcher m2 = FLUID_ANY_FORM_TAG_PATTERN.matcher(content);
+        while (m2.find()) {
+            int offset = m2.start();
+            if (processed.contains(offset)) continue;
+            String viewHelper = m2.group();
+            handleFluidFormMatch(viewHelper, offset, file, holder, labelForMap);
+        }
+    }
+
+    private void handleFluidFormMatch(String viewHelper, int offset, PsiFile file, ProblemsHolder holder,
+                                      Map<String, String> labelForMap) {
+        // Extract ViewHelper type
+        String tagName = extractTagName(viewHelper);
+        if (tagName == null) return;
+        
+        // Skip specific types that don't need labels
+        String lower = tagName.toLowerCase();
+        if (lower.endsWith("submit") || lower.endsWith("button") || lower.endsWith("hidden")
+            || lower.endsWith("select.optgroup") || lower.endsWith("select.option") || lower.endsWith(".optgroup") || lower.endsWith(".option")) {
+            return;
+        }
+        
+        // Fluid ViewHelpers often have 'property' attribute that auto-generates labels
+        String id = getAttributeValue(viewHelper, "id");
+        String property = getAttributeValue(viewHelper, "property");
+        
+        boolean hasAssociatedLabel = (id != null && labelForMap.containsKey(id));
+        boolean hasAria = hasAttribute(viewHelper, "aria-label") || hasAttribute(viewHelper, "aria-labelledby");
+        boolean hasTitle = hasAttribute(viewHelper, "title") && getAttributeValue(viewHelper, "title") != null
+                && !getAttributeValue(viewHelper, "title").trim().isEmpty();
+        
+        if (!hasAssociatedLabel && property == null && !hasAria && !hasTitle) {
+            String type = tagName.replace("f:form.", "");
+            registerProblem(file, holder, offset,
+                String.format("Fluid form ViewHelper '%s' missing label", type),
+                ProblemHighlightType.ERROR,
+                new AddFluidLabelQuickFix());
         }
     }
     

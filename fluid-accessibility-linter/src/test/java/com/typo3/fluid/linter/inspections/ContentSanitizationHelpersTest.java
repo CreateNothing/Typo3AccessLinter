@@ -27,7 +27,7 @@ public class ContentSanitizationHelpersTest extends BaseInspectionTest {
     @Test
     public void testStripTagsShouldWarnIfRemovingHeadings() {
         String html = "<f:format.stripTags><h2>Title</h2>Body</f:format.stripTags>";
-        var highlights = highlight(html, new HeadingHierarchyInspection());
+        var highlights = highlight(html, new ContentFilterSemanticsInspection());
         // Expect a warning once implemented
         assertHighlightsContain(highlights, "Removing headings may harm accessibility");
     }
@@ -41,4 +41,3 @@ public class ContentSanitizationHelpersTest extends BaseInspectionTest {
         assertNoHighlightsContaining(highlights, "stripped required attribute");
     }
 }
-

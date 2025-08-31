@@ -106,12 +106,39 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         // Check for conflicting live region settings
         checkConflictingLiveRegions(content, file, holder);
-        
+
         // Enhanced context-aware checks
         prioritizeContentUpdates(content, file, holder);
         detectCompetingLiveRegions(content, file, holder);
         validateLiveRegionAppropriateness(content, file, holder);
         checkStatusMessagePatterns(content, file, holder);
+
+        // Fluid-specific: flash messages should be inside a live region
+        checkFlashMessagesAnnouncement(content, file, holder);
+    }
+
+    private void checkFlashMessagesAnnouncement(String content, PsiFile file, ProblemsHolder holder) {
+        Pattern flashPattern = Pattern.compile("<f:flashMessages\\b[^>]*/?>", Pattern.CASE_INSENSITIVE);
+        Matcher m = flashPattern.matcher(content);
+        while (m.find()) {
+            int start = m.start();
+            int end = m.end();
+
+            int contextStart = Math.max(0, start - 300);
+            int contextEnd = Math.min(content.length(), end + 300);
+            String context = content.substring(contextStart, contextEnd).toLowerCase();
+
+            boolean hasWrapper = context.contains("role=\"status\"") ||
+                                 context.contains("aria-live=\"polite\"") ||
+                                 context.contains("role=\"alert\"") ||
+                                 context.contains("aria-live=\"assertive\"");
+
+            if (!hasWrapper) {
+                registerProblem(holder, file, start, end,
+                    "Flash messages should be announced via aria-live or role='status'",
+                    new AddStatusRoleFix());
+            }
+        }
     }
     
     private void checkAriaLiveAttributes(String content, PsiFile file, ProblemsHolder holder) {

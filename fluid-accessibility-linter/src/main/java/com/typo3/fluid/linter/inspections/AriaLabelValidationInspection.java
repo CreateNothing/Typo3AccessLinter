@@ -261,8 +261,17 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
                                  start, end, file, holder);
         }
         
-        // Check icon buttons (buttons with only icons)
+        // Check icon buttons (buttons/links with only icons)
         if ("button".equals(tagName) || "a".equals(tagName)) {
+            // Consider core:icon as icon-only content as well
+            boolean hasCoreIcon = content != null && content.toLowerCase().matches(".*<core:icon\\b[^>]*(/?>|>.*?</core:icon>).*?");
+            if (hasCoreIcon && (visibleText == null || visibleText.isEmpty()) && !hasAriaLabel && !hasAriaLabelledby && !hasTitle) {
+                registerProblem(holder, file, start, end,
+                    ("button".equals(tagName) ? "Icon-only button needs accessible text (aria-label, aria-labelledby, or title)"
+                                              : "Icon-only link must have aria-label or meaningful text to be accessible"),
+                    new AddAriaLabelFix());
+            }
+            // Existing checks (e.g., <i class="..."> patterns, single glyphs)
             checkIconButton(visibleText, hasAriaLabel, hasAriaLabelledby, hasTitle,
                           start, end, file, holder);
         }
