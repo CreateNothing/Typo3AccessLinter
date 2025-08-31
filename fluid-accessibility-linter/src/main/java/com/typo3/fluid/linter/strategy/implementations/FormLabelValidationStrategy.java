@@ -60,10 +60,11 @@ public class FormLabelValidationStrategy implements ValidationStrategy {
             if (id == null || id.trim().isEmpty()) {
                 // Provide fixes: add <label for> (generating id) OR add aria-label
                 com.typo3.fluid.linter.fixes.FixContext labelCtx = new com.typo3.fluid.linter.fixes.FixContext("form-input-missing-id");
-                com.typo3.fluid.linter.fixes.FixContext ariaCtx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
-                ariaCtx.setAttribute("attributeName", "aria-label");
                 com.intellij.codeInspection.LocalQuickFix[] fixesLabel = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, labelCtx);
-                com.intellij.codeInspection.LocalQuickFix[] fixesAria = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, ariaCtx);
+                // Provide a friendly aria-label fix via GenerateLabelForInputFixStrategy
+                com.typo3.fluid.linter.fixes.FixContext ariaFriendly = new com.typo3.fluid.linter.fixes.FixContext("form-input-missing-label");
+                ariaFriendly.setAttribute("labelFixKind", "aria");
+                com.intellij.codeInspection.LocalQuickFix[] fixesAria = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, ariaFriendly);
                 com.intellij.codeInspection.LocalQuickFix[] fixes = concat(fixesLabel, fixesAria);
                 results.add(new ValidationResult(s, e, "Form input missing id attribute and label", fixes));
                 continue;
@@ -73,10 +74,11 @@ public class FormLabelValidationStrategy implements ValidationStrategy {
             if (!associated) {
                 // Provide fixes: add <label for> or add aria-label
                 com.typo3.fluid.linter.fixes.FixContext labelCtx = new com.typo3.fluid.linter.fixes.FixContext("form-input-missing-label");
-                com.typo3.fluid.linter.fixes.FixContext ariaCtx = new com.typo3.fluid.linter.fixes.FixContext("missing-attribute");
-                ariaCtx.setAttribute("attributeName", "aria-label");
                 com.intellij.codeInspection.LocalQuickFix[] fixesLabel = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, labelCtx);
-                com.intellij.codeInspection.LocalQuickFix[] fixesAria = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, ariaCtx);
+                // Friendly aria-label fix
+                com.typo3.fluid.linter.fixes.FixContext ariaFriendly = new com.typo3.fluid.linter.fixes.FixContext("form-input-missing-label");
+                ariaFriendly.setAttribute("labelFixKind", "aria");
+                com.intellij.codeInspection.LocalQuickFix[] fixesAria = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, ariaFriendly);
                 com.intellij.codeInspection.LocalQuickFix[] fixes = concat(fixesLabel, fixesAria);
                 results.add(new ValidationResult(s, e, "Form input missing associated label", fixes));
             }

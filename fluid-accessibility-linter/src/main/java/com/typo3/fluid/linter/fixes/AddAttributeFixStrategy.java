@@ -58,9 +58,7 @@ public class AddAttributeFixStrategy implements FixStrategy {
         
         @NotNull
         @Override
-        public String getFamilyName() {
-            return "Add attribute";
-        }
+        public String getFamilyName() { return "Accessibility"; }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {

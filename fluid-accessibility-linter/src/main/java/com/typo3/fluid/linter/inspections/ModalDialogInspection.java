@@ -308,6 +308,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddAriaModalFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-modal='true' to dialog";
         }
@@ -319,6 +322,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixAriaModalValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -334,6 +340,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddDialogLabelFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-label to dialog";
         }
@@ -345,6 +354,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddFocusableElementFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -360,6 +372,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddCloseButtonFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add close button to dialog";
         }
@@ -373,6 +388,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class FixDialogTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix dialog tabindex value";
         }
@@ -384,6 +402,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddDialogRoleFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -677,6 +698,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddInitialFocusQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add initial focus to modal";
         }
@@ -688,6 +712,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddFocusTrapQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -703,6 +730,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddFocusRestorationQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add focus restoration";
         }
@@ -714,6 +744,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddBackdropDismissalQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -729,6 +762,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddScrollLockQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add background scroll prevention";
         }
@@ -740,6 +776,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddBackdropQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -755,6 +794,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddTabHandlingQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add Tab key handling for focus trap";
         }
@@ -766,6 +808,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddFocusCyclingQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -781,6 +826,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddEscapeHandlingQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add Escape key dismissal";
         }
@@ -792,6 +840,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddDismissalMethodsQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -807,6 +858,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddCloseButtonLabelQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add accessible label to close button";
         }
@@ -818,6 +872,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixCloseButtonTabindexQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

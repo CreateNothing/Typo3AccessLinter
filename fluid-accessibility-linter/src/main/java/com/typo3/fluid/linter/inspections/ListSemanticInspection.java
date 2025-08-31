@@ -1709,6 +1709,9 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Standardize list items: " + suggestion;
         }
@@ -1720,6 +1723,9 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
     }
     
     private static class SeparateMixedContentFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -1741,6 +1747,9 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Optimize long list with " + itemCount + " items";
         }
@@ -1754,6 +1763,9 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
     private static class ReviewListStructureFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Review list structure for minimal content items";
         }
@@ -1765,6 +1777,9 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddKeyboardNavigationFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

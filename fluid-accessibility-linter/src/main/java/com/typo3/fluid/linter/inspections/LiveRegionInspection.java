@@ -327,6 +327,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class FixAriaLiveValueFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix aria-live value";
         }
@@ -338,6 +341,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class ChangeToPoliteFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -353,6 +359,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class RemoveRedundantAriaLiveFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Remove redundant aria-live";
         }
@@ -364,6 +373,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixAriaAtomicValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -379,6 +391,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class FixAriaRelevantValueFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix aria-relevant value";
         }
@@ -390,6 +405,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixAriaBusyValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -405,6 +423,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class AddAlertRoleFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add role='alert' for screen reader announcement";
         }
@@ -416,6 +437,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddStatusRoleFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -435,6 +459,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
             this.role = role;
         }
         
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -775,6 +802,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Change to aria-live='polite' (" + reason + ")";
         }
@@ -794,6 +824,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Change to aria-live='assertive' (" + reason + ")";
         }
@@ -805,6 +838,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddAriaBusyFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -820,6 +856,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class ReviewLiveRegionPriorityFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Review and adjust live region priorities";
         }
@@ -831,6 +870,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class ConsolidateLiveRegionsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -846,6 +888,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class AddLiveRegionPlaceholderFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add descriptive aria-label to live region";
         }
@@ -859,6 +904,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     private static class RemoveLiveRegionFromStaticFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Remove live region from static content";
         }
@@ -870,6 +918,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddLiveRegionToFormFeedbackFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -891,6 +942,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add recommended live region (" + priority + ")";
         }
@@ -902,6 +956,9 @@ public class LiveRegionInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddLoadingAriaAttributesFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

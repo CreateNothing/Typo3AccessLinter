@@ -1,25 +1,20 @@
 package com.typo3.fluid.linter.inspections;
 
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Test;
 
-/**
- * Test for {@link UniversalAccessibilityInspection}.
- */
-public class UniversalAccessibilityInspectionTest extends LightJavaCodeInsightFixtureTestCase {
+public class UniversalAccessibilityInspectionTest extends BaseInspectionTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData";
+    @Test
+    public void testShouldHighlightMissingAlt_viaRuleEngine() {
+        String html = "<img src=\"x.jpg\">";
+        var highlights = highlight(html, new UniversalAccessibilityInspection());
+        assertHighlightsContain(highlights, "Image missing alt attribute");
     }
 
     @Test
-    public void testDummy() {
-        assertTrue(true);
+    public void testShouldHighlightHeadingJump_viaRuleEngine() {
+        String html = "<h1>T</h1><h3>Skip</h3>";
+        var highlights = highlight(html, new UniversalAccessibilityInspection());
+        assertHighlightsContain(highlights, "Heading level jumps from h1 to h3");
     }
 }

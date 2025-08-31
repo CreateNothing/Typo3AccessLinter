@@ -2,8 +2,9 @@ package com.typo3.fluid.linter.strategy.implementations;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.xml.XmlTag;
+import com.typo3.fluid.linter.parser.PsiElementParser;
+import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.typo3.fluid.linter.strategy.ValidationResult;
 
 import java.util.ArrayList;
@@ -19,19 +20,9 @@ public class TableAccessibilityValidationStrategy extends BaseValidationStrategy
     public List<ValidationResult> validate(PsiFile file, String content) {
         List<ValidationResult> results = new ArrayList<>();
         List<XmlTag> tables = new ArrayList<>();
-
-        file.accept(new PsiRecursiveElementVisitor() {
-            @Override
-            public void visitElement(@org.jetbrains.annotations.NotNull PsiElement element) {
-                if (element instanceof XmlTag) {
-                    XmlTag tag = (XmlTag) element;
-                    if ("table".equalsIgnoreCase(tag.getName())) {
-                        tables.add(tag);
-                    }
-                }
-                super.visitElement(element);
-            }
-        });
+        for (PsiElement el : PsiElementParser.findElementsByTagName(file, "table")) {
+            if (el instanceof XmlTag) tables.add((XmlTag) el);
+        }
 
         for (XmlTag table : tables) {
             String role = safe(table.getAttributeValue("role")).toLowerCase();
@@ -45,7 +36,7 @@ public class TableAccessibilityValidationStrategy extends BaseValidationStrategy
                 com.typo3.fluid.linter.fixes.FixContext ctx = new com.typo3.fluid.linter.fixes.FixContext("table-headers-missing");
                 com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
                         .getFixes(file, s, e, ctx);
-                results.add(new ValidationResult(s, e, "Data tables should include TH header cells", fixes));
+                results.add(new ValidationResult(s, e, "Data tables must include TH header cells", fixes));
             }
         }
 

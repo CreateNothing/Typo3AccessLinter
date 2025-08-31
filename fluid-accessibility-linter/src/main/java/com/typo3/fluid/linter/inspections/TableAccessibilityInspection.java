@@ -651,6 +651,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class AddTableHeadersFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Convert first row to header cells";
         }
@@ -664,6 +667,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class AddTableCaptionFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add table caption";
         }
@@ -675,6 +681,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddTableSectionsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -696,6 +705,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add scope='" + scopeValue + "' to header";
         }
@@ -709,6 +721,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class ConvertToHeaderCellsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Convert <td> to <th> for header cells";
         }
@@ -720,6 +735,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     }
     
     private static class ReplaceSummaryWithCaptionFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -851,6 +869,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class RemoveSemanticElementsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Remove semantic elements from layout table";
         }
@@ -862,6 +883,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     }
     
     private static class SuggestCSSAlternativeFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -877,6 +901,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class ClarifyTablePurposeFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add role='presentation' or proper headers";
         }
@@ -890,6 +917,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class AddHeaderAssociationsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add header associations (scope/headers attributes)";
         }
@@ -901,6 +931,9 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddHeaderIdsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

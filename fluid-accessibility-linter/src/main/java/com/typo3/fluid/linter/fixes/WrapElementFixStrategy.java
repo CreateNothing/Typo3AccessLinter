@@ -53,9 +53,7 @@ public class WrapElementFixStrategy implements FixStrategy {
         
         @NotNull
         @Override
-        public String getFamilyName() {
-            return "Wrap element";
-        }
+        public String getFamilyName() { return "Structure"; }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {

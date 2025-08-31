@@ -236,6 +236,12 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
     private static class AddNavigationLabelFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() {
+            return getFamilyName();
+        }
+
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-label to navigation";
         }
@@ -249,6 +255,12 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
     private static class RemoveRedundantRoleFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() {
+            return getFamilyName();
+        }
+
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Remove redundant role attribute";
         }
@@ -260,6 +272,12 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddMainLandmarkFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() {
+            return getFamilyName();
+        }
+
         @NotNull
         @Override
         public String getFamilyName() {

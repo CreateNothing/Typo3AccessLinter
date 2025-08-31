@@ -1,25 +1,29 @@
 package com.typo3.fluid.linter.inspections;
 
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Test;
 
-/**
- * Test for {@link TableAccessibilityInspection}.
- */
-public class TableAccessibilityInspectionTest extends LightJavaCodeInsightFixtureTestCase {
+public class TableAccessibilityInspectionTest extends BaseInspectionTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData";
+    @Test
+    public void testShouldWarn_whenLargeDataTableHasNoHeaders() {
+        StringBuilder rows = new StringBuilder();
+        for (int i = 0; i < 6; i++) rows.append("<tr><td>A</td><td>B</td></tr>");
+        String html = "<table>" + rows + "</table>";
+        var highlights = highlight(html, new TableAccessibilityInspection());
+        assertHighlightsContain(highlights, "Data table should have header cells (<th>) to describe the data");
     }
 
     @Test
-    public void testDummy() {
-        assertTrue(true);
+    public void testShouldNotWarnHeaders_whenLayoutTablePresentationRole() {
+        String html = "<table role=\"presentation\"><tr><td>A</td><td>B</td></tr></table>";
+        var highlights = highlight(html, new TableAccessibilityInspection());
+        assertNoHighlightsContaining(highlights, "header cells", "<th>");
+    }
+
+    @Test
+    public void testShouldWarn_whenTablePurposeUnclear() {
+        String html = "<table><tr><td>A</td><td>B</td></tr></table>";
+        var highlights = highlight(html, new TableAccessibilityInspection());
+        assertHighlightsContain(highlights, "Table purpose unclear. Add role='presentation' for layout or proper headers for data tables");
     }
 }

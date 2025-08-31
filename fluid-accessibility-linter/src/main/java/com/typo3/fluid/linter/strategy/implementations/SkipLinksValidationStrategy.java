@@ -2,10 +2,11 @@ package com.typo3.fluid.linter.strategy.implementations;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.xml.XmlTag;
 import com.typo3.fluid.linter.strategy.ValidationResult;
 import com.typo3.fluid.linter.utils.AccessibilityUtils;
+import com.typo3.fluid.linter.parser.PsiElementParser;
+import com.intellij.psi.PsiRecursiveElementVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,19 +21,9 @@ public class SkipLinksValidationStrategy extends BaseValidationStrategy {
     public List<ValidationResult> validate(PsiFile file, String content) {
         List<ValidationResult> results = new ArrayList<>();
         List<XmlTag> anchors = new ArrayList<>();
-
-        file.accept(new PsiRecursiveElementVisitor() {
-            @Override
-            public void visitElement(@org.jetbrains.annotations.NotNull PsiElement element) {
-                if (element instanceof XmlTag) {
-                    XmlTag tag = (XmlTag) element;
-                    if ("a".equalsIgnoreCase(tag.getName())) {
-                        anchors.add(tag);
-                    }
-                }
-                super.visitElement(element);
-            }
-        });
+        for (PsiElement el : PsiElementParser.findElementsByTagName(file, "a")) {
+            if (el instanceof XmlTag) anchors.add((XmlTag) el);
+        }
 
         List<XmlTag> skipLinks = new ArrayList<>();
         for (XmlTag a : anchors) {

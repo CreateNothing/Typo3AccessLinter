@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
@@ -55,9 +56,7 @@ public class AddChildElementFixStrategy implements FixStrategy {
         
         @NotNull
         @Override
-        public String getFamilyName() {
-            return "Add child element";
-        }
+        public String getFamilyName() { return "Structure"; }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
@@ -82,29 +81,26 @@ public class AddChildElementFixStrategy implements FixStrategy {
                 }
             }
             
-            try {
-                // Create a temporary XML file with the child element
-                String childXml = String.format("<%s>%s</%s>", childTagName, childContent, childTagName);
-                PsiFile tempFile = PsiFileFactory.getInstance(project)
-                    .createFileFromText("temp.xml", parentTag.getContainingFile().getFileType(), 
-                        "<root>" + childXml + "</root>");
-                
-                // Find the created child tag in the temporary file
-                XmlTag rootTag = (XmlTag) tempFile.getFirstChild();
-                if (rootTag != null && rootTag.getSubTags().length > 0) {
-                    XmlTag childTag = rootTag.getSubTags()[0];
-                    
-                    // Add as first child to make it accessible immediately
+            String childXml = String.format("<%s>%s</%s>", childTagName, childContent, childTagName);
+            WriteCommandAction.runWriteCommandAction(project, "Add child element", null, () -> {
+                try {
+                    // Create a temporary file with a root wrapper to parse the child tag
+                    String wrapped = "<root>" + childXml + "</root>";
+                    PsiFile temp = PsiFileFactory.getInstance(project)
+                            .createFileFromText("temp.xml", parentTag.getContainingFile().getFileType(), wrapped);
+                    XmlTag root = firstXmlTag(temp);
+                    if (root == null) return;
+                    XmlTag childTag = root.findFirstSubTag(childTagName);
+                    if (childTag == null) return;
                     if (parentTag.getSubTags().length > 0) {
                         parentTag.addBefore(childTag, parentTag.getSubTags()[0]);
                     } else {
                         parentTag.add(childTag);
                     }
+                } catch (Throwable ignored) {
+                    // Best-effort; leave unchanged on parse failure
                 }
-            } catch (Exception e) {
-                // Fallback: add as simple text if XML creation fails
-                // This is a simplified approach - in production, better error handling would be needed
-            }
+            });
         }
         
         private XmlTag findContainingTag(PsiElement element) {
@@ -114,6 +110,17 @@ public class AddChildElementFixStrategy implements FixStrategy {
                     return (XmlTag) current;
                 }
                 current = current.getParent();
+            }
+            return null;
+        }
+
+        private XmlTag firstXmlTag(PsiElement element) {
+            PsiElement cur = element.getFirstChild();
+            while (cur != null) {
+                if (cur instanceof XmlTag) return (XmlTag) cur;
+                XmlTag nested = firstXmlTag(cur);
+                if (nested != null) return nested;
+                cur = cur.getNextSibling();
             }
             return null;
         }

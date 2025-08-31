@@ -355,6 +355,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class AddAriaExpandedFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-expanded attribute";
         }
@@ -366,6 +369,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     }
     
     private static class FixAriaExpandedValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -381,6 +387,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class AddAriaControlsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-controls attribute";
         }
@@ -392,6 +401,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     }
     
     private static class AddButtonRoleFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -407,6 +419,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class AddPanelIdFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add id to accordion panel";
         }
@@ -418,6 +433,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     }
     
     private static class AddAriaLabelledByFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -433,6 +451,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class AddTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add tabindex='0' for keyboard access";
         }
@@ -444,6 +465,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     }
     
     private static class RemoveRedundantAriaFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -668,6 +692,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class AddVisualIndicatorFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add visual state indicator to accordion trigger";
         }
@@ -681,6 +708,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class AddKeyboardSupportFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add keyboard navigation support";
         }
@@ -692,6 +722,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     }
     
     private static class AddFocusManagementFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -713,6 +746,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix heading level to h" + newLevel;
         }
@@ -726,6 +762,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     private static class GroupAccordionsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Wrap related accordions in labeled container";
         }
@@ -737,6 +776,9 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
     }
     
     private static class AddGroupLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

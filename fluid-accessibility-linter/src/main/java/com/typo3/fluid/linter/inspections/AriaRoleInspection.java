@@ -1239,6 +1239,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Include visible text '" + visibleText + "' at the beginning of aria-label";
         }
@@ -1256,6 +1259,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             this.redundantRole = redundantRole;
         }
         
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -1277,6 +1283,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Create missing element with id='" + missingId + "'";
         }
@@ -1288,6 +1297,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     }
     
     private static class RemoveUnnecessaryAriaLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -1307,6 +1319,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             this.invalidAttribute = invalidAttribute;
         }
         
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -1330,6 +1345,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Start aria-label with visible text '" + visibleText + "'";
         }
@@ -1341,6 +1359,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     }
     
     private static class ShortenAriaLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -1356,6 +1377,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     private static class MoveToAriaDescribedbyFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Move instructions to aria-describedby";
         }
@@ -1367,6 +1391,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixAriaHiddenFocusableConflictFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -1382,6 +1409,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     private static class AddAriaExpandedFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-expanded attribute";
         }
@@ -1393,6 +1423,9 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     }
     
     private static class ReviewTranslationFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

@@ -429,6 +429,10 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
     private static class RemoveAriaLabelFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Remove unnecessary aria-label";
         }
@@ -461,6 +465,10 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
     }
     
     private static class AddAriaLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+
         @NotNull
         @Override
         public String getFamilyName() {
@@ -510,6 +518,10 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
     }
     
     private static class ResolveConflictingLabelsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+
         @NotNull
         @Override
         public String getFamilyName() {

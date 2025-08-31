@@ -167,6 +167,9 @@ public class SkipLinksInspection extends FluidAccessibilityInspection {
     private static class AddSkipLinkFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add skip navigation link";
         }
@@ -178,6 +181,9 @@ public class SkipLinksInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddFocusStylesFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

@@ -55,9 +55,7 @@ public class ReplaceTextFixStrategy implements FixStrategy {
         
         @NotNull
         @Override
-        public String getFamilyName() {
-            return "Replace text";
-        }
+        public String getFamilyName() { return "Accessibility"; }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {

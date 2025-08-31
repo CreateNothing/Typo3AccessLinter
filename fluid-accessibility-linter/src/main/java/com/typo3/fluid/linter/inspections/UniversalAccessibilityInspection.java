@@ -62,7 +62,8 @@ public class UniversalAccessibilityInspection extends FluidAccessibilityInspecti
     @Override
     @NotNull
     public String getShortName() {
-        return "FluidUniversalAccessibility";
+        // Must match EP-derived short name (class name without "Inspection")
+        return "UniversalAccessibility";
     }
     
     @Override

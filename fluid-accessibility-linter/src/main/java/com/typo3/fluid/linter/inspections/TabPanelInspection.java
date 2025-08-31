@@ -409,6 +409,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddAriaSelectedFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-selected attribute";
         }
@@ -420,6 +423,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixAriaSelectedValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -435,6 +441,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddAriaControlsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-controls to tab";
         }
@@ -446,6 +455,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddPanelIdFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -461,6 +473,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddAriaLabelledByFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-labelledby to tabpanel";
         }
@@ -472,6 +487,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddTablistLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -487,6 +505,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddTabElementFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add tab element with role='tab'";
         }
@@ -498,6 +519,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixOrientationValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -513,6 +537,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix tabindex value";
         }
@@ -524,6 +551,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddTabPanelTabindexFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -539,6 +569,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixTabPanelTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Change tabpanel tabindex to '0'";
         }
@@ -550,6 +583,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddTabRolesFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -855,6 +891,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddArrowKeyNavigationFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add arrow key navigation to tablist";
         }
@@ -866,6 +905,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddHomeEndKeysFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -881,6 +923,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixSelectedTabIndexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Change selected tab tabindex to '0'";
         }
@@ -892,6 +937,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixInactiveTabIndexFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -907,6 +955,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddFocusManagementHintFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add focus management to tabpanel";
         }
@@ -918,6 +969,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixTabSelectionFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -933,6 +987,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixTabindexConsistencyFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix tabindex consistency in tablist";
         }
@@ -946,6 +1003,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class ShowTabPanelFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Show tabpanel for selected tab";
         }
@@ -957,6 +1017,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class HideTabPanelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

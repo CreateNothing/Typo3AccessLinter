@@ -44,13 +44,13 @@ public class LinkTextValidationStrategy implements ValidationStrategy {
                     ctx.setAttribute("attributeName", "aria-label");
                     com.intellij.codeInspection.LocalQuickFix[] fixes = com.typo3.fluid.linter.fixes.FixRegistry.getInstance()
                             .getFixes(file, link.start, link.end, ctx);
-                    results.add(new ValidationResult(
-                            link.start, link.end,
-                            link.hasIcon ?
-                                    "Icon-only link must have aria-label or meaningful text to be accessible" :
-                                    "Link has no text content and no accessible label",
-                            fixes
-                    ));
+                            results.add(new ValidationResult(
+                                    link.start, link.end,
+                                    link.hasIcon ?
+                                            "Icon-only link should have aria-label or meaningful text to be accessible" :
+                                            "Link has no text content and no accessible label",
+                                    fixes
+                            ));
                 }
             } else {
                 String lowerText = link.linkText.toLowerCase().trim();

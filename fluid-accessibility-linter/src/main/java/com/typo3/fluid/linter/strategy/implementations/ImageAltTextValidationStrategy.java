@@ -6,7 +6,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlTag;
 import com.typo3.fluid.linter.fixes.FixContext;
 import com.typo3.fluid.linter.fixes.FixRegistry;
-import com.typo3.fluid.linter.parser.FluidPsiUtils;
+import com.typo3.fluid.linter.parser.PsiElementParser;
 import com.typo3.fluid.linter.strategy.ValidationResult;
 import com.typo3.fluid.linter.strategy.ValidationStrategy;
 
@@ -23,8 +23,10 @@ public class ImageAltTextValidationStrategy implements ValidationStrategy {
         List<ValidationResult> results = new ArrayList<>();
 
         // HTML <img>
-        for (XmlTag img : com.typo3.fluid.linter.parser.FluidPsiUtils.findTagsByName(file, "img")) {
-            results.addAll(checkOneImageTag(file, img));
+        for (PsiElement el : PsiElementParser.findElementsByTagName(file, "img")) {
+            if (el instanceof XmlTag) {
+                results.addAll(checkOneImageTag(file, (XmlTag) el));
+            }
         }
 
         // Fluid f:image
@@ -69,7 +71,7 @@ public class ImageAltTextValidationStrategy implements ValidationStrategy {
         if (alt != null) {
             String trimmed = alt.trim();
             if (trimmed.isEmpty()) {
-                out.add(new ValidationResult(start, end, "Alt attribute should not be empty (use role='presentation' for decorative images)"));
+                out.add(new ValidationResult(start, end, "Alt attribute must not be empty (use role='presentation' for decorative images)"));
             } else if (isLowQualityAltText(trimmed)) {
                 out.add(new ValidationResult(start, end, "Alt text appears to be low quality: " + trimmed));
             }

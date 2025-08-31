@@ -1,25 +1,34 @@
 package com.typo3.fluid.linter.inspections;
 
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Test;
 
-/**
- * Test for {@link RadioGroupFieldsetInspection}.
- */
-public class RadioGroupFieldsetInspectionTest extends LightJavaCodeInsightFixtureTestCase {
+public class RadioGroupFieldsetInspectionTest extends BaseInspectionTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData";
+    @Test
+    public void testShouldError_whenRadioGroupNotInFieldset() {
+        String html = "<input type=\"radio\" name=\"opt\"> <input type=\"radio\" name=\"opt\">";
+        var highlights = highlight(html, new RadioGroupFieldsetInspection());
+        assertHighlightsContain(highlights, "Radio button group 'opt' should be wrapped in <fieldset> with <legend>");
     }
 
     @Test
-    public void testDummy() {
-        assertTrue(true);
+    public void testShouldWarn_whenCheckboxGroupNotInFieldset() {
+        String html = "<input type=\"checkbox\"> <input type=\"checkbox\"> <input type=\"checkbox\">";
+        var highlights = highlight(html, new RadioGroupFieldsetInspection());
+        assertHighlightsContain(highlights, "Related checkboxes should be grouped in <fieldset> with <legend>");
+    }
+
+    @Test
+    public void testShouldError_whenFieldsetMissingLegend() {
+        String html = "<fieldset><input type=\"radio\" name=\"a\"></fieldset>";
+        var highlights = highlight(html, new RadioGroupFieldsetInspection());
+        assertHighlightsContain(highlights, "Fieldset missing <legend> element");
+    }
+
+    @Test
+    public void testShouldError_whenLegendIsEmpty() {
+        String html = "<fieldset><legend> </legend><input type=\"radio\" name=\"a\"></fieldset>";
+        var highlights = highlight(html, new RadioGroupFieldsetInspection());
+        assertHighlightsContain(highlights, "Legend element is empty");
     }
 }
