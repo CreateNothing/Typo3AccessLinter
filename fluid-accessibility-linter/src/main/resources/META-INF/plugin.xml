@@ -1,28 +1,22 @@
 <idea-plugin>
     <id>com.typo3.fluid.accessibility-linter</id>
     <name>Fluid Accessibility Linter</name>
-    <vendor>TYPO3 Community</vendor>
-    <version>1.4.0</version>
+    <vendor email="inboxstuff@proton.me">CreateNothing</vendor>
+    <version>0.5.1</version>
     
     <description><![CDATA[
-        Advanced accessibility linter for TYPO3 Fluid templates with context-aware intelligence.
-        Provides sophisticated real-time accessibility checks including:
+        A fast, context‑aware accessibility linter for TYPO3 Fluid templates in PhpStorm and other IntelliJ‑based IDEs. It flags issues as you type and offers focused quick‑fixes that align with WCAG and ARIA best practices.
+        <br/><br/>
+        <b>Key features</b>
         <ul>
-            <li><b>Image Accessibility:</b> Context-aware alt text validation, decorative image detection, SVG support</li>
-            <li><b>Smart Link Analysis:</b> Context-sensitive link text validation with surrounding content analysis</li>
-            <li><b>Advanced Form Validation:</b> Fieldset grouping, placeholder anti-patterns, required field consistency</li>
-            <li><b>Intelligent Heading Structure:</b> HTML5 sectioning awareness, Fluid layout understanding</li>
-            <li><b>Table Classification:</b> Automatic layout vs data table detection with appropriate validation</li>
-            <li><b>ARIA Intelligence:</b> Implicit role detection, context-appropriate validation, unnecessary aria-label detection</li>
-            <li><b>Navigation Optimization:</b> Skip link target validation, landmark redundancy detection</li>
-            <li><b>Interactive Components:</b> Modal focus management, accordion state tracking, tab keyboard navigation</li>
-            <li><b>Live Region Management:</b> Content prioritization, competing region detection</li>
-            <li><b>Multilingual Support:</b> Language attribute consistency, content language detection</li>
-            <li><b>List Semantics:</b> Content-aware ordered vs unordered validation</li>
-            <li><b>Radio/Checkbox Groups:</b> Intelligent grouping detection and validation</li>
+            <li><b>Real‑time inspections:</b> images (alt text, decorative/SVG), links (meaningful text), forms (labels, required/state), headings (hierarchy & sectioning), tables (data vs layout, header scope), landmarks & navigation (skip links, redundancy), ARIA roles/attributes (implicit roles, misuse), interactive UI (modals, accordions, tabs), live regions, language attributes, list semantics, and radio/checkbox groups.</li>
+            <li><b>Fluid‑aware analysis:</b> understands common TYPO3/Fluid patterns embedded in HTML templates.</li>
+            <li><b>One‑click quick‑fixes:</b> add missing labels/attributes, generate table scaffolds, adjust heading levels, mark decorative images, and more.</li>
+            <li><b>Configurable rules:</b> sensible defaults with options under <i>Settings | Tools | Fluid Accessibility</i>.</li>
+            <li><b>Compatible:</b> tested with PhpStorm and IntelliJ IDEA 2023.3 and newer.</li>
         </ul>
         <br/>
-        <b>Version 1.4.0:</b> All inspections enhanced with context-aware intelligence and sophisticated validation logic.
+        Built and maintained by CreateNothing for the TYPO3 community. Not affiliated with or endorsed by the TYPO3 Association.
     ]]></description>
     
     <depends>com.intellij.modules.platform</depends>

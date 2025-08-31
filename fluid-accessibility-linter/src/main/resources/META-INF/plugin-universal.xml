@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.typo3.fluid.accessibility-linter</id>
     <name>Fluid Accessibility Linter</name>
-    <vendor>TYPO3 Community</vendor>
+    <vendor email="inboxstuff@proton.me">CreateNothing</vendor>
     <version>2.0.0</version>
     
     <description><![CDATA[
