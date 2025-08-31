@@ -213,7 +213,7 @@ public class RadioGroupFieldsetInspection extends FluidAccessibilityInspection {
                     // Report problem at first radio button
                     Integer firstOffset = entry.getValue().get(0);
                     registerProblem(file, holder, firstOffset,
-                        String.format("Radio button group '%s' should be wrapped in <fieldset> with <legend>",
+                        String.format("Group related options ('%s') in a <fieldset> with a <legend> so the question is read with each option",
                             entry.getKey()),
                         ProblemHighlightType.ERROR,
                         new WrapInFieldsetQuickFix("radio", entry.getKey()));
@@ -284,7 +284,7 @@ public class RadioGroupFieldsetInspection extends FluidAccessibilityInspection {
             if (!inFieldset) {
                 // Report as warning (not error) since checkbox groups are less strict
                 registerProblem(file, holder, group.offsets.get(0),
-                    "Related checkboxes should be grouped in <fieldset> with <legend>",
+                    "Group related checkboxes in a <fieldset> with a <legend> so the purpose is announced",
                     ProblemHighlightType.WARNING,
                     new WrapInFieldsetQuickFix("checkbox", null));
             }
@@ -302,7 +302,7 @@ public class RadioGroupFieldsetInspection extends FluidAccessibilityInspection {
             Matcher legendMatcher = LEGEND_PATTERN.matcher(fieldsetContent);
             if (!legendMatcher.find()) {
                 registerProblem(file, holder, offset,
-                    "Fieldset missing <legend> element",
+                    "Add a <legend> to this fieldset to label the group",
                     ProblemHighlightType.ERROR,
                     new AddLegendQuickFix());
             } else {
@@ -316,7 +316,7 @@ public class RadioGroupFieldsetInspection extends FluidAccessibilityInspection {
                 
                 if (!afterFieldsetTag.startsWith("<legend")) {
                     registerProblem(file, holder, offset + legendStart,
-                        "Legend should be the first child of fieldset",
+                        "Place the <legend> first inside the <fieldset> so it’s read as the group label",
                         ProblemHighlightType.WARNING,
                         null);
                 }

@@ -85,7 +85,7 @@ public class SkipLinksInspection extends FluidAccessibilityInspection {
             
             if (hasNav && hasMain) {
                 registerProblem(holder, file, 0, 100,
-                    "Page with navigation should have skip navigation links for keyboard users",
+                    "Add a 'Skip to content' link near the top so keyboard users can bypass the menu",
                     new AddSkipLinkFix());
             }
         }
@@ -114,7 +114,7 @@ public class SkipLinksInspection extends FluidAccessibilityInspection {
             
             if (!targetId.matches("(?i)(main|content|navigation|nav|search).*")) {
                 registerProblem(holder, file, skipMatcher.start(), skipMatcher.end(),
-                    "Skip link target ID '" + targetId + "' is not descriptive. Use IDs like 'main-content', 'navigation', etc.",
+                    "Make the skip link target more descriptive, like id='main' or id='main-content'",
                     null);
             }
         }
@@ -136,7 +136,7 @@ public class SkipLinksInspection extends FluidAccessibilityInspection {
             
             if (!hasFocusStyles && (classes.contains("sr-only") || classes.contains("visually-hidden"))) {
                 registerProblem(holder, file, hiddenMatcher.start(), hiddenMatcher.end(),
-                    "Skip link with class '" + classes + "' should become visible on focus",
+                    "Visually hidden skip link should become visible when focused",
                     new AddFocusStylesFix());
             }
         }
@@ -159,7 +159,7 @@ public class SkipLinksInspection extends FluidAccessibilityInspection {
                     
                     if (!SKIP_LINK_PATTERN.matcher(afterBody).find()) {
                         registerProblem(holder, file, firstFocusableMatcher.start(), firstFocusableMatcher.end(),
-                            "Skip links should be the first focusable element in the page",
+                            "Place the 'Skip to content' link first in the tab order",
                             null);
                     }
                 }

@@ -9,8 +9,8 @@ public class TabPanelInspectionTest extends BaseInspectionTest {
         String html = "<div role=\"tablist\"></div>";
         var highlights = highlight(html, new TabPanelInspection());
         assertHighlightsContain(highlights,
-                "Tablist should have aria-label or aria-labelledby for context",
-                "Tablist must contain at least one element with role='tab'");
+                "Give the tablist a short label",
+                "Ensure the tablist contains at least one element with role='tab'");
     }
 
     @Test
@@ -18,8 +18,8 @@ public class TabPanelInspectionTest extends BaseInspectionTest {
         String html = "<div role=\"tab\">Tab</div>";
         var highlights = highlight(html, new TabPanelInspection());
         assertHighlightsContain(highlights,
-                "Tab must have aria-selected attribute",
-                "Tab should have aria-controls pointing to its tabpanel");
+                "Add aria-selected to the tab",
+                "Add aria-controls on the tab pointing to its tabpanel");
     }
 
     @Test
@@ -27,15 +27,15 @@ public class TabPanelInspectionTest extends BaseInspectionTest {
         String html = "<div role=\"tabpanel\"></div>";
         var highlights = highlight(html, new TabPanelInspection());
         assertHighlightsContain(highlights,
-                "Tabpanel must have an id for aria-controls reference",
-                "Tabpanel should have aria-labelledby pointing to its tab",
-                "Tabpanel should have tabindex='0' for keyboard accessibility");
+                "Add an id to the tabpanel",
+                "Add aria-labelledby on the tabpanel pointing to its tab",
+                "Make the tab panel focusable (tabindex='0')");
     }
 
     @Test
     public void testShouldWarn_whenMultipleTabsSelected() {
         String html = "<div role=\"tab\" aria-selected=\"true\"></div><div role=\"tab\" aria-selected=\"true\"></div>";
         var highlights = highlight(html, new TabPanelInspection());
-        assertHighlightsContain(highlights, "Only one tab should have aria-selected='true'");
+        assertHighlightsContain(highlights, "Have only one tab with aria-selected='true'");
     }
 }

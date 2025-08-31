@@ -1,0 +1,42 @@
+<html>
+  <body>
+    <h2>Heading hierarchy</h2>
+
+    <p>
+      This inspection highlights skipped heading levels, multiple H1s in the
+      same context, empty headings, and navigation headings that may crowd out
+      the main page heading.
+    </p>
+
+    <h3>Why this matters</h3>
+    <p>
+      Headings convey the outline of a page. Assistive technologies use them to
+      jump and scan. Large jumps or empty headings make navigation harder.
+    </p>
+    
+    <h3>What’s checked</h3>
+    <ul>
+      <li>Multiple H1s in main content vs. sectioning contexts.</li>
+      <li>Skipped levels (e.g., H2 → H5) with context awareness.</li>
+      <li>Empty headings.</li>
+      <li>Navigation headings that should be lower level or expressed via <code>aria-label</code> on <code>&lt;nav&gt;</code>.</li>
+    </ul>
+
+    <h3>Quick‑fixes</h3>
+    <ul>
+      <li>Change heading level (e.g., H5 → H3).</li>
+      <li>Add placeholder text to empty headings.</li>
+      <li>(Planned) Normalize large jumps automatically (reduce to at most +1).</li>
+      <li>(Planned) Promote orphan subheadings at the start of a region.</li>
+    </ul>
+
+    <h3>Examples</h3>
+    <p><strong>Problem</strong> — large jump:</p>
+    <pre>&lt;h2&gt;Section&lt;/h2&gt;
+&lt;h5&gt;Detail&lt;/h5&gt;</pre>
+    <p><strong>Fix</strong> — normalize:</p>
+    <pre>&lt;h2&gt;Section&lt;/h2&gt;
+&lt;h3&gt;Detail&lt;/h3&gt;</pre>
+  </body>
+</html>
+

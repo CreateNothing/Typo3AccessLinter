@@ -166,7 +166,7 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
             if (!idMatcher.find()) {
                 registerProblem(holder, file, baseOffset + panelMatcher.start(), 
                     baseOffset + panelMatcher.end(),
-                    "Accordion panel should have an id for aria-controls reference",
+                    "Add an id to the accordion panel so aria-controls can reference it",
                     new AddPanelIdFix());
             } else {
                 panelIds.add(idMatcher.group(1));
@@ -177,7 +177,7 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
                 if (!ARIA_LABELLEDBY_PATTERN.matcher(panelTag).find()) {
                     registerProblem(holder, file, baseOffset + panelMatcher.start(),
                         baseOffset + panelMatcher.end(),
-                        "Accordion panel with role='region' should have aria-labelledby",
+                        "If the panel uses role='region', add aria-labelledby",
                         new AddAriaLabelledByFix());
                 }
             }
@@ -190,13 +190,13 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         if (!expandedMatcher.find()) {
             registerProblem(holder, file, start, end,
-                "Accordion button must have aria-expanded attribute",
+                "Add aria-expanded to the accordion trigger",
                 new AddAriaExpandedFix());
         } else {
             String value = expandedMatcher.group(1);
             if (!"true".equals(value) && !"false".equals(value)) {
                 registerProblem(holder, file, start, end,
-                    "aria-expanded must be 'true' or 'false', not '" + value + "'",
+                    "Use 'true' or 'false' for aria-expanded, not '" + value + "'",
                     new FixAriaExpandedValueFix());
             }
         }
@@ -208,7 +208,7 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
         
         if (!controlsMatcher.find()) {
             registerProblem(holder, file, start, end,
-                "Accordion button should have aria-controls pointing to panel id",
+                "Add aria-controls on the trigger pointing to the panel id",
                 new AddAriaControlsFix());
         } else {
             String controlsId = controlsMatcher.group(1);
@@ -237,13 +237,13 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
             // Check if it's a link being used as button
             if (buttonTag.toLowerCase().startsWith("<a")) {
                 registerProblem(holder, file, start, end,
-                    "Links used as accordion triggers should have role='button'",
+                    "If using a link as a trigger, add role='button' (or use a button)",
                     new AddButtonRoleFix());
                 
                 // Check for href="#" which is problematic
                 if (buttonTag.contains("href=\"#\"") || buttonTag.contains("href='#'")) {
                     registerProblem(holder, file, start, end,
-                        "Accordion trigger should not use href='#'. Use a button element instead",
+                        "Avoid href='#' on accordion triggers; use a button instead",
                         null);
                 }
             }
@@ -254,7 +254,7 @@ public class AccordionAccessibilityInspection extends FluidAccessibilityInspecti
             Matcher tabindexMatcher = TABINDEX_PATTERN.matcher(buttonTag);
             if (!tabindexMatcher.find()) {
                 registerProblem(holder, file, start, end,
-                    "Non-button accordion trigger should have tabindex='0' for keyboard access",
+                    "Make non-button triggers focusable (add tabindex='0')",
                     new AddTabindexFix());
             }
         }

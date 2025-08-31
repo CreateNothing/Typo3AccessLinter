@@ -1,0 +1,71 @@
+<html>
+  <body>
+    <h2>ARIA roles and accessible names</h2>
+
+    <p>
+      This inspection validates ARIA roles and common accessible-name patterns
+      and offers safe auto‑fixes. It helps keep visible labels and programmatic
+      names in sync so assistive tech and voice control users can operate UI
+      reliably.
+    </p>
+
+    <h3>Why this matters</h3>
+    <p>
+      If you’ve never heard of WCAG: think “say what you see.” When a button or
+      link has visible words (like “Google”), assistive tools should expose the
+      same words so people can speak or find them. If <code>aria-label</code>
+      changes the words (e.g., “Going to School”), voice control and some screen
+      reader flows won’t match what’s on screen.
+    </p>
+    <p>
+      The guideline behind this is WCAG 2.5.3 “Label in Name.” In plain terms:
+      the programmatic name (e.g., <code>aria-label</code>) must include the
+      visible label (ideally at the beginning).
+    </p>
+
+    <h3>What’s checked</h3>
+    <ul>
+      <li>Invalid/abstract or redundant ARIA roles.</li>
+      <li>Required ARIA properties for specific roles.</li>
+      <li>Conflicts (e.g., <code>aria-hidden</code> on focusable/interactive elements).</li>
+      <li>Accessible name best practices for links and buttons (Label‑in‑Name).</li>
+      <li>Unnecessary or overly long <code>aria-label</code> values, and instructional text that belongs in <code>aria-describedby</code>.</li>
+      <li><code>aria-labelledby</code> references to missing element IDs.</li>
+    </ul>
+
+    <h3>Clear guidance for “Label in Name”</h3>
+    <p>
+      If the warning says “Accessible name should include the visible label,” it
+      means your <code>aria-label</code> doesn’t start with the visible text.
+      Fix by starting the label with the visible words, or remove
+      <code>aria-label</code> entirely so the visible text is used.
+    </p>
+
+    <h4>Examples</h4>
+    <p><strong>Problem</strong> — accessible name doesn’t include the visible label:</p>
+    <pre>&lt;a href="https://example.com" aria-label="Go to Example"&gt;Example&lt;/a&gt;</pre>
+    <p><strong>Better</strong> — start with the visible label (simple rule: say what you see first):</p>
+    <pre>&lt;a href="https://example.com" aria-label="Example — company site"&gt;Example&lt;/a&gt;</pre>
+    <p><strong>Also good</strong> — keep <code>aria-label</code> short and move details to <code>aria-describedby</code>:</p>
+    <pre>
+&lt;span id="ex-desc" class="sr-only"&gt;company site&lt;/span&gt;
+&lt;a href="https://example.com" aria-describedby="ex-desc"&gt;Example&lt;/a&gt;
+    </pre>
+
+    <h3>Quick‑fixes offered</h3>
+    <ul>
+      <li>Remove redundant role words from <code>aria-label</code> (e.g., “button”, “link”).</li>
+      <li>Remove unnecessary <code>aria-label</code> that duplicates visible text.</li>
+      <li>Shorten overly long <code>aria-label</code> and add <code>aria-describedby</code> for details.</li>
+      <li>Prepend visible text to <code>aria-label</code> to satisfy “Label in Name”.</li>
+      <li>(Planned) Create missing IDs for <code>aria-labelledby</code> references.</li>
+    </ul>
+
+    <h3>References</h3>
+    <ul>
+      <li>WCAG 2.5.3: Label in Name</li>
+      <li>WAI‑ARIA Authoring Practices</li>
+    </ul>
+  </body>
+  
+</html>

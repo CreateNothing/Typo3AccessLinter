@@ -24,7 +24,7 @@ public class ListSemanticInspectionTest extends BaseInspectionTest {
     public void testShouldWarn_whenEmptyListItem() {
         String html = "<ul><li></li></ul>";
         var highlights = highlight(html, new ListSemanticInspection());
-        assertHighlightsContain(highlights, "Empty list item found. List items should contain meaningful content");
+        assertHighlightsContain(highlights, "Remove empty list items; each <li> should have content");
     }
 
     @Test

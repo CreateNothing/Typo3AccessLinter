@@ -125,13 +125,13 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
 
             if (navCount > 1 && (label == null || label.trim().isEmpty())) {
                 registerProblem(holder, file, navMatcher.start(), navMatcher.end(),
-                    "Multiple <nav> elements should have unique aria-label or aria-labelledby attributes",
+                    "Give each navigation area a unique label (e.g., aria-label)",
                     new AddNavigationLabelFix());
             } else if (label != null) {
                 String key = label.trim();
                 if (!navLabels.add(key)) {
                     registerProblem(holder, file, navMatcher.start(), navMatcher.end(),
-                        "Duplicate navigation label '" + label + "'. Each navigation should have a unique label",
+                        "Duplicate navigation label '" + label + "'. Give each navigation area a unique label",
                         null);
                 }
             }
@@ -182,7 +182,7 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
         
         if (!hasMain && content.length() > 500) {
             registerProblem(holder, file, 0, 100,
-                "Page should have a <main> landmark for primary content",
+                "Add a <main> landmark for primary content",
                 new AddMainLandmarkFix());
         }
         
@@ -197,7 +197,7 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
         }
         if (mainCount > 1) {
             registerProblem(holder, file, 0, 100,
-                "Page should have only one <main> landmark",
+                "Use only one <main> landmark per page",
                 null);
         }
     }
@@ -215,7 +215,7 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
                 int linkCount = countOccurrences(navContent, "<a ") + countOccurrences(navContent, "<f:link");
                 if (linkCount > 3) {
                     registerProblem(holder, file, navMatcher.start(), navMatcher.end(),
-                        "Navigation with multiple links should use a list structure (<ul> or <ol>)",
+                        "Wrap multiple navigation links in a list (<ul> or <ol>)",
                         null);
                 }
             }

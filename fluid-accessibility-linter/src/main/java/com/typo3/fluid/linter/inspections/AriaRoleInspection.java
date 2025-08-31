@@ -1106,7 +1106,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
                 !visibleText.toLowerCase().contains(ariaLabel.toLowerCase())) {
                 
                 registerProblem(holder, file, matcher.start(), matcher.end(),
-                    "WCAG 2.5.3: aria-label should include the visible text '" + visibleText + "' at the beginning",
+                    "Accessible name should include the visible label. Start aria-label with '" + visibleText + "' or remove aria-label so the visible text is used.",
                     new IncludeVisibleTextInAriaLabelFix(visibleText, ariaLabel));
             }
             
@@ -1226,7 +1226,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
                     Math.min(visibleText.length(), ariaLabel.length())))) {
                     
                     registerProblem(holder, file, matcher.start(), matcher.end(),
-                        "WCAG 2.5.3 violation: aria-label should start with the visible text '" + visibleText + "'",
+                        "Accessible name should include the visible label. Start aria-label with '" + visibleText + "' or remove aria-label so the visible text is used.",
                         new FixAriaLabelOrderFix(visibleText, ariaLabel));
                 }
             }
@@ -1397,7 +1397,47 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would prepend visible text to aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+
+            PsiFile file = element.getContainingFile();
+            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+            if (document == null) return;
+
+            String content = file.getText();
+            int offset = element.getTextRange().getStartOffset();
+            int tagStart = content.lastIndexOf('<', offset);
+            int tagEnd = content.indexOf('>', offset);
+            if (tagStart < 0 || tagEnd < 0) return;
+
+            String tag = content.substring(tagStart, tagEnd + 1);
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("(aria-label\\s*=\\s*[\\\"'])([^\\\"']*)([\\\"'])", java.util.regex.Pattern.CASE_INSENSITIVE);
+            java.util.regex.Matcher m = p.matcher(tag);
+            if (!m.find()) return;
+
+            String current = m.group(2);
+            String vt = visibleText == null ? "" : visibleText.trim();
+            if (vt.isEmpty()) return;
+
+            // If it already starts with the visible text (case-insensitive), do nothing
+            if (current.regionMatches(true, 0, vt, 0, Math.min(current.length(), vt.length()))) {
+                return;
+            }
+
+            String sep = " — ";
+            String newValue = vt + (current.isEmpty() ? "" : sep + current);
+            String updatedTag = tag.substring(0, m.start(2)) + newValue + tag.substring(m.end(2));
+
+            final String finalTag = updatedTag.replaceAll("\\s+>", ">");
+            StringBuilder sb = new StringBuilder(content);
+            String result = sb.replace(tagStart, tagEnd + 1, finalTag).toString();
+            final String resultText = result;
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+                if (doc != null) {
+                    doc.replaceString(0, doc.getTextLength(), resultText);
+                }
+            });
         }
     }
     
@@ -1560,7 +1600,47 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Minimal no-op to avoid risky content rewrites for now
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+
+            PsiFile file = element.getContainingFile();
+            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+            if (document == null) return;
+
+            String content = file.getText();
+            int offset = element.getTextRange().getStartOffset();
+            int tagStart = content.lastIndexOf('<', offset);
+            int tagEnd = content.indexOf('>', offset);
+            if (tagStart < 0 || tagEnd < 0) return;
+
+            String tag = content.substring(tagStart, tagEnd + 1);
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("(aria-label\\s*=\\s*[\\\"'])([^\\\"']*)([\\\"'])", java.util.regex.Pattern.CASE_INSENSITIVE);
+            java.util.regex.Matcher m = p.matcher(tag);
+            if (!m.find()) return;
+
+            String current = m.group(2);
+            String vt = visibleText == null ? "" : visibleText.trim();
+            if (vt.isEmpty()) return;
+
+            // If it already starts with the visible text (case-insensitive), do nothing
+            if (current.regionMatches(true, 0, vt, 0, Math.min(current.length(), vt.length()))) {
+                return;
+            }
+
+            String sep = " — ";
+            String newValue = vt + (current.isEmpty() ? "" : sep + current);
+            String updatedTag = tag.substring(0, m.start(2)) + newValue + tag.substring(m.end(2));
+
+            final String finalTag = updatedTag.replaceAll("\\s+>", ">");
+            StringBuilder sb = new StringBuilder(content);
+            String result = sb.replace(tagStart, tagEnd + 1, finalTag).toString();
+            final String resultText = result;
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+                if (doc != null) {
+                    doc.replaceString(0, doc.getTextLength(), resultText);
+                }
+            });
         }
     }
     

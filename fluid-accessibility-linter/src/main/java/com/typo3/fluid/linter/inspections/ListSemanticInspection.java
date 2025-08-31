@@ -202,7 +202,7 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
             String match = nestedMatcher.group(0);
             if (!match.trim().endsWith("</li>")) {
                 registerProblem(holder, file, nestedMatcher.start(), nestedMatcher.end(),
-                    "Nested list should be inside a list item <li>",
+                    "Put nested lists inside a list item (<li>)",
                     null);
             }
         }
@@ -215,7 +215,7 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         Matcher improperMatcher = improperNestingPattern.matcher(content);
         while (improperMatcher.find()) {
             registerProblem(holder, file, improperMatcher.start(), improperMatcher.end(),
-                "Lists should not be siblings. Nest the second list inside a list item",
+                "Avoid side‑by‑side lists; nest the second list inside a list item",
                 null);
         }
     }
@@ -225,14 +225,14 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         
         while (emptyMatcher.find()) {
             registerProblem(holder, file, emptyMatcher.start(), emptyMatcher.end(),
-                "Empty list item found. List items should contain meaningful content",
+                "Remove empty list items; each <li> should have content",
                 new RemoveEmptyListItemFix());
         }
         
         Matcher dividerMatcher = DIVIDER_PATTERN.matcher(content);
         while (dividerMatcher.find()) {
             registerProblem(holder, file, dividerMatcher.start(), dividerMatcher.end(),
-                "List items used as visual dividers should be replaced with CSS styling",
+                "Don’t use list items as visual dividers; use CSS instead",
                 null);
         }
     }
@@ -508,7 +508,7 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
                 
                 if (!beforeList.contains("<nav") && !beforeList.contains("role=\"navigation\"")) {
                     registerProblem(holder, file, navMatcher.start(), navMatcher.start() + 100,
-                        "Navigation list should be wrapped in <nav> element or have role='navigation'",
+                        "Wrap navigation lists in <nav> (or add role='navigation')",
                         new AddNavigationLandmarkFix());
                 }
                 
@@ -535,7 +535,7 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
             
             if (!listTag.contains("aria-label") && !listTag.contains("aria-labelledby")) {
                 registerProblem(holder, file, breadcrumbMatcher.start(), breadcrumbMatcher.start() + 100,
-                    "Breadcrumb navigation should have aria-label='Breadcrumb' or similar for context",
+                    "Add a short label to the breadcrumb (e.g., aria-label='Breadcrumb')",
                     new AddBreadcrumbLabelFix());
             }
             

@@ -46,7 +46,7 @@ public class NavigationLandmarkInspectionTest extends LightJavaCodeInsightFixtur
             <nav><a href="/b">B</a></nav>
             <main>Main</main>
             """;
-        doTest(html, "Multiple <nav> elements should have unique aria-label or aria-labelledby attributes");
+        doTest(html, "Give each navigation area a unique label");
     }
 
     @Test
@@ -69,13 +69,13 @@ public class NavigationLandmarkInspectionTest extends LightJavaCodeInsightFixtur
         StringBuilder sb = new StringBuilder("<header>Header</header><nav>Menu</nav><div>");
         while (sb.length() < 600) sb.append("content ");
         sb.append("</div>");
-        doTest(sb.toString(), "Page should have a <main> landmark for primary content");
+        doTest(sb.toString(), "Add a <main> landmark for primary content");
     }
 
     @Test
     public void testMultipleMainLandmarks() {
         String html = "<main>One</main><div>content</div><main>Two</main>";
-        doTest(html, "Page should have only one <main> landmark");
+        doTest(html, "Use only one <main> landmark per page");
     }
 
     @Test
@@ -88,7 +88,7 @@ public class NavigationLandmarkInspectionTest extends LightJavaCodeInsightFixtur
                 <a href="/d">D</a>
             </nav>
             """;
-        doTest(html, "Navigation with multiple links should use a list structure");
+        doTest(html, "Wrap multiple navigation links in a list");
     }
 
     @Test
@@ -101,7 +101,7 @@ public class NavigationLandmarkInspectionTest extends LightJavaCodeInsightFixtur
                 <f:link.action action="d">D</f:link.action>
             </nav>
             """;
-        doTest(html, "Navigation with multiple links should use a list structure");
+        doTest(html, "Wrap multiple navigation links in a list");
     }
 
     @Test

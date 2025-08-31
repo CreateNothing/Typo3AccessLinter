@@ -141,7 +141,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher selectedMatcher = ARIA_SELECTED_PATTERN.matcher(tabTag);
             if (!selectedMatcher.find()) {
                 registerProblem(holder, file, tabStart, tabEnd,
-                    "Tab must have aria-selected attribute",
+                    "Add aria-selected to the tab",
                     new AddAriaSelectedFix());
             } else {
                 String value = selectedMatcher.group(1);
@@ -150,7 +150,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                 }
                 if (!"true".equals(value) && !"false".equals(value)) {
                     registerProblem(holder, file, tabStart, tabEnd,
-                        "aria-selected must be 'true' or 'false', not '" + value + "'",
+                        "Use 'true' or 'false' for aria-selected, not '" + value + "'",
                         new FixAriaSelectedValueFix());
                 }
             }
@@ -159,7 +159,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher controlsMatcher = ARIA_CONTROLS_PATTERN.matcher(tabTag);
             if (!controlsMatcher.find()) {
                 registerProblem(holder, file, tabStart, tabEnd,
-                    "Tab should have aria-controls pointing to its tabpanel",
+                    "Add aria-controls on the tab pointing to its tabpanel",
                     new AddAriaControlsFix());
             } else {
                 controlledPanels.add(controlsMatcher.group(1));
@@ -178,7 +178,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         // Check that only one tab is selected
         if (selectedCount > 1) {
             registerProblem(holder, file, 0, 100,
-                "Only one tab should have aria-selected='true' at a time",
+                "Have only one tab with aria-selected='true' at a time",
                 null);
         }
     }
@@ -196,7 +196,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher idMatcher = ID_PATTERN.matcher(panelTag);
             if (!idMatcher.find()) {
                 registerProblem(holder, file, panelStart, panelEnd,
-                    "Tabpanel must have an id for aria-controls reference",
+                    "Add an id to the tabpanel so tabs can reference it (aria-controls)",
                     new AddPanelIdFix());
             } else {
                 panelIds.add(idMatcher.group(1));
@@ -206,7 +206,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher labelledbyMatcher = ARIA_LABELLEDBY_PATTERN.matcher(panelTag);
             if (!labelledbyMatcher.find()) {
                 registerProblem(holder, file, panelStart, panelEnd,
-                    "Tabpanel should have aria-labelledby pointing to its tab",
+                    "Add aria-labelledby on the tabpanel pointing to its tab",
                     new AddAriaLabelledByFix());
             }
             
@@ -222,7 +222,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         if (!hasLabel && !hasLabelledBy) {
             registerProblem(holder, file, start, end,
-                "Tablist should have aria-label or aria-labelledby for context",
+                "Give the tablist a short label (aria-label or aria-labelledby) for context",
                 new AddTablistLabelFix());
         }
     }
@@ -233,7 +233,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         if (!tabMatcher.find()) {
             registerProblem(holder, file, baseOffset, baseOffset + Math.min(100, tablistContent.length()),
-                "Tablist must contain at least one element with role='tab'",
+                "Ensure the tablist contains at least one element with role='tab'",
                 new AddTabElementFix());
         }
     }
@@ -246,7 +246,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             String value = orientationMatcher.group(1);
             if (!"horizontal".equals(value) && !"vertical".equals(value)) {
                 registerProblem(holder, file, start, end,
-                    "aria-orientation must be 'horizontal' or 'vertical', not '" + value + "'",
+                    "Use 'horizontal' or 'vertical' for aria-orientation, not '" + value + "'",
                     new FixOrientationValueFix());
             }
         }
@@ -263,7 +263,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                 int tabindex = Integer.parseInt(value);
                 if (tabindex > 0) {
                     registerProblem(holder, file, start, end,
-                        "Tabs should use tabindex='0' or '-1', not positive values",
+                        "Use tabindex='0' or '-1' on tabs; avoid positive values",
                         new FixTabindexFix());
                 }
             } catch (NumberFormatException e) {
@@ -280,13 +280,13 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         if (!tabindexMatcher.find()) {
             registerProblem(holder, file, start, end,
-                "Tabpanel should have tabindex='0' for keyboard accessibility",
+                "Make the tab panel focusable (tabindex='0')",
                 new AddTabPanelTabindexFix());
         } else {
             String value = tabindexMatcher.group(1);
             if (!"0".equals(value)) {
                 registerProblem(holder, file, start, end,
-                    "Tabpanel should have tabindex='0', not '" + value + "'",
+                    "Use tabindex='0' on the tab panel, not '" + value + "'",
                     new FixTabPanelTabindexFix());
             }
         }
@@ -841,7 +841,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                     Matcher selectedMatcher = ARIA_SELECTED_PATTERN.matcher(tabTag);
                     if (selectedMatcher.find() && "true".equals(selectedMatcher.group(1))) {
                         registerProblem(holder, file, tabStart, tabMatcher.end(),
-                            "Selected tab (aria-selected='true') should have tabindex='0', not '-1'",
+                            "Give the selected tab (aria-selected='true') tabindex='0', not '-1'",
                             new FixSelectedTabIndexFix());
                     }
                 } else if ("0".equals(tabindex)) {
@@ -849,7 +849,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                     Matcher selectedMatcher = ARIA_SELECTED_PATTERN.matcher(tabTag);
                     if (!selectedMatcher.find() || !"true".equals(selectedMatcher.group(1))) {
                         registerProblem(holder, file, tabStart, tabMatcher.end(),
-                            "Only the selected tab should have tabindex='0'. Inactive tabs should have tabindex='-1'",
+                            "Only the selected tab gets tabindex='0'; inactive tabs use tabindex='-1'",
                             new FixInactiveTabIndexFix());
                     }
                 }
@@ -873,7 +873,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                     // Check if panel is focusable
                     if (!TABINDEX_PATTERN.matcher(panelTag).find()) {
                         registerProblem(holder, file, panelMatcher.start(), panelMatcher.end(),
-                            "Tabpanel should have tabindex='0' to be focusable after tab activation",
+                            "After activation, make the tab panel focusable (tabindex='0')",
                             new AddTabPanelTabindexFix());
                     }
                     
@@ -932,7 +932,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             
             if (selectedCount != 1) {
                 registerProblem(holder, file, tablistStart, tablistStart + 100,
-                    String.format("Tablist should have exactly one selected tab, found %d", selectedCount),
+                    String.format("Have exactly one selected tab (aria-selected='true'), found %d", selectedCount),
                     new FixTabSelectionFix());
             }
             

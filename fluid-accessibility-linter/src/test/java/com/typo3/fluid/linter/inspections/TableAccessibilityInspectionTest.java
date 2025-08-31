@@ -10,7 +10,7 @@ public class TableAccessibilityInspectionTest extends BaseInspectionTest {
         for (int i = 0; i < 6; i++) rows.append("<tr><td>A</td><td>B</td></tr>");
         String html = "<table>" + rows + "</table>";
         var highlights = highlight(html, new TableAccessibilityInspection());
-        assertHighlightsContain(highlights, "Data table should have header cells (<th>) to describe the data");
+        assertHighlightsContain(highlights, "Add header cells (<th>) to describe the data");
     }
 
     @Test

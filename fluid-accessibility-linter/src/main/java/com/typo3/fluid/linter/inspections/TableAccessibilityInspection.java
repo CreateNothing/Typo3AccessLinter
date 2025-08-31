@@ -302,7 +302,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             // Data table validation
             if (!analysis.hasHeaders && analysis.rowCount > 1) {
                 registerProblem(holder, file, start, end,
-                    "Data table should have header cells (<th>) to describe the data",
+                    "Add header cells (<th>) to describe the data",
                     new AddTableHeadersFix());
             }
             
@@ -310,7 +310,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             if (!analysis.hasCaption && !analysis.hasAriaLabel && !analysis.hasAriaLabelledBy && 
                 (analysis.rowCount > 5 || analysis.estimatedColumnCount > 4)) {
                 registerProblem(holder, file, start, end,
-                    "Complex data table should have a <caption> or aria-label to describe its content",
+                    "Add a short table description via <caption> or aria-label",
                     new AddTableCaptionFix());
             }
             
@@ -330,7 +330,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             // Check empty headers
             if (header.textContent.trim().isEmpty()) {
                 registerProblem(holder, file, baseOffset + header.startOffset, baseOffset + header.endOffset,
-                    "Table header <th> should not be empty", null);
+                    "Fill in empty table header <th>", null);
             }
             
             // Check generic headers
@@ -364,12 +364,12 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             CaptionInfo caption = analysis.captionInfo;
             if (caption.isEmpty) {
                 registerProblem(holder, file, start + caption.startOffset, start + caption.endOffset,
-                    "Table caption should not be empty", null);
+                    "Fill in the empty <caption>", null);
             }
             
             if (!caption.isFirstChild) {
                 registerProblem(holder, file, start + caption.startOffset, start + caption.endOffset,
-                    "<caption> must be the first child of <table>", null);
+                    "Place <caption> as the first child of <table>", null);
             }
         }
     }
@@ -380,14 +380,14 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         // Check for proper sectioning in large tables
         if (analysis.rowCount > 10 && !analysis.hasThead && !analysis.hasTbody) {
             registerProblem(holder, file, baseOffset, baseOffset + 100,
-                "Large table should use <thead>, <tbody>, and optionally <tfoot> for better structure",
+                "Use <thead>, <tbody>, and optionally <tfoot> to structure large tables",
                 new AddTableSectionsFix());
         }
         
         // Check tbody without thead when headers exist
         if (analysis.hasTbody && !analysis.hasThead && analysis.hasHeaders) {
             registerProblem(holder, file, baseOffset, baseOffset + 100,
-                "Table with <tbody> and header cells should also have <thead>", null);
+                "If a table has <tbody> and header cells, include <thead>", null);
         }
     }
     
@@ -455,7 +455,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             
             if (thContent.trim().isEmpty()) {
                 registerProblem(holder, file, baseOffset + thMatcher.start(), baseOffset + thMatcher.end(),
-                    "Table header <th> should not be empty",
+                    "Fill in empty table header <th>",
                     null);
             }
             
@@ -493,7 +493,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             
             if (rowCount > 5 || colCount > 4) {
                 registerProblem(holder, file, start, end,
-                    "Complex table should have a <caption> or aria-label to describe its content",
+                    "Add a short table description via <caption> or aria-label",
                     new AddTableCaptionFix());
             }
         }
@@ -510,7 +510,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             if (captionText.isEmpty()) {
                 registerProblem(holder, file, start + captionMatcher.start(), 
                     start + captionMatcher.end(),
-                    "Table caption should not be empty",
+                    "Fill in the empty <caption>",
                     null);
             }
             
@@ -522,7 +522,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
                 (theadPosition > 0 && captionPosition > theadPosition)) {
                 registerProblem(holder, file, start + captionMatcher.start(),
                     start + captionMatcher.end(),
-                    "<caption> must be the first child of <table>",
+                    "Place <caption> as the first child of <table>",
                     null);
             }
         }
@@ -537,7 +537,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         if (rowCount > 10 && !hasThead && !hasTbody) {
             registerProblem(holder, file, baseOffset, baseOffset + 100,
-                "Large table should use <thead>, <tbody>, and optionally <tfoot> for better structure",
+                "Use <thead>, <tbody>, and optionally <tfoot> to structure large tables",
                 new AddTableSectionsFix());
         }
         
@@ -545,7 +545,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             Matcher firstThMatcher = TH_PATTERN.matcher(content);
             if (firstThMatcher.find()) {
                 registerProblem(holder, file, baseOffset, baseOffset + 100,
-                    "Table with <tbody> and header cells should also have <thead>",
+                    "If a table has <tbody> and header cells, include <thead>",
                     null);
             }
         }
@@ -555,7 +555,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             int tbodyPosition = content.indexOf("<tbody");
             if (tbodyPosition > 0 && tfootPosition > tbodyPosition) {
                 registerProblem(holder, file, baseOffset + tfootPosition, baseOffset + tfootPosition + 50,
-                    "<tfoot> should come before <tbody> in the markup for proper table structure",
+                    "Place <tfoot> before <tbody> for proper structure",
                     null);
             }
         }
@@ -575,7 +575,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
                 if (isComplexTable(content)) {
                     registerProblem(holder, file, baseOffset + thMatcher.start(), 
                         baseOffset + thMatcher.end(),
-                        "Table header in complex table should have 'scope' attribute",
+                        "Give complex table headers a 'scope' attribute",
                         new AddScopeFix(isInThead ? "col" : (isFirstInRow ? "row" : "col")));
                 }
             }

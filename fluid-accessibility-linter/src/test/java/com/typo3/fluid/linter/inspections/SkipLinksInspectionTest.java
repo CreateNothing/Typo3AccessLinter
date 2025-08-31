@@ -48,7 +48,7 @@ public class SkipLinksInspectionTest extends LightJavaCodeInsightFixtureTestCase
                 <main>Main content</main>
             </body>
             """;
-        doTest(html, "Page with navigation should have skip navigation links for keyboard users");
+        doTest(html, "Add a 'Skip to content' link near the top so keyboard users can bypass the menu");
     }
 
     // Note: placement validation is lenient in current implementation; omitting strict first-focusable assertion
@@ -62,7 +62,7 @@ public class SkipLinksInspectionTest extends LightJavaCodeInsightFixtureTestCase
                 <main id="content">Main</main>
             </body>
             """;
-        doTest(html, "Skip link with class 'sr-only' should become visible on focus");
+        doTest(html, "Visually hidden skip link should become visible when focused");
     }
 
     @Test
@@ -75,7 +75,7 @@ public class SkipLinksInspectionTest extends LightJavaCodeInsightFixtureTestCase
             """;
         doTest(html,
             "Skip link target '#foo' does not exist in the document",
-            "Skip link target ID 'foo' is not descriptive");
+            "Make the skip link target more descriptive");
     }
 
     @Test
