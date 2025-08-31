@@ -231,7 +231,7 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
                 // If context is descriptive, allow the generic phrase
             } else {
                 String message = String.format(
-                    "Link text '%s' is not descriptive. Links should clearly describe their destination or purpose",
+                    "Link text '%s' is not descriptive. Use words that describe the destination or action",
                     link.linkText
                 );
                 registerProblem(holder, file, link.start, link.end, message, null);

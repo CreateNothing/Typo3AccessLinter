@@ -328,7 +328,7 @@ public class ImageAccessibilityInspection extends FluidAccessibilityInspection {
                 // Don't require alt attribute when role indicates decorative
                 if (context.altText != null && !context.altText.isEmpty()) {
                     registerProblem(holder, file, start, end,
-                        "Decorative image with role=\"" + context.role + "\" should not have alt text",
+                        "Decorative image should have empty alt (alt=\"\")",
                         new RemoveAltAttributeFix());
                 }
                 return;
@@ -336,11 +336,11 @@ public class ImageAccessibilityInspection extends FluidAccessibilityInspection {
             
             if (context.altText == null) {
                 registerProblem(holder, file, start, end,
-                    "Decorative image should have empty alt=\"\" attribute",
+                    "Decorative image should have empty alt (alt=\"\")",
                     new AddEmptyAltFix());
             } else if (!context.altText.isEmpty()) {
                 registerProblem(holder, file, start, end,
-                    "Decorative image should have empty alt text (alt=\"\")",
+                    "Decorative image should have empty alt (alt=\"\")",
                     new ChangeToEmptyAltFix());
             }
             return;
@@ -349,7 +349,7 @@ public class ImageAccessibilityInspection extends FluidAccessibilityInspection {
         // Check for missing alt text
         if (context.altText == null) {
             String message = context.isInLink ? 
-                "Image in link must have alt text describing the link destination" :
+                "When an image is the only content of a link, add alt text describing the link destination" :
                 "Image needs alt text to describe its content";
             registerProblem(holder, file, start, end, message, new AddAltAttributeFix(""));
             return;
