@@ -104,6 +104,13 @@ public class MissingAltTextInspectionTest extends LightJavaCodeInsightFixtureTes
     }
     
     @Test
+    public void testRolePresentationWithoutAltNoWarning() {
+        String html = "<img src=\"decorative.png\" role=\"presentation\">";
+        // Current inspection treats role="presentation/none" as sufficient decoration indicator
+        doTestNoWarnings(html);
+    }
+    
+    @Test
     public void testValidAltMixedQuotes() {
         String html = "<img src=\"sunset.jpg\" alt='Beautiful sunset over the mountains'>";
         doTestNoWarnings(html);

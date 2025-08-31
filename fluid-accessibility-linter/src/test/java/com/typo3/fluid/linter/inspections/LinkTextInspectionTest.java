@@ -220,6 +220,31 @@ public class LinkTextInspectionTest extends LightJavaCodeInsightFixtureTestCase 
     }
     
     @Test
+    public void testReadMoreInListItemWithContext() {
+        String html = """
+            <ul>
+                <li>
+                    <span>Project Apollo</span>
+                    <a href="/projects/apollo">Read more</a>
+                </li>
+            </ul>
+            """;
+        doTestNoWarnings(html);
+    }
+    
+    @Test
+    public void testReadMoreInListItemWithoutContext() {
+        String html = """
+            <ul>
+                <li>
+                    <a href="/projects/apollo">Read more</a>
+                </li>
+            </ul>
+            """;
+        doTest(html, "'Read more' needs context");
+    }
+    
+    @Test
     public void testLearnMoreWithAriaLabel() {
         // Currently the inspection still flags contextual phrases even with aria-label
         // This could be considered a bug in the inspection
@@ -265,6 +290,30 @@ public class LinkTextInspectionTest extends LightJavaCodeInsightFixtureTestCase 
         doTestNoWarnings(html);
     }
     
+    @Test
+    public void testIconOnlySvgLinkWithTitleNoAriaLabel() {
+        String html = """
+            <a href="/settings" title="Settings">
+                <svg width="16" height="16" class="icon">
+                    <path d="M0 0h16v16H0z" fill="none"/>
+                </svg>
+            </a>
+            """;
+        doTest(html, "Icon-only link should use aria-label instead of title for better accessibility");
+    }
+    
+    @Test
+    public void testIconOnlySvgLinkWithAriaLabel() {
+        String html = """
+            <a href="/settings" aria-label="Open settings">
+                <svg width="16" height="16" class="icon">
+                    <path d="M0 0h16v16H0z" fill="none"/>
+                </svg>
+            </a>
+            """;
+        doTestNoWarnings(html);
+    }
+    
     // ========== Fluid ViewHelper Tests ==========
     
     @Test
@@ -288,6 +337,16 @@ public class LinkTextInspectionTest extends LightJavaCodeInsightFixtureTestCase 
     @Test
     public void testFluidLinkWithDescriptiveText() {
         String html = "<f:link.action action=\"show\" controller=\"News\">View complete news article</f:link.action>";
+        doTestNoWarnings(html);
+    }
+    
+    @Test
+    public void testFluidIconOnlyLinkWithAriaLabel() {
+        String html = """
+            <f:link.page pageUid="123" aria-label="Go to homepage">
+                <svg class="icon" width="16" height="16"><path d="M0 0h16v16H0z"/></svg>
+            </f:link.page>
+            """;
         doTestNoWarnings(html);
     }
     
@@ -347,6 +406,26 @@ public class LinkTextInspectionTest extends LightJavaCodeInsightFixtureTestCase 
     public void testMixedCaseReadMore() {
         String html = "<p>News: <a href=\"/news\">Read More</a></p>";
         doTest(html, "'Read More' needs context");
+    }
+    
+    // ========== Duplicate/Length Edge Cases ==========
+    
+    @Test
+    public void testDuplicateLinksWithDifferentDestinations() {
+        String html = """
+            <div>
+                <a href="/user/alice">Profile</a>
+                <a href="/user/bob">Profile</a>
+            </div>
+            """;
+        doTest(html, "Multiple links with text 'profile' point to different destinations");
+    }
+    
+    @Test
+    public void testVeryLongLinkText() {
+        String longText = "This is an overly verbose link label that exceeds one hundred characters and should be considered too long to read comfortably";
+        String html = "<a href=\"/long\">" + longText + "</a>";
+        doTest(html, "link text is too long");
     }
     
     // ========== Additional Non-Descriptive Phrases Tests ==========

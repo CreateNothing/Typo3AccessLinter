@@ -119,15 +119,17 @@ public class NavigationLandmarkInspection extends FluidAccessibilityInspection {
         while (navMatcher.find()) {
             navCount++;
             String attributes = navMatcher.group(1);
-            
+
             Matcher labelMatcher = ARIA_LABEL_PATTERN.matcher(attributes);
-            if (navCount > 1 && !labelMatcher.find()) {
+            String label = labelMatcher.find() ? labelMatcher.group(1) : null;
+
+            if (navCount > 1 && (label == null || label.trim().isEmpty())) {
                 registerProblem(holder, file, navMatcher.start(), navMatcher.end(),
                     "Multiple <nav> elements should have unique aria-label or aria-labelledby attributes",
                     new AddNavigationLabelFix());
-            } else if (labelMatcher.find()) {
-                String label = labelMatcher.group(1);
-                if (!navLabels.add(label)) {
+            } else if (label != null) {
+                String key = label.trim();
+                if (!navLabels.add(key)) {
                     registerProblem(holder, file, navMatcher.start(), navMatcher.end(),
                         "Duplicate navigation label '" + label + "'. Each navigation should have a unique label",
                         null);
