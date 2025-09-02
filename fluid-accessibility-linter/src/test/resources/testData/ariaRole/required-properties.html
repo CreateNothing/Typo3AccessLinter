@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Required ARIA Properties Test</title>
+</head>
+<body>
+    <!-- Checkbox role requires aria-checked -->
+    <div role="checkbox">Missing aria-checked</div>
+    <div role="checkbox" aria-checked="false">Valid checkbox</div>
+    
+    <!-- Radio role requires aria-checked -->
+    <div role="radio">Missing aria-checked</div>
+    <div role="radio" aria-checked="true">Valid radio</div>
+    
+    <!-- Switch role requires aria-checked -->
+    <div role="switch">Missing aria-checked</div>
+    <div role="switch" aria-checked="true">Valid switch</div>
+    
+    <!-- Slider role requires valuenow, valuemin, valuemax -->
+    <div role="slider">Missing all value properties</div>
+    <div role="slider" aria-valuenow="50">Missing min and max</div>
+    <div role="slider" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Valid slider</div>
+    
+    <!-- Spinbutton role requires valuenow, valuemin, valuemax -->
+    <div role="spinbutton">Missing value properties</div>
+    <div role="spinbutton" aria-valuenow="5" aria-valuemin="1" aria-valuemax="10">Valid spinbutton</div>
+    
+    <!-- Combobox requires aria-expanded -->
+    <div role="combobox">Missing aria-expanded</div>
+    <div role="combobox" aria-expanded="false">Valid combobox</div>
+    
+    <!-- Heading requires aria-level -->
+    <div role="heading">Missing aria-level</div>
+    <div role="heading" aria-level="2">Valid heading</div>
+    
+    <!-- Dialog requires aria-labelledby or aria-label -->
+    <div role="dialog">Missing label</div>
+    <div role="dialog" aria-label="Settings">Valid dialog with label</div>
+    <div role="dialog" aria-labelledby="dialog-title">Valid dialog with labelledby</div>
+    
+    <!-- Alertdialog requires aria-labelledby or aria-label -->
+    <div role="alertdialog">Missing label</div>
+    <div role="alertdialog" aria-label="Warning">Valid alertdialog</div>
+    
+    <!-- Tab requires aria-selected -->
+    <div role="tab">Missing aria-selected</div>
+    <div role="tab" aria-selected="true">Valid tab</div>
+    
+    <!-- Option requires aria-selected -->
+    <div role="option">Missing aria-selected</div>
+    <div role="option" aria-selected="false">Valid option</div>
+    
+    <!-- Progressbar requires aria-valuenow -->
+    <div role="progressbar">Missing aria-valuenow</div>
+    <div role="progressbar" aria-valuenow="75">Valid progressbar</div>
+    
+    <!-- Scrollbar requires multiple properties -->
+    <div role="scrollbar">Missing required properties</div>
+    <div role="scrollbar" 
+         aria-controls="content" 
+         aria-valuenow="30" 
+         aria-valuemin="0" 
+         aria-valuemax="100">Valid scrollbar</div>
+    
+    <!-- Tree and treegrid require aria-orientation -->
+    <div role="tree">Missing aria-orientation</div>
+    <div role="tree" aria-orientation="vertical">Valid tree</div>
+    <div role="treegrid" aria-orientation="horizontal">Valid treegrid</div>
+    
+    <!-- Menuitem checkbox/radio require aria-checked -->
+    <div role="menuitemcheckbox">Missing aria-checked</div>
+    <div role="menuitemcheckbox" aria-checked="true">Valid menuitem checkbox</div>
+    <div role="menuitemradio">Missing aria-checked</div>
+    <div role="menuitemradio" aria-checked="false">Valid menuitem radio</div>
+</body>
+</html>

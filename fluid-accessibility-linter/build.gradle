@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.typo3.fluid'
-version '1.1.0'
+version '0.5.1'
 
 repositories {
     mavenCentral()
@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.9.3'
 }
 
 intellij {
@@ -32,4 +33,14 @@ java {
 
 test {
     useJUnit()
+    
+    // Show test output in console
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat = 'full'
+        showStandardStreams = false
+    }
+    
+    // Set test JVM arguments for IntelliJ platform
+    systemProperty "idea.test.cyclic.buffer.size", "1048576"
 }

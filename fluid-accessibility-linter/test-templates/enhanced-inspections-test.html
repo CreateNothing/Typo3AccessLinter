@@ -2,7 +2,7 @@
 <html lang="en" xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
 <head>
     <meta charset="UTF-8">
-    <title>Enhanced Accessibility Inspections Test Suite</title>
+    <title>Accessibility Inspections Test Suite</title>
 </head>
 <body>
 
@@ -10,7 +10,7 @@
 <!-- ENHANCED IMAGE ACCESSIBILITY TESTS -->
 <!-- =================================================================== -->
 <section>
-    <h1>Enhanced Image Accessibility Tests</h1>
+    <h1>Image Accessibility Tests</h1>
     
     <!-- Context-aware decorative image detection -->
     <img src="spacer.gif" width="1" height="1"> <!-- Should suggest alt="" for decorative -->
@@ -49,7 +49,7 @@
 <!-- ENHANCED LINK TEXT WITH CONTEXT ANALYSIS -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Link Text Tests</h2>
+    <h2>Link Text Tests</h2>
     
     <!-- Context-aware "read more" validation -->
     <article>
@@ -86,7 +86,7 @@
 <!-- ENHANCED HEADING HIERARCHY WITH HTML5 SECTIONING -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Heading Tests</h2>
+    <h2>Heading Tests</h2>
     
     <!-- HTML5 sectioning context -->
     <article>
@@ -119,7 +119,7 @@
 <!-- ENHANCED TABLE ACCESSIBILITY WITH LAYOUT DETECTION -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Table Tests</h2>
+    <h2>Table Tests</h2>
     
     <!-- Data table (should be detected by content patterns) -->
     <table>
@@ -172,7 +172,7 @@
 <!-- ENHANCED FORM LABEL WITH FIELDSET GROUPING -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Form Tests</h2>
+    <h2>Form Tests</h2>
     
     <!-- Placeholder anti-pattern detection -->
     <input type="text" placeholder="Enter your name"> <!-- Should warn: placeholder without label -->
@@ -208,7 +208,7 @@
 <!-- ENHANCED NAVIGATION LANDMARKS -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Navigation Tests</h2>
+    <h2>Navigation Tests</h2>
     
     <!-- Skip link validation -->
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -236,7 +236,7 @@
 <!-- ENHANCED ARIA ROLES WITH IMPLICIT DETECTION -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced ARIA Role Tests</h2>
+    <h2>ARIA Role Tests</h2>
     
     <!-- Unnecessary explicit roles -->
     <button role="button">Click me</button> <!-- Should warn: redundant role -->
@@ -260,7 +260,7 @@
 <!-- ENHANCED MODAL DIALOG WITH FOCUS MANAGEMENT -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Modal Tests</h2>
+    <h2>Modal Tests</h2>
     
     <!-- Modal without proper focus management -->
     <div role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -288,7 +288,7 @@
 <!-- ENHANCED ACCORDION WITH STATE MANAGEMENT -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Accordion Tests</h2>
+    <h2>Accordion Tests</h2>
     
     <!-- Accordion with inconsistent state -->
     <div class="accordion">
@@ -310,7 +310,7 @@
 <!-- ENHANCED TAB PANELS WITH KEYBOARD NAVIGATION -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Tab Panel Tests</h2>
+    <h2>Tab Panel Tests</h2>
     
     <!-- Tab interface without proper keyboard support indicators -->
     <div role="tablist">
@@ -332,7 +332,7 @@
 <!-- ENHANCED LIVE REGIONS WITH PRIORITIZATION -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Live Region Tests</h2>
+    <h2>Live Region Tests</h2>
     
     <!-- Competing live regions -->
     <div aria-live="assertive">Critical alert</div>
@@ -358,7 +358,7 @@
 <!-- ENHANCED LIST SEMANTICS WITH CONTENT ANALYSIS -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced List Tests</h2>
+    <h2>List Tests</h2>
     
     <!-- Ordered list with non-sequential content -->
     <ol>
@@ -389,7 +389,7 @@
 <!-- ENHANCED RADIO/CHECKBOX GROUPS -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Radio/Checkbox Group Tests</h2>
+    <h2>Radio/Checkbox Group Tests</h2>
     
     <!-- Related radio buttons without fieldset -->
     <input type="radio" name="size" id="small">
@@ -424,7 +424,7 @@
 <!-- ENHANCED PAGE LANGUAGE WITH MULTILINGUAL DETECTION -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Language Tests</h2>
+    <h2>Language Tests</h2>
     
     <!-- Mixed language content without lang attributes -->
     <p>Welcome to our website</p>
@@ -447,7 +447,7 @@
 <!-- ENHANCED SKIP LINKS WITH TARGET VALIDATION -->
 <!-- =================================================================== -->
 <section>
-    <h2>Enhanced Skip Link Tests</h2>
+    <h2>Skip Link Tests</h2>
     
     <!-- Skip link with missing target -->
     <a href="#content" class="skip-link">Skip to content</a>

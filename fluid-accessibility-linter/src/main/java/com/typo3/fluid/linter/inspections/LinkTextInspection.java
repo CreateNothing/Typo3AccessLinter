@@ -1,10 +1,7 @@
 package com.typo3.fluid.linter.inspections;
 
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.typo3.fluid.linter.utils.AccessibilityUtils;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +44,21 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
         "follow this link",
         "click this link",
         "visit",
-        "check out"
+        "check out",
+        "click to",
+        "go to",
+        "tap here",
+        "press here",
+        "follow",
+        "open",
+        "view details",
+        "more details",
+        "further information",
+        "additional information",
+        "click for more",
+        "find out",
+        "discover",
+        "explore"
     ));
     
     private static final Set<String> CONTEXTUAL_PHRASES = new HashSet<>(Arrays.asList(
@@ -62,7 +73,15 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     ));
     
     private static final Pattern LINK_PATTERN = Pattern.compile(
-        "<(a\\s+[^>]*|f:link\\.[^\\s>]+[^>]*)>(.*?)</(a|f:link\\.[^>]*)>",
+        "<(" +
+            "a\\s+[^>]*" +
+            "|f:link(?:\\.[^\\s>]+)?[^>]*" +
+            "|[a-zA-Z0-9_.-]+:link(?:\\.[^\\s>]+)?[^>]*" +
+        ")>(.*?)</(" +
+            "a" +
+            "|f:link(?:\\.[^>]*)?" +
+            "|[a-zA-Z0-9_.-]+:link(?:\\.[^>]*)?" +
+        ")>",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     
@@ -82,8 +101,10 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     );
     
     private static final Pattern ICON_PATTERN = Pattern.compile(
-        "<(?:i|span)\\s+[^>]*class\\s*=\\s*[\"'][^\"']*(?:icon|fa-|glyphicon|material-icons)[^\"']*[\"'][^>]*>|" +
-        "<img\\s+[^>]*(?:class\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"']|src\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"'])[^>]*>",
+        "<(?:i|span)\\s+[^>]*class\\s*=\\s*[\"'][^\"']*(?:icon|fa-|fas|far|fab|glyphicon|material-icons|bi-|ion-)[^\"']*[\"'][^>]*>|" +
+        "<img\\s+[^>]*(?:class\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"']|src\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"'])[^>]*>|" +
+        "<svg\\s+[^>]*(?:class\\s*=\\s*[\"'][^\"']*icon[^\"']*[\"'])?[^>]*>.*?</svg>|" +
+        "<core:icon\\b[^>]*/?>",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     
@@ -106,6 +127,10 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     
     @Override
     protected void inspectFile(@NotNull PsiFile file, @NotNull ProblemsHolder holder) {
+        com.typo3.fluid.linter.settings.RuleSettingsState st = com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(file.getProject());
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return; // suppressed when Universal is enabled and suppression is active
+        }
         String content = file.getText();
         
         // Collect all links for context analysis and duplicate detection
@@ -118,6 +143,8 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
             checkSingleCharacterText(link, file, holder);
             checkUrlAsText(link, file, holder);
             checkIconOnlyLink(link, file, holder);
+            checkLongLinkText(link, file, holder);
+            checkWhitespaceOnlyText(link, file, holder);
         }
         
         // Check for duplicate links
@@ -162,15 +189,25 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     }
     
     private void checkEmptyLink(LinkInfo link, PsiFile file, ProblemsHolder holder) {
-        if (link.linkText.isEmpty() && !link.hasAriaLabel) {
+        if (link.linkText.isEmpty()) {
+            // Check if it has a valid aria-label
+            if (link.hasAriaLabel && link.ariaLabel != null && !link.ariaLabel.trim().isEmpty()) {
+                // Validate the quality of the aria-label
+                String ariaLabelLower = link.ariaLabel.toLowerCase().trim();
+                if (NON_DESCRIPTIVE_PHRASES.contains(ariaLabelLower)) {
+                    registerProblem(holder, file, link.start, link.end,
+                        String.format("aria-label '%s' is not descriptive", link.ariaLabel), null);
+                }
+                return; // Has valid aria-label
+            }
+            
+            // No aria-label or empty aria-label
             if (link.hasIcon) {
                 registerProblem(holder, file, link.start, link.end,
-                    "Icon-only link must have aria-label or meaningful text to be accessible",
-                    new AddAriaLabelFix("Add descriptive aria-label"));
+                    "Icon-only link must have aria-label or meaningful text to be accessible", null);
             } else {
                 registerProblem(holder, file, link.start, link.end,
-                    "Link has no text content and no accessible label",
-                    new AddAriaLabelFix("Add text or aria-label"));
+                    "Link has no text content and no accessible label", null);
             }
         }
     }
@@ -189,17 +226,15 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
                         "Link text '%s' needs context. Either improve the link text or ensure preceding text describes the destination",
                         link.linkText
                     );
-                    registerProblem(holder, file, link.start, link.end,
-                        message, new ImproveContextualLinkFix(link.linkText, context));
+                    registerProblem(holder, file, link.start, link.end, message, null);
                 }
                 // If context is descriptive, allow the generic phrase
             } else {
                 String message = String.format(
-                    "Link text '%s' is not descriptive. Links should clearly describe their destination or purpose",
+                    "Link text '%s' is not descriptive. Use words that describe the destination or action",
                     link.linkText
                 );
-                registerProblem(holder, file, link.start, link.end,
-                    message, new ImproveLineTextFix(link.linkText));
+                registerProblem(holder, file, link.start, link.end, message, null);
             }
         }
     }
@@ -216,8 +251,7 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
             }
             
             registerProblem(holder, file, link.start, link.end,
-                String.format("Single character '%s' as link text is not descriptive. Add aria-label or use descriptive text", text),
-                new ImproveLineTextFix(text));
+                String.format("Single character '%s' as link text is not descriptive. Add aria-label or use descriptive text", text), null);
         }
     }
     
@@ -226,8 +260,7 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
         
         if (isUrlText(link.linkText.toLowerCase())) {
             registerProblem(holder, file, link.start, link.end,
-                "URL as link text is not user-friendly. Use descriptive text that explains the link's purpose",
-                new ImproveLineTextFix(link.linkText));
+                "URL as link text is not user-friendly. Use descriptive text that explains the link's purpose", null);
         }
     }
     
@@ -235,14 +268,31 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
         if (link.hasIcon && link.linkText.isEmpty()) {
             if (!link.hasAriaLabel && (!link.hasTitle || link.title == null || link.title.trim().isEmpty())) {
                 registerProblem(holder, file, link.start, link.end,
-                    "Icon-only link must have aria-label to describe its purpose",
-                    new AddAriaLabelFix("Add aria-label describing the link purpose"));
+                    "Icon-only link must have aria-label to describe its purpose", null);
             } else if (link.hasTitle && (link.ariaLabel == null || link.ariaLabel.trim().isEmpty())) {
                 // Has title but no aria-label - suggest adding aria-label for better screen reader support
                 registerProblem(holder, file, link.start, link.end,
-                    "Icon-only link should use aria-label instead of title for better accessibility",
-                    new ConvertTitleToAriaLabelFix());
+                    "Icon-only link should use aria-label instead of title for better accessibility", null);
             }
+        }
+    }
+    
+    private void checkLongLinkText(LinkInfo link, PsiFile file, ProblemsHolder holder) {
+        if (link.linkText.isEmpty()) return;
+        
+        // Check if link text exceeds recommended length (around 100 characters)
+        if (link.linkText.length() > 100) {
+            registerProblem(holder, file, link.start, link.end,
+                String.format("Link text is too long (%d characters). Consider making it more concise (under 100 characters)", 
+                    link.linkText.length()), null);
+        }
+    }
+    
+    private void checkWhitespaceOnlyText(LinkInfo link, PsiFile file, ProblemsHolder holder) {
+        // Check if link text is only whitespace (spaces, tabs, newlines)
+        if (!link.linkText.isEmpty() && link.linkText.trim().isEmpty()) {
+            registerProblem(holder, file, link.start, link.end,
+                "Link contains only whitespace characters and no meaningful text", null);
         }
     }
     
@@ -269,8 +319,7 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
                     // Same text, different destinations - problematic
                     for (LinkInfo link : duplicateLinks) {
                         registerProblem(holder, file, link.start, link.end,
-                            String.format("Multiple links with text '%s' point to different destinations. Make link text more specific", entry.getKey()),
-                            new MakeLinkSpecificFix(link.linkText, link.href));
+                            String.format("Multiple links with text '%s' point to different destinations. Make link text more specific", entry.getKey()), null);
                     }
                 }
             }
@@ -292,8 +341,7 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
                 // If there's very little text between links, suggest grouping
                 if (textBetweenLinks.trim().length() < 20) {
                     registerProblem(holder, file, current.start, next2.end,
-                        "Multiple links clustered together. Consider grouping related links in a list or navigation element for better accessibility",
-                        new GroupLinksInListFix());
+                        "Multiple links clustered together. Consider grouping related links in a list or navigation element for better accessibility", null);
                     break; // Only report once per cluster
                 }
             }
@@ -306,7 +354,19 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     }
     
     private String extractContext(String content, int linkStart) {
-        // Extract up to 200 characters before the link
+        // First try to find the most recent heading before the link
+        String headingContext = extractHeadingContext(content, linkStart);
+        if (headingContext != null && !headingContext.isEmpty()) {
+            return headingContext;
+        }
+        
+        // Then try to find list item context
+        String listContext = extractListItemContext(content, linkStart);
+        if (listContext != null && !listContext.isEmpty()) {
+            return listContext;
+        }
+        
+        // Finally, extract up to 200 characters before the link
         int contextStart = Math.max(0, linkStart - 200);
         String contextText = content.substring(contextStart, linkStart);
         
@@ -320,6 +380,61 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
         }
         
         return contextText.trim();
+    }
+    
+    private String extractHeadingContext(String content, int linkStart) {
+        // Look for the nearest heading before the link (h1-h6)
+        Pattern headingPattern = Pattern.compile(
+            "<h[1-6][^>]*>(.*?)</h[1-6]>",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+        );
+        
+        Matcher matcher = headingPattern.matcher(content.substring(0, linkStart));
+        String lastHeading = null;
+        int lastHeadingEnd = -1;
+        
+        while (matcher.find()) {
+            // Check if this heading is closer to the link
+            if (matcher.end() > lastHeadingEnd) {
+                lastHeading = AccessibilityUtils.extractTextContent(matcher.group(1)).trim();
+                lastHeadingEnd = matcher.end();
+            }
+        }
+        
+        // Only use heading if it's within 500 characters of the link
+        if (lastHeading != null && (linkStart - lastHeadingEnd) < 500) {
+            return lastHeading;
+        }
+        
+        return null;
+    }
+    
+    private String extractListItemContext(String content, int linkStart) {
+        // Check if link is within a list item
+        int liStart = content.lastIndexOf("<li", linkStart);
+        int liEnd = content.indexOf("</li>", linkStart);
+        
+        if (liStart != -1 && liEnd != -1 && liEnd > linkStart) {
+            // Extract the list item content
+            String liContent = content.substring(liStart, liEnd + 5);
+            
+            // Remove the link itself from the context
+            int linkEndInLi = liContent.indexOf("</a>");
+            if (linkEndInLi == -1) {
+                linkEndInLi = liContent.indexOf("</f:link");
+            }
+            
+            if (linkEndInLi != -1) {
+                String beforeLink = liContent.substring(0, liContent.indexOf("<a"));
+                if (beforeLink.indexOf("<f:link") != -1) {
+                    beforeLink = liContent.substring(0, liContent.indexOf("<f:link"));
+                }
+                
+                return AccessibilityUtils.extractTextContent(beforeLink).trim();
+            }
+        }
+        
+        return null;
     }
     
     private boolean hasDescriptiveContext(String context, String linkText) {
@@ -359,8 +474,12 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
     }
     
     private boolean isUrlText(String text) {
-        return text.matches("^(https?://|www\\.).*") || 
-               text.matches("^[a-zA-Z0-9.-]+\\.(com|org|net|edu|gov|io|co|uk|de)(/.*)?$");
+        // Check for various URL patterns
+        return text.matches("^(https?://|ftp://|www\\.).*") || 
+               text.matches("^[a-zA-Z0-9.-]+\\.(com|org|net|edu|gov|io|co|uk|de|fr|es|it|jp|cn|au|ca|ru|br|in|mx|nl|se|no|fi|dk|pl|ch|at|be|cz|pt|gr|hu|ro|bg|hr|sk|si|lt|lv|ee|ie|lu|mt|cy)(/.*)?$") ||
+               text.matches("^[a-zA-Z0-9.-]+\\.(info|biz|name|pro|aero|museum|coop|int|travel|xxx|tech|online|store|app|dev|cloud|digital|website|site|space|live|life|world|earth|today|news|blog|shop|market|trade|business|company|agency|solutions|services|support|systems|network|global|international)(/.*)?$") ||
+               text.contains("http://") || text.contains("https://") ||
+               text.matches(".*\\.[a-z]{2,4}/.*"); // Any domain-like pattern
     }
     
     
@@ -395,110 +514,6 @@ public class LinkTextInspection extends FluidAccessibilityInspection {
         }
     }
     
-    // Enhanced quick fixes
-    private static class AddAriaLabelFix implements LocalQuickFix {
-        private final String suggestion;
-        
-        AddAriaLabelFix(String suggestion) {
-            this.suggestion = suggestion;
-        }
-        
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return suggestion != null ? suggestion : "Add aria-label to link";
-        }
-        
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label attribute
-        }
-    }
-    
-    private static class ImproveLineTextFix implements LocalQuickFix {
-        private final String currentText;
-        
-        ImproveLineTextFix(String currentText) {
-            this.currentText = currentText;
-        }
-        
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return "Improve link text to be more descriptive";
-        }
-        
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would suggest better link text
-        }
-    }
-    
-    private static class ImproveContextualLinkFix implements LocalQuickFix {
-        private final String linkText;
-        private final String context;
-        
-        ImproveContextualLinkFix(String linkText, String context) {
-            this.linkText = linkText;
-            this.context = context;
-        }
-        
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return "Improve contextual link by combining text with context";
-        }
-        
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would combine context with link text for better description
-        }
-    }
-    
-    private static class ConvertTitleToAriaLabelFix implements LocalQuickFix {
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return "Convert title attribute to aria-label for better accessibility";
-        }
-        
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would replace title with aria-label
-        }
-    }
-    
-    private static class MakeLinkSpecificFix implements LocalQuickFix {
-        private final String linkText;
-        private final String href;
-        
-        MakeLinkSpecificFix(String linkText, String href) {
-            this.linkText = linkText;
-            this.href = href;
-        }
-        
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return "Make link text more specific to distinguish from similar links";
-        }
-        
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would suggest more specific link text based on destination
-        }
-    }
-    
-    private static class GroupLinksInListFix implements LocalQuickFix {
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return "Group clustered links in a navigation list";
-        }
-        
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would wrap clustered links in a <nav><ul> structure
-        }
-    }
+    // Quick fix classes removed as they are not implemented
+    // Future enhancement: implement actual code replacement functionality
 }

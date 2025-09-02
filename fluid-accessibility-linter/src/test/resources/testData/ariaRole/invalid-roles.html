@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Invalid ARIA Roles Test</title>
+</head>
+<body>
+    <!-- Invalid role names -->
+    <div role="invalid-role">This has an invalid role</div>
+    <div role="my-custom-role">Custom roles are not valid</div>
+    
+    <!-- Abstract roles (should not be used directly) -->
+    <div role="command">Abstract command role</div>
+    <div role="composite">Abstract composite role</div>
+    <div role="input">Abstract input role</div>
+    <div role="landmark">Abstract landmark role</div>
+    <div role="range">Abstract range role</div>
+    <div role="roletype">Abstract roletype</div>
+    <div role="section">Abstract section role</div>
+    <div role="sectionhead">Abstract sectionhead role</div>
+    <div role="select">Abstract select role</div>
+    <div role="structure">Abstract structure role</div>
+    <div role="widget">Abstract widget role</div>
+    <div role="window">Abstract window role</div>
+    
+    <!-- Multiple roles (not allowed) -->
+    <div role="button link">Multiple roles not allowed</div>
+    <div role="navigation main">Multiple landmark roles</div>
+    
+    <!-- Typos in role names -->
+    <div role="buton">Typo: should be button</div>
+    <div role="naviation">Typo: should be navigation</div>
+    <div role="dailog">Typo: should be dialog</div>
+</body>
+</html>

@@ -50,6 +50,10 @@ public class InvalidListStructureInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        com.typo3.fluid.linter.settings.RuleSettingsState st = holder.getProject() != null ? com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(holder.getProject()) : null;
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return new PsiElementVisitor() { };// suppressed
+        }
         return new XmlElementVisitor() {
             @Override
             public void visitXmlFile(XmlFile file) {

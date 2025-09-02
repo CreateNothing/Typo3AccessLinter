@@ -3,9 +3,12 @@ package com.typo3.fluid.linter.inspections;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiDocumentManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
@@ -190,9 +193,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         Matcher focusableMatcher = FOCUSABLE_ELEMENTS_PATTERN.matcher(dialogContent);
         
         if (!focusableMatcher.find()) {
-            registerProblem(holder, file, baseOffset, baseOffset + Math.min(100, dialogContent.length()),
+            registerProblems(holder, file, baseOffset, baseOffset + Math.min(100, dialogContent.length()),
                 "Dialog should contain at least one focusable element",
-                new AddFocusableElementFix());
+                new LocalQuickFix[]{ new AddFocusableElementFix(), new AddProgrammaticFocusFix() });
         }
     }
     
@@ -308,17 +311,37 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddAriaModalFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-modal='true' to dialog";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-modal='true'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("aria-modal")) return;
+            String updated = text.replaceFirst(">", " aria-modal=\"true\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
     private static class FixAriaModalValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -327,11 +350,27 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the aria-modal value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\baria-modal\\s*=\\s*[\"'])[^\"']+([\"'])", "$1true$2");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
     private static class AddDialogLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -340,11 +379,30 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("aria-label") || text.contains("aria-labelledby")) return;
+            // Prefer a minimal aria-label. If element inner text is simple, reuse it; otherwise use 'Dialog'
+            String labelValue = "Dialog";
+            String updated = text.replaceFirst(">", " aria-label=\"" + labelValue + "\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
     private static class AddFocusableElementFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -353,11 +411,29 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would suggest adding a focusable element
+            // Conservative: make container focusable instead of injecting elements
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("tabindex=")) return;
+            String updated = text.replaceFirst(">", " tabindex=\"-1\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
     private static class AddCloseButtonFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -373,17 +449,36 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class FixDialogTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix dialog tabindex value";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the tabindex
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            String updated = text.replaceAll("(\\btabindex\\s*=\\s*[\"'])[^\"']+([\"'])", "$1-1$2");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
     private static class AddDialogRoleFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -392,7 +487,52 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role='dialog'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains(" role=")) return;
+            String updated = text.replaceFirst(">", " role=\"dialog\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
+        }
+    }
+
+    // New quick-fix: programmatic focus fallback
+    private static class AddProgrammaticFocusFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Make dialog programmatically focusable";
+        }
+
+        @Override
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            String text = element.getText();
+            if (text.contains("tabindex=")) return;
+            String updated = text.replaceFirst(">", " tabindex=\"-1\">");
+            if (!updated.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        document.replaceString(element.getTextRange().getStartOffset(),
+                                element.getTextRange().getEndOffset(), updated);
+                    }
+                });
+            }
         }
     }
     
@@ -677,6 +817,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddInitialFocusQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add initial focus to modal";
         }
@@ -688,6 +831,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddFocusTrapQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -703,6 +849,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddFocusRestorationQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add focus restoration";
         }
@@ -714,6 +863,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddBackdropDismissalQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -729,6 +881,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddScrollLockQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add background scroll prevention";
         }
@@ -740,6 +895,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddBackdropQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -755,6 +913,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddTabHandlingQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add Tab key handling for focus trap";
         }
@@ -766,6 +927,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddFocusCyclingQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -781,6 +945,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddEscapeHandlingQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add Escape key dismissal";
         }
@@ -792,6 +959,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddDismissalMethodsQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -807,6 +977,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     private static class AddCloseButtonLabelQuickFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add accessible label to close button";
         }
@@ -818,6 +991,9 @@ public class ModalDialogInspection extends FluidAccessibilityInspection {
     }
     
     private static class FixCloseButtonTabindexQuickFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {

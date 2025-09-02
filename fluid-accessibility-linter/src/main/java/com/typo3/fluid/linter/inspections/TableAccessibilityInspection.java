@@ -141,6 +141,10 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     
     @Override
     protected void inspectFile(@NotNull PsiFile file, @NotNull ProblemsHolder holder) {
+        com.typo3.fluid.linter.settings.RuleSettingsState st = com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(file.getProject());
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return; // suppressed when Universal is enabled and suppression is active
+        }
         String content = file.getText();
         
         Matcher tableMatcher = TABLE_PATTERN.matcher(content);
@@ -298,7 +302,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             // Data table validation
             if (!analysis.hasHeaders && analysis.rowCount > 1) {
                 registerProblem(holder, file, start, end,
-                    "Data table should have header cells (<th>) to describe the data",
+                    "Add header cells (<th>) to describe the data",
                     new AddTableHeadersFix());
             }
             
@@ -306,7 +310,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             if (!analysis.hasCaption && !analysis.hasAriaLabel && !analysis.hasAriaLabelledBy && 
                 (analysis.rowCount > 5 || analysis.estimatedColumnCount > 4)) {
                 registerProblem(holder, file, start, end,
-                    "Complex data table should have a <caption> or aria-label to describe its content",
+                    "Add a short table description via <caption> or aria-label",
                     new AddTableCaptionFix());
             }
             
@@ -326,7 +330,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             // Check empty headers
             if (header.textContent.trim().isEmpty()) {
                 registerProblem(holder, file, baseOffset + header.startOffset, baseOffset + header.endOffset,
-                    "Table header <th> should not be empty", null);
+                    "Fill in empty table header <th>", null);
             }
             
             // Check generic headers
@@ -360,12 +364,12 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             CaptionInfo caption = analysis.captionInfo;
             if (caption.isEmpty) {
                 registerProblem(holder, file, start + caption.startOffset, start + caption.endOffset,
-                    "Table caption should not be empty", null);
+                    "Fill in the empty <caption>", null);
             }
             
             if (!caption.isFirstChild) {
                 registerProblem(holder, file, start + caption.startOffset, start + caption.endOffset,
-                    "<caption> must be the first child of <table>", null);
+                    "Place <caption> as the first child of <table>", null);
             }
         }
     }
@@ -376,14 +380,14 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         // Check for proper sectioning in large tables
         if (analysis.rowCount > 10 && !analysis.hasThead && !analysis.hasTbody) {
             registerProblem(holder, file, baseOffset, baseOffset + 100,
-                "Large table should use <thead>, <tbody>, and optionally <tfoot> for better structure",
+                "Use <thead>, <tbody>, and optionally <tfoot> to structure large tables",
                 new AddTableSectionsFix());
         }
         
         // Check tbody without thead when headers exist
         if (analysis.hasTbody && !analysis.hasThead && analysis.hasHeaders) {
             registerProblem(holder, file, baseOffset, baseOffset + 100,
-                "Table with <tbody> and header cells should also have <thead>", null);
+                "If a table has <tbody> and header cells, include <thead>", null);
         }
     }
     
@@ -451,7 +455,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             
             if (thContent.trim().isEmpty()) {
                 registerProblem(holder, file, baseOffset + thMatcher.start(), baseOffset + thMatcher.end(),
-                    "Table header <th> should not be empty",
+                    "Fill in empty table header <th>",
                     null);
             }
             
@@ -489,7 +493,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             
             if (rowCount > 5 || colCount > 4) {
                 registerProblem(holder, file, start, end,
-                    "Complex table should have a <caption> or aria-label to describe its content",
+                    "Add a short table description via <caption> or aria-label",
                     new AddTableCaptionFix());
             }
         }
@@ -506,7 +510,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             if (captionText.isEmpty()) {
                 registerProblem(holder, file, start + captionMatcher.start(), 
                     start + captionMatcher.end(),
-                    "Table caption should not be empty",
+                    "Fill in the empty <caption>",
                     null);
             }
             
@@ -518,7 +522,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
                 (theadPosition > 0 && captionPosition > theadPosition)) {
                 registerProblem(holder, file, start + captionMatcher.start(),
                     start + captionMatcher.end(),
-                    "<caption> must be the first child of <table>",
+                    "Place <caption> as the first child of <table>",
                     null);
             }
         }
@@ -533,7 +537,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         if (rowCount > 10 && !hasThead && !hasTbody) {
             registerProblem(holder, file, baseOffset, baseOffset + 100,
-                "Large table should use <thead>, <tbody>, and optionally <tfoot> for better structure",
+                "Use <thead>, <tbody>, and optionally <tfoot> to structure large tables",
                 new AddTableSectionsFix());
         }
         
@@ -541,7 +545,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             Matcher firstThMatcher = TH_PATTERN.matcher(content);
             if (firstThMatcher.find()) {
                 registerProblem(holder, file, baseOffset, baseOffset + 100,
-                    "Table with <tbody> and header cells should also have <thead>",
+                    "If a table has <tbody> and header cells, include <thead>",
                     null);
             }
         }
@@ -551,7 +555,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             int tbodyPosition = content.indexOf("<tbody");
             if (tbodyPosition > 0 && tfootPosition > tbodyPosition) {
                 registerProblem(holder, file, baseOffset + tfootPosition, baseOffset + tfootPosition + 50,
-                    "<tfoot> should come before <tbody> in the markup for proper table structure",
+                    "Place <tfoot> before <tbody> for proper structure",
                     null);
             }
         }
@@ -571,7 +575,7 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
                 if (isComplexTable(content)) {
                     registerProblem(holder, file, baseOffset + thMatcher.start(), 
                         baseOffset + thMatcher.end(),
-                        "Table header in complex table should have 'scope' attribute",
+                        "Give complex table headers a 'scope' attribute",
                         new AddScopeFix(isInThead ? "col" : (isFirstInRow ? "row" : "col")));
                 }
             }
@@ -651,17 +655,47 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class AddTableHeadersFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Convert first row to header cells";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would convert td to th in first row
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            // Find first row
+            Matcher tr = TR_PATTERN.matcher(tableHtml);
+            if (!tr.find()) return;
+            String firstRow = tr.group(0);
+            String converted = firstRow
+                .replaceAll("<td(?![^>]*scope)[^>]*>", "<th scope=\"col\">")
+                .replace("</td>", "</th>");
+            final String newTable = tableHtml.substring(0, tr.start()) + converted + tableHtml.substring(tr.end());
+            final int fTableStart1 = tableStart; final int fTableEnd1 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart1, fTableEnd1, newTable);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
     private static class AddTableCaptionFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -670,11 +704,29 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add caption element
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int openEnd = text.indexOf('>', tableStart);
+            if (tableStart < 0 || openEnd < 0) return;
+            int insertAt = openEnd + 1;
+            String caption = "<caption>Table</caption>";
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.insertString(insertAt, caption);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
     private static class AddTableSectionsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -683,7 +735,36 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would wrap rows in thead/tbody
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            // Extract inner content between <table...> and </table>
+            int openEnd = tableHtml.indexOf('>');
+            if (openEnd < 0) return;
+            String openTag = tableHtml.substring(0, openEnd + 1);
+            String inner = tableHtml.substring(openEnd + 1, tableHtml.length() - "</table>".length());
+            // Split rows
+            Matcher m = TR_PATTERN.matcher(inner);
+            if (!m.find()) return;
+            int firstStart = m.start();
+            int firstEnd = m.end();
+            String firstRow = inner.substring(firstStart, firstEnd);
+            String rest = inner.substring(firstEnd);
+            String rebuilt = openTag + "<thead>" + firstRow + "</thead><tbody>" + rest + "</tbody></table>";
+            final String newTable2 = rebuilt; final int fTableStart2 = tableStart; final int fTableEnd2 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart2, fTableEnd2, newTable2);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -696,17 +777,35 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add scope='" + scopeValue + "' to header";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add scope attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String tagText = element.getText();
+            if (!tagText.contains("<th")) return;
+            if (tagText.matches("(?is).*scope\\s*=.*")) return;
+            String updated = tagText.replaceFirst("<th", "<th scope=\"" + scopeValue + "\"");
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), updated);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
     private static class ConvertToHeaderCellsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -715,11 +814,15 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would convert td to th
+            // Reuse AddTableHeadersFix behavior
+            new AddTableHeadersFix().applyFix(project, descriptor);
         }
     }
     
     private static class ReplaceSummaryWithCaptionFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -728,7 +831,30 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would convert summary to caption
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int openEnd = text.indexOf('>', tableStart);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || openEnd < 0 || tableEnd < 0) return;
+            String openTag = text.substring(tableStart, openEnd + 1);
+            Matcher sm = SUMMARY_PATTERN.matcher(openTag);
+            String summary = null;
+            if (sm.find()) {
+                summary = sm.group(1);
+            }
+            String openTagNoSummary = openTag.replaceAll("\\s*summary\\s*=\\s*[\"'][^\"']*[\"']", "");
+            String caption = "<caption>" + (summary != null ? summary : "Table") + "</caption>";
+            String rebuilt = openTagNoSummary + caption + text.substring(openEnd + 1, tableEnd) + "</table>";
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(tableStart, tableEnd + "</table>".length(), rebuilt);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
@@ -851,17 +977,42 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
     private static class RemoveSemanticElementsFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Remove semantic elements from layout table";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove th and caption elements
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            final String tableHtml = text.substring(tableStart, tableEnd)
+                .replaceAll("(?is)<caption[^>]*>.*?</caption>", "")
+                .replace("<th", "<td")
+                .replace("</th>", "</td>");
+            final String newTable3 = tableHtml; final int fTableStart3 = tableStart; final int fTableEnd3 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart3, fTableEnd3, newTable3);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
     private static class SuggestCSSAlternativeFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -870,11 +1021,14 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would provide CSS alternatives
+            // Non-destructive suggestion: no file changes
         }
     }
     
     private static class ClarifyTablePurposeFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -883,11 +1037,31 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add role attribute or headers
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int openEnd = text.indexOf('>', tableStart);
+            if (tableStart < 0 || openEnd < 0) return;
+            String openTag = text.substring(tableStart, openEnd + 1);
+            if (!openTag.matches("(?is).*\\brole\\s*=.*")) {
+                String newOpen = openTag.replaceFirst("<table", "<table role=\"presentation\"");
+                com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                    doc.replaceString(tableStart, openEnd + 1, newOpen);
+                    com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+                });
+            }
         }
     }
     
     private static class AddHeaderAssociationsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -896,11 +1070,32 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add scope or headers attributes
+            // Minimal: ensure all <th> have scope; prefer 'col'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            final String updated2 = tableHtml.replaceAll("<th(?![^>]*scope)([^>]*)>", "<th scope=\"col\"$1>");
+            final int fTableStart4 = tableStart; final int fTableEnd4 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart4, fTableEnd4, updated2);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
     
     private static class AddHeaderIdsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -909,7 +1104,42 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add id attributes to headers
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            var doc = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(file);
+            if (doc == null) return;
+            String text = file.getText();
+            int pos = element.getTextRange().getStartOffset();
+            int tableStart = text.lastIndexOf("<table", pos);
+            int tableEnd = text.indexOf("</table>", pos);
+            if (tableStart < 0 || tableEnd < 0) return;
+            tableEnd += "</table>".length();
+            String tableHtml = text.substring(tableStart, tableEnd);
+            // Add ids incrementally
+            StringBuilder sb = new StringBuilder();
+            Matcher m = TH_PATTERN.matcher(tableHtml);
+            int last = 0; int i = 1;
+            while (m.find()) {
+                String attrs = m.group(1);
+                String full = m.group(0);
+                boolean hasId = ID_PATTERN.matcher(attrs).find();
+                sb.append(tableHtml, last, m.start());
+                if (!hasId) {
+                    String replaced = full.replaceFirst("<th", "<th id=\"th-" + i + "\"");
+                    sb.append(replaced);
+                    i++;
+                } else {
+                    sb.append(full);
+                }
+                last = m.end();
+            }
+            sb.append(tableHtml.substring(last));
+            final String updated3 = sb.toString(); final int fTableStart5 = tableStart; final int fTableEnd5 = tableEnd;
+            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                doc.replaceString(fTableStart5, fTableEnd5, updated3);
+                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+            });
         }
     }
 }

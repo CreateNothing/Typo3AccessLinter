@@ -3,7 +3,12 @@ package com.typo3.fluid.linter.inspections;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +52,7 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
     ));
     
     private static final Pattern ELEMENT_PATTERN = Pattern.compile(
-        "<([a-zA-Z][a-zA-Z0-9-]*)(\\s+[^>]*)?>(.*?)</\\1>|<([a-zA-Z][a-zA-Z0-9-]*)(\\s+[^>]*?)/>",
+        "<([a-zA-Z][a-zA-Z0-9-]*)(\s+[^>]*)?>(.*?)</\\1>|<([a-zA-Z][a-zA-Z0-9-]*)(\s+[^>]*?)/>",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
     
@@ -121,22 +126,27 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         Map<String, String> labelForMap = buildLabelForMap(content);
         Map<String, String> idToElementMap = buildIdToElementMap(content);
         
-        // Check all elements
-        Matcher elementMatcher = ELEMENT_PATTERN.matcher(content);
-        
+        // Check all elements: iterate over each start tag (opening or self-closing)
+        Matcher elementMatcher = Pattern.compile("<([a-zA-Z][a-zA-Z0-9-]*)(\\s+[^>]*)?(\\/?)>", Pattern.CASE_INSENSITIVE)
+                                       .matcher(content);
         while (elementMatcher.find()) {
-            String tagName = elementMatcher.group(1) != null ? elementMatcher.group(1) : elementMatcher.group(4);
-            String attributes = elementMatcher.group(2) != null ? elementMatcher.group(2) : elementMatcher.group(5);
-            String elementContent = elementMatcher.group(3);
-            
-            if (tagName == null || attributes == null) continue;
-            
+            String tagName = elementMatcher.group(1);
+            String attributes = elementMatcher.group(2) != null ? elementMatcher.group(2) : "";
+            boolean selfClosing = elementMatcher.group(3) != null && !elementMatcher.group(3).isEmpty();
+
+            if (tagName == null) continue;
+
             tagName = tagName.toLowerCase();
-            
+
+            int startOffset = elementMatcher.start();
+            int openTagEnd = elementMatcher.end();
+            int endOffset = selfClosing ? openTagEnd : findElementEnd(content, startOffset);
+            String elementContent = selfClosing ? "" : content.substring(Math.min(openTagEnd, content.length()), Math.min(endOffset, content.length()));
+
             // Check this element for aria-label issues
-            checkAriaLabelUsage(tagName, attributes, elementContent, 
-                               elementMatcher.start(), elementMatcher.end(),
-                               file, holder, labelForMap, idToElementMap);
+            checkAriaLabelUsage(tagName, attributes, elementContent,
+                                startOffset, endOffset,
+                                file, holder, labelForMap, idToElementMap);
         }
         
         // Check for conflicting labeling mechanisms
@@ -181,19 +191,27 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
                         "Redundant aria-label duplicates the element's text content",
                         new RemoveAriaLabelFix());
                 }
-                // Check if aria-label is less descriptive than visible text
-                else if (visibleText.length() > ariaLabelValue.length() + 5 && 
-                         !ariaLabelValue.isEmpty()) {
-                    registerProblem(holder, file, start, end,
-                        "aria-label '" + ariaLabelValue + "' overrides more descriptive visible text '" + 
-                        truncate(visibleText, 30) + "'",
-                        new RemoveAriaLabelFix());
-                }
-                // Check for generic aria-labels
-                else if (isGenericLabel(ariaLabelValue) && !isGenericLabel(visibleText)) {
-                    registerProblem(holder, file, start, end,
-                        "Generic aria-label '" + ariaLabelValue + "' overrides specific visible text",
-                        new RemoveAriaLabelFix());
+                // Choose message: prefer "more descriptive" for button label on <button>,
+                // otherwise prefer the generic-label message when applicable.
+                else {
+                    boolean generic = isGenericLabel(ariaLabelValue) && !isGenericLabel(visibleText);
+                    boolean preferMoreDescriptive = "button".equalsIgnoreCase(tagName) && "button".equalsIgnoreCase(ariaLabelValue);
+
+                    if (preferMoreDescriptive && visibleText.length() > ariaLabelValue.length() + 5) {
+                        registerProblem(holder, file, start, end,
+                            "aria-label '" + ariaLabelValue + "' overrides more descriptive visible text '" + 
+                            truncate(visibleText, 30) + "'",
+                            new RemoveAriaLabelFix());
+                    } else if (generic) {
+                        registerProblem(holder, file, start, end,
+                            "Generic aria-label '" + ariaLabelValue + "' overrides specific visible text",
+                            new RemoveAriaLabelFix());
+                    } else if (visibleText.length() > ariaLabelValue.length() + 5 && !ariaLabelValue.isEmpty()) {
+                        registerProblem(holder, file, start, end,
+                            "aria-label '" + ariaLabelValue + "' overrides more descriptive visible text '" + 
+                            truncate(visibleText, 30) + "'",
+                            new RemoveAriaLabelFix());
+                    }
                 }
             }
         }
@@ -243,8 +261,17 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
                                  start, end, file, holder);
         }
         
-        // Check icon buttons (buttons with only icons)
+        // Check icon buttons (buttons/links with only icons)
         if ("button".equals(tagName) || "a".equals(tagName)) {
+            // Consider core:icon as icon-only content as well
+            boolean hasCoreIcon = content != null && content.toLowerCase().matches(".*<core:icon\\b[^>]*(/?>|>.*?</core:icon>).*?");
+            if (hasCoreIcon && (visibleText == null || visibleText.isEmpty()) && !hasAriaLabel && !hasAriaLabelledby && !hasTitle) {
+                registerProblem(holder, file, start, end,
+                    ("button".equals(tagName) ? "Icon-only button needs accessible text (aria-label, aria-labelledby, or title)"
+                                              : "Icon-only link must have aria-label or meaningful text to be accessible"),
+                    new AddAriaLabelFix());
+            }
+            // Existing checks (e.g., <i class="..."> patterns, single glyphs)
             checkIconButton(visibleText, hasAriaLabel, hasAriaLabelledby, hasTitle,
                           start, end, file, holder);
         }
@@ -274,8 +301,8 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
                 Matcher valueMatcher = VALUE_PATTERN.matcher(attributes);
                 if (valueMatcher.find()) {
                     String value = valueMatcher.group(1);
-                    String ariaLabel = ARIA_LABEL_PATTERN.matcher(attributes).find() ? 
-                        ARIA_LABEL_PATTERN.matcher(attributes).group(1) : "";
+                    Matcher ariaMatcher = ARIA_LABEL_PATTERN.matcher(attributes);
+                    String ariaLabel = ariaMatcher.find() ? ariaMatcher.group(1) : "";
                     
                     if (value.equalsIgnoreCase(ariaLabel)) {
                         registerProblem(holder, file, start, end,
@@ -305,7 +332,8 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         // Check for redundant aria-label when visible label exists
         if (hasVisibleLabel && hasAriaLabel) {
             String labelText = labelForMap.get(elementId);
-            String ariaLabel = ARIA_LABEL_PATTERN.matcher(attributes).group(1);
+            Matcher ariaMatcher2 = ARIA_LABEL_PATTERN.matcher(attributes);
+            String ariaLabel = ariaMatcher2.find() ? ariaMatcher2.group(1) : "";
             
             if (labelText != null && labelText.equalsIgnoreCase(ariaLabel)) {
                 registerProblem(holder, file, start, end,
@@ -341,8 +369,8 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
     private void checkConflictingLabels(String content, PsiFile file, ProblemsHolder holder) {
         // Check for elements with multiple conflicting label methods
         Pattern multiLabelPattern = Pattern.compile(
-            "<[^>]+(?:aria-label\\s*=\\s*[\"'][^\"']+[\"'][^>]*aria-labelledby\\s*=\\s*[\"'][^\"']+[\"']|" +
-            "aria-labelledby\\s*=\\s*[\"'][^\"']+[\"'][^>]*aria-label\\s*=\\s*[\"'][^\"']+[\"'])[^>]*>",
+            "<[^>]+(?:aria-label\\s*=\\s*[\"'][^\"']+[\"'][^>]*aria-labelledby\\s*=\\s*[\"'][^\"']+[\"']|"
+            + "aria-labelledby\\s*=\\s*[\"'][^\"']+[\"'][^>]*aria-label\\s*=\\s*[\"'][^\"']+[\"'])[^>]*>",
             Pattern.CASE_INSENSITIVE
         );
         
@@ -402,12 +430,16 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
     }
     
     private String truncate(String text, int maxLength) {
-        if (text.length() <= maxLength) return text;
-        return text.substring(0, maxLength) + "...";
+        String base = text.length() <= maxLength ? text : text.substring(0, maxLength);
+        return base + "...";
     }
     
     
     private static class RemoveAriaLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+
         @NotNull
         @Override
         public String getFamilyName() {
@@ -416,11 +448,36 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove the aria-label attribute
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove aria-label attribute with various possible formats
+            String cleanedText = text.replaceAll("\\s*\\baria-label\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", "> ").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
     
     private static class AddAriaLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+
         @NotNull
         @Override
         public String getFamilyName() {
@@ -429,11 +486,51 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Check if it's a self-closing tag or opening tag
+            final String newText;
+            if (text.endsWith("/>")) {
+                // Self-closing tag - insert before />
+                newText = text.substring(0, text.length() - 2) + " aria-label=\"\" />";
+            } else if (text.endsWith(">")) {
+                // Opening tag - insert before >
+                newText = text.substring(0, text.length() - 1) + " aria-label=\"\">";
+            } else {
+                // Shouldn't happen, but handle it
+                newText = text + " aria-label=\"\"";
+            }
+            
+            // Replace the element text and position cursor in the empty aria-label
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                Document document = PsiDocumentManager.getInstance(project)
+                        .getDocument(element.getContainingFile());
+                if (document != null) {
+                    int startOffset = element.getTextRange().getStartOffset();
+                    int endOffset = element.getTextRange().getEndOffset();
+                    document.replaceString(startOffset, endOffset, newText);
+                    
+                    // Try to position cursor inside the quotes
+                    Editor editor = FileEditorManager
+                            .getInstance(project).getSelectedTextEditor();
+                    if (editor != null) {
+                        int ariaLabelPos = newText.indexOf("aria-label=\"");
+                        if (ariaLabelPos >= 0) {
+                            editor.getCaretModel().moveToOffset(startOffset + ariaLabelPos + 12);
+                        }
+                    }
+                }
+            });
         }
     }
     
     private static class ResolveConflictingLabelsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
+
         @NotNull
         @Override
         public String getFamilyName() {
@@ -442,7 +539,28 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would remove aria-label and keep aria-labelledby
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            
+            String text = element.getText();
+            // Remove aria-label but keep aria-labelledby
+            String cleanedText = text.replaceAll("\\s*\\baria-label\\s*=\\s*[\"'][^\"']*[\"']", "");
+            
+            // Clean up extra spaces
+            final String newText = cleanedText.replaceAll("\\s+>", "> ").replaceAll("\\s+", " ");
+            
+            // Replace the element text
+            if (!newText.equals(text)) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    Document document = PsiDocumentManager.getInstance(project)
+                            .getDocument(element.getContainingFile());
+                    if (document != null) {
+                        int startOffset = element.getTextRange().getStartOffset();
+                        int endOffset = element.getTextRange().getEndOffset();
+                        document.replaceString(startOffset, endOffset, newText);
+                    }
+                });
+            }
         }
     }
 }

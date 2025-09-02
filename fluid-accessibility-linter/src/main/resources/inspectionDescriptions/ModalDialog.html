@@ -1,0 +1,47 @@
+<html>
+  <body>
+    <h2>Modal dialogs: semantics, labeling, and focus</h2>
+
+    <p>
+      This inspection helps ensure dialogs meet accessibility basics: correct
+      semantics, a clear accessible name, and predictable keyboard focus.
+    </p>
+
+    <h3>Why this matters</h3>
+    <p>
+      Screen reader and keyboard users rely on modal semantics to understand
+      that background content is inert. A dialog must expose a concise name and
+      allow focus to enter and remain within it. Without this, users can get
+      lost or trapped.
+    </p>
+
+    <h3>What’s checked</h3>
+    <ul>
+      <li><strong>Semantics</strong>: <code>role="dialog"</code> or <code>role="alertdialog"</code> and <code>aria-modal="true"</code>.</li>
+      <li><strong>Accessible name</strong>: via <code>aria-labelledby</code> (preferred) or <code>aria-label</code>.</li>
+      <li><strong>Focus fallback</strong>: container is programmatically focusable (e.g., <code>tabindex="-1"</code>).</li>
+      <li><strong>Tabindex</strong>: positive values are flagged and normalized.</li>
+      <li><strong>Modal-like elements without role</strong>: detect common modal classes/ids.</li>
+    </ul>
+
+    <h3>Quick‑fixes offered</h3>
+    <ul>
+      <li>Add or normalize <code>aria-modal="true"</code>.</li>
+      <li>Add <code>role="dialog"</code> to modal-like containers.</li>
+      <li>Add <code>tabindex="-1"</code> when no focusable content exists.</li>
+      <li>Fix positive <code>tabindex</code> to <code>-1</code>.</li>
+      <li>(Planned) Add <code>aria-labelledby</code> by inserting/finding a title with a stable id.</li>
+      <li>(Planned) Wire <code>aria-describedby</code> for supporting text.</li>
+    </ul>
+
+    <h3>Examples</h3>
+    <p><strong>Problem</strong> — missing modal semantics and label:</p>
+    <pre>&lt;div class="modal"&gt;Settings&lt;/div&gt;</pre>
+    <p><strong>Fix</strong> — add semantics and name:</p>
+    <pre>&lt;div role="dialog" aria-modal="true" aria-labelledby="dlg-title" tabindex="-1"&gt;
+  &lt;h2 id="dlg-title"&gt;Settings&lt;/h2&gt;
+  ...
+&lt;/div&gt;</pre>
+  </body>
+</html>
+

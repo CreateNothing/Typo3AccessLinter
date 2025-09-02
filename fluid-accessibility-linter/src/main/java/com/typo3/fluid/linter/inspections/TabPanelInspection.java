@@ -141,7 +141,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher selectedMatcher = ARIA_SELECTED_PATTERN.matcher(tabTag);
             if (!selectedMatcher.find()) {
                 registerProblem(holder, file, tabStart, tabEnd,
-                    "Tab must have aria-selected attribute",
+                    "Add aria-selected to the tab",
                     new AddAriaSelectedFix());
             } else {
                 String value = selectedMatcher.group(1);
@@ -150,7 +150,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                 }
                 if (!"true".equals(value) && !"false".equals(value)) {
                     registerProblem(holder, file, tabStart, tabEnd,
-                        "aria-selected must be 'true' or 'false', not '" + value + "'",
+                        "Use 'true' or 'false' for aria-selected, not '" + value + "'",
                         new FixAriaSelectedValueFix());
                 }
             }
@@ -159,7 +159,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher controlsMatcher = ARIA_CONTROLS_PATTERN.matcher(tabTag);
             if (!controlsMatcher.find()) {
                 registerProblem(holder, file, tabStart, tabEnd,
-                    "Tab should have aria-controls pointing to its tabpanel",
+                    "Add aria-controls on the tab pointing to its tabpanel",
                     new AddAriaControlsFix());
             } else {
                 controlledPanels.add(controlsMatcher.group(1));
@@ -178,7 +178,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         // Check that only one tab is selected
         if (selectedCount > 1) {
             registerProblem(holder, file, 0, 100,
-                "Only one tab should have aria-selected='true' at a time",
+                "Have only one tab with aria-selected='true' at a time",
                 null);
         }
     }
@@ -196,7 +196,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher idMatcher = ID_PATTERN.matcher(panelTag);
             if (!idMatcher.find()) {
                 registerProblem(holder, file, panelStart, panelEnd,
-                    "Tabpanel must have an id for aria-controls reference",
+                    "Add an id to the tabpanel so tabs can reference it (aria-controls)",
                     new AddPanelIdFix());
             } else {
                 panelIds.add(idMatcher.group(1));
@@ -206,7 +206,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             Matcher labelledbyMatcher = ARIA_LABELLEDBY_PATTERN.matcher(panelTag);
             if (!labelledbyMatcher.find()) {
                 registerProblem(holder, file, panelStart, panelEnd,
-                    "Tabpanel should have aria-labelledby pointing to its tab",
+                    "Add aria-labelledby on the tabpanel pointing to its tab",
                     new AddAriaLabelledByFix());
             }
             
@@ -222,7 +222,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         if (!hasLabel && !hasLabelledBy) {
             registerProblem(holder, file, start, end,
-                "Tablist should have aria-label or aria-labelledby for context",
+                "Give the tablist a short label (aria-label or aria-labelledby) for context",
                 new AddTablistLabelFix());
         }
     }
@@ -233,7 +233,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         if (!tabMatcher.find()) {
             registerProblem(holder, file, baseOffset, baseOffset + Math.min(100, tablistContent.length()),
-                "Tablist must contain at least one element with role='tab'",
+                "Ensure the tablist contains at least one element with role='tab'",
                 new AddTabElementFix());
         }
     }
@@ -246,7 +246,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             String value = orientationMatcher.group(1);
             if (!"horizontal".equals(value) && !"vertical".equals(value)) {
                 registerProblem(holder, file, start, end,
-                    "aria-orientation must be 'horizontal' or 'vertical', not '" + value + "'",
+                    "Use 'horizontal' or 'vertical' for aria-orientation, not '" + value + "'",
                     new FixOrientationValueFix());
             }
         }
@@ -263,7 +263,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                 int tabindex = Integer.parseInt(value);
                 if (tabindex > 0) {
                     registerProblem(holder, file, start, end,
-                        "Tabs should use tabindex='0' or '-1', not positive values",
+                        "Use tabindex='0' or '-1' on tabs; avoid positive values",
                         new FixTabindexFix());
                 }
             } catch (NumberFormatException e) {
@@ -280,13 +280,13 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         if (!tabindexMatcher.find()) {
             registerProblem(holder, file, start, end,
-                "Tabpanel should have tabindex='0' for keyboard accessibility",
+                "Make the tab panel focusable (tabindex='0')",
                 new AddTabPanelTabindexFix());
         } else {
             String value = tabindexMatcher.group(1);
             if (!"0".equals(value)) {
                 registerProblem(holder, file, start, end,
-                    "Tabpanel should have tabindex='0', not '" + value + "'",
+                    "Use tabindex='0' on the tab panel, not '" + value + "'",
                     new FixTabPanelTabindexFix());
             }
         }
@@ -409,17 +409,40 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddAriaSelectedFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add aria-selected attribute";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-selected='false'
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            if (open.toLowerCase().contains("aria-selected")) return;
+            String updated = open.substring(0, open.length() - 1) + " aria-selected=\"false\">";
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class FixAriaSelectedValueFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -428,11 +451,32 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix the value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            // normalize to true/false (default false), handle both single and double quotes
+            String normalized = open
+                    .replaceAll("(?i)aria-selected\\s*=\\s*(['\"])\\s*[^'\"]*\\1", "aria-selected=\"false\"")
+                    .replaceAll("(?i)aria-selected\\s*=\\s*\"([^\"]*)\"", "aria-selected=\"false\"");
+            String newContent = content.substring(0, tagStart) + normalized + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddAriaControlsFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -441,11 +485,31 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-controls
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            if (open.toLowerCase().contains("aria-controls")) return;
+            String panelId = "panel-" + System.currentTimeMillis();
+            String updated = open.substring(0, open.length() - 1) + " aria-controls=\"" + panelId + "\">";
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddPanelIdFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -454,11 +518,33 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add unique id
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            // Find the enclosing open tag around the caret
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            // Skip if id already present (avoid matching aria-labelledby)
+            if (open.toLowerCase().matches("(?s).*\\bid\\s*=\\s*['\"][^'\"]*['\"].*")) return;
+            String id = "panel-" + System.currentTimeMillis();
+            String updated = open.substring(0, open.length() - 1) + " id=\"" + id + "\">";
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddAriaLabelledByFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -467,11 +553,57 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-labelledby
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            // Find the enclosing open tag around the caret
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            // Ensure we are on a tabpanel element
+            if (!open.toLowerCase().contains("role=\"tabpanel\"") && !open.toLowerCase().contains("role='tabpanel'")) return;
+            if (open.toLowerCase().contains("aria-labelledby")) return;
+
+            // Find nearest preceding tab id or generate one
+            int prevTabIdx = content.toLowerCase().lastIndexOf("role=\"tab\"", tagStart);
+            if (prevTabIdx < 0) prevTabIdx = content.toLowerCase().lastIndexOf("role='tab'", tagStart);
+            String tabId = null;
+            if (prevTabIdx >= 0) {
+                int tabStart = content.lastIndexOf('<', prevTabIdx);
+                int tabEnd = content.indexOf('>', tabStart);
+                if (tabStart >= 0 && tabEnd > tabStart) {
+                    String tabOpen = content.substring(tabStart, tabEnd + 1);
+                    Matcher idm = ID_PATTERN.matcher(tabOpen);
+                    if (idm.find()) tabId = idm.group(1);
+                    if (tabId == null) {
+                        tabId = "tab-" + System.currentTimeMillis();
+                        String updatedTab = tabOpen.substring(0, tabOpen.length() - 1) + " id=\"" + tabId + "\">";
+                        content = content.substring(0, tabStart) + updatedTab + content.substring(tabEnd + 1);
+                        // adjust indices if content changed
+                        int delta = updatedTab.length() - tabOpen.length();
+                        if (tagStart > tabStart) { tagStart += delta; tagEnd += delta; caret += delta; }
+                        open = content.substring(tagStart, tagEnd + 1);
+                    }
+                }
+            }
+            if (tabId == null) tabId = "tab-" + System.currentTimeMillis();
+            String updated = open.substring(0, open.length() - 1) + " aria-labelledby=\"" + tabId + "\">";
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddTablistLabelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -480,11 +612,30 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add aria-label
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            if (open.toLowerCase().contains("aria-label") || open.toLowerCase().contains("aria-labelledby")) return;
+            String updated = open.substring(0, open.length() - 1) + " aria-label=\"Tabs\">";
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddTabElementFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -500,17 +651,38 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixOrientationValueFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Fix aria-orientation value";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix orientation value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String normalized = open.replaceAll("(?i)aria-orientation\\s*=\\s*\"[^\"]*\"", "aria-orientation=\"horizontal\"");
+            String newContent = content.substring(0, tagStart) + normalized + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class FixTabindexFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -526,6 +698,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddTabPanelTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add tabindex='0' to tabpanel";
         }
@@ -539,17 +714,45 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixTabPanelTabindexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Change tabpanel tabindex to '0'";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix tabindex value
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String updated;
+            if (open.toLowerCase().contains("tabindex")) {
+                updated = open
+                        .replaceAll("(?i)tabindex\\s*=\\s*(['\\\"])\\s*[^'\\\"]*\\1", "tabindex=\"0\"")
+                        .replaceAll("(?i)tabindex\\s*=\\s*\"[^\"]*\"", "tabindex=\"0\"");
+            } else {
+                updated = open.substring(0, open.length() - 1) + " tabindex=\"0\">";
+            }
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddTabRolesFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -638,7 +841,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                     Matcher selectedMatcher = ARIA_SELECTED_PATTERN.matcher(tabTag);
                     if (selectedMatcher.find() && "true".equals(selectedMatcher.group(1))) {
                         registerProblem(holder, file, tabStart, tabMatcher.end(),
-                            "Selected tab (aria-selected='true') should have tabindex='0', not '-1'",
+                            "Give the selected tab (aria-selected='true') tabindex='0', not '-1'",
                             new FixSelectedTabIndexFix());
                     }
                 } else if ("0".equals(tabindex)) {
@@ -646,7 +849,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                     Matcher selectedMatcher = ARIA_SELECTED_PATTERN.matcher(tabTag);
                     if (!selectedMatcher.find() || !"true".equals(selectedMatcher.group(1))) {
                         registerProblem(holder, file, tabStart, tabMatcher.end(),
-                            "Only the selected tab should have tabindex='0'. Inactive tabs should have tabindex='-1'",
+                            "Only the selected tab gets tabindex='0'; inactive tabs use tabindex='-1'",
                             new FixInactiveTabIndexFix());
                     }
                 }
@@ -670,7 +873,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
                     // Check if panel is focusable
                     if (!TABINDEX_PATTERN.matcher(panelTag).find()) {
                         registerProblem(holder, file, panelMatcher.start(), panelMatcher.end(),
-                            "Tabpanel should have tabindex='0' to be focusable after tab activation",
+                            "After activation, make the tab panel focusable (tabindex='0')",
                             new AddTabPanelTabindexFix());
                     }
                     
@@ -729,7 +932,7 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
             
             if (selectedCount != 1) {
                 registerProblem(holder, file, tablistStart, tablistStart + 100,
-                    String.format("Tablist should have exactly one selected tab, found %d", selectedCount),
+                    String.format("Have exactly one selected tab (aria-selected='true'), found %d", selectedCount),
                     new FixTabSelectionFix());
             }
             
@@ -855,6 +1058,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class AddArrowKeyNavigationFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Add arrow key navigation to tablist";
         }
@@ -866,6 +1072,9 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     }
     
     private static class AddHomeEndKeysFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -881,17 +1090,43 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
     private static class FixSelectedTabIndexFix implements LocalQuickFix {
         @NotNull
         @Override
+        public String getName() { return getFamilyName(); }
+        @NotNull
+        @Override
         public String getFamilyName() {
             return "Change selected tab tabindex to '0'";
         }
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix tabindex
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String updated;
+            if (open.toLowerCase().contains("tabindex")) {
+                updated = open.replaceAll("(?i)tabindex\\s*=\\s*\"[^\"]*\"", "tabindex=\"0\"");
+            } else {
+                updated = open.substring(0, open.length() - 1) + " tabindex=\"0\">";
+            }
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class FixInactiveTabIndexFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -900,11 +1135,36 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix tabindex
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int tagStart = content.lastIndexOf('<', caret);
+            if (tagStart < 0) return;
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String updated;
+            if (open.toLowerCase().contains("tabindex")) {
+                updated = open
+                        .replaceAll("(?i)tabindex\\s*=\\s*(['\\\"])\\s*[^'\\\"]*\\1", "tabindex=\"-1\"")
+                        .replaceAll("(?i)tabindex\\s*=\\s*\"[^\"]*\"", "tabindex=\"-1\"");
+            } else {
+                updated = open.substring(0, open.length() - 1) + " tabindex=\"-1\">";
+            }
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class AddFocusManagementHintFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -913,11 +1173,35 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would add focus management hint
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            // Find panel open tag
+            int roleIdx = content.toLowerCase().lastIndexOf("role=\"tabpanel\"", caret);
+            if (roleIdx < 0) roleIdx = content.toLowerCase().lastIndexOf("role='tabpanel'", caret);
+            if (roleIdx < 0) return;
+            int tagStart = content.lastIndexOf('<', roleIdx);
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagStart < 0 || tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String updated = open;
+            if (!open.toLowerCase().contains("tabindex")) {
+                updated = open.substring(0, open.length() - 1) + " tabindex=\"0\">";
+            }
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class FixTabSelectionFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -926,11 +1210,27 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix selection
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            // Within the document, ensure only one aria-selected="true" per tablist
+            // Simple approach: set all tabs to false, then set the first one to true
+            String normalized = content.replaceAll("(?i)(<[^>]+role\\s*=\\s*['\"]tab['\"][^>]*?)aria-selected\\s*=\\s*['\"][^'\"]*['\"]", "$1")
+                                       .replaceAll("(?i)(<[^>]+role\\s*=\\s*['\"]tab['\"][^>]*?)>", "$1 aria-selected=\"false\">");
+            // Set first occurrence to true
+            normalized = normalized.replaceFirst("(?i)(<[^>]+role\\s*=\\s*['\"]tab['\"][^>]*?)aria-selected=\\\"false\\\">", "$1aria-selected=\"true\">");
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), normalized);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class FixTabindexConsistencyFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -939,11 +1239,25 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would fix tabindex consistency
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            // Set all tabs to tabindex=-1 then set the first selected=true tab to tabindex=0
+            String updated = content.replaceAll("(?i)(<[^>]+role\\s*=\\s*['\"]tab['\"][^>]*?)tabindex\\s*=\\s*['\"][^'\"]*['\"]", "$1")
+                                    .replaceAll("(?i)(<[^>]+role\\s*=\\s*['\"]tab['\"][^>]*?)>", "$1 tabindex=\"-1\">");
+            updated = updated.replaceFirst("(?i)(<[^>]+role\\s*=\\s*['\"]tab['\"][^>]*?aria-selected\\s*=\\s*['\"]true['\"][^>]*?)tabindex=\\\"-1\\\">", "$1tabindex=\"0\">");
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), updated);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class ShowTabPanelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -952,11 +1266,35 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would show panel
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int roleIdx = content.toLowerCase().lastIndexOf("role=\"tabpanel\"", caret);
+            if (roleIdx < 0) roleIdx = content.toLowerCase().lastIndexOf("role='tabpanel'", caret);
+            if (roleIdx < 0) return;
+            int tagStart = content.lastIndexOf('<', roleIdx);
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagStart < 0 || tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String updated = open.replaceAll("(?i)\\s+hidden\\b", "")
+                                 .replaceAll("(?i)aria-hidden\\s*=\\s*\"[^\"]*\"", "aria-hidden=\"false\"");
+            if (!updated.toLowerCase().contains("aria-hidden")) {
+                updated = updated.substring(0, updated.length() - 1) + " aria-hidden=\"false\">";
+            }
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     
     private static class HideTabPanelFix implements LocalQuickFix {
+        @NotNull
+        @Override
+        public String getName() { return getFamilyName(); }
         @NotNull
         @Override
         public String getFamilyName() {
@@ -965,7 +1303,29 @@ public class TabPanelInspection extends FluidAccessibilityInspection {
         
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            // Implementation would hide panel
+            PsiElement element = descriptor.getPsiElement();
+            if (element == null) return;
+            PsiFile file = element.getContainingFile();
+            if (file == null) return;
+            String content = file.getText();
+            int caret = element.getTextOffset();
+            int roleIdx = content.toLowerCase().lastIndexOf("role=\"tabpanel\"", caret);
+            if (roleIdx < 0) roleIdx = content.toLowerCase().lastIndexOf("role='tabpanel'", caret);
+            if (roleIdx < 0) return;
+            int tagStart = content.lastIndexOf('<', roleIdx);
+            int tagEnd = content.indexOf('>', tagStart);
+            if (tagStart < 0 || tagEnd < 0) return;
+            String open = content.substring(tagStart, tagEnd + 1);
+            String updated = open;
+            if (!open.toLowerCase().contains("hidden")) {
+                updated = open.substring(0, open.length() - 1) + " hidden aria-hidden=\"true\">";
+            } else {
+                updated = updated.replaceAll("(?i)aria-hidden\\s*=\\s*\"[^\"]*\"", "aria-hidden=\"true\"");
+            }
+            String newContent = content.substring(0, tagStart) + updated + content.substring(tagEnd + 1);
+            com.intellij.psi.PsiFile newFile = com.intellij.psi.PsiFileFactory.getInstance(project)
+                .createFileFromText(file.getName(), file.getFileType(), newContent);
+            file.getNode().replaceAllChildrenToChildrenOf(newFile.getNode());
         }
     }
     

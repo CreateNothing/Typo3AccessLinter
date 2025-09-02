@@ -1,0 +1,36 @@
+{
+  "enabled": {
+    "img-alt-text": true,
+    "form-label": true,
+    "link-text": true,
+    "list-structure": true,
+    "heading-hierarchy": true,
+    "aria-valid": true,
+    "skip-links": true,
+    "table-headers": true,
+    "fluid-image-alt": true,
+    "fluid-form-label": true,
+    "fluid-link-text": true,
+    "fluid-structure": true
+  },
+  "severity": {
+    "img-alt-text": "ERROR",
+    "form-label": "ERROR",
+    "aria-valid": "ERROR",
+    "table-headers": "ERROR",
+    "list-structure": "WARNING",
+    "heading-hierarchy": "WARNING",
+    "skip-links": "WARNING",
+    "link-text": "WARNING",
+    "fluid-image-alt": "ERROR",
+    "fluid-form-label": "ERROR",
+    "fluid-link-text": "WARNING",
+    "fluid-structure": "WARNING"
+  },
+  "config": {
+    "link-text": {
+      "maxLength": "100"
+    }
+  }
+}
+

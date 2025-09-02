@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Valid Link Text - Best Practices Test Cases</title>
+</head>
+<body>
+    <h1>WCAG 2.1 Compliant Link Text Examples</h1>
+    <p>This file contains examples of properly descriptive link text that meets WCAG 2.1 Success Criterion 2.4.4</p>
+
+    <section>
+        <h2>1. Descriptive Link Text</h2>
+        
+        <!-- Clear, descriptive links that indicate destination -->
+        <p>Learn about <a href="/accessibility">web accessibility guidelines</a>.</p>
+        <p>View our <a href="/services">comprehensive services catalog</a>.</p>
+        <p>Download the <a href="/guidelines">WCAG 2.1 compliance guidelines</a>.</p>
+        <p>Register for the <a href="/conference">2024 Accessibility Conference</a>.</p>
+        <p>Read the <a href="/privacy">privacy policy</a>.</p>
+        <p>Contact our <a href="/support">customer support team</a>.</p>
+        <p>Browse the <a href="/products">product catalog</a>.</p>
+        <p>View the <a href="/schedule">training schedule for 2024</a>.</p>
+    </section>
+
+    <section>
+        <h2>2. Links with File Information</h2>
+        
+        <!-- Links that include file type and size -->
+        <p>Download the <a href="/annual-report.pdf">2024 Annual Report (PDF, 2.3 MB)</a></p>
+        <p>View the <a href="/presentation.pptx">Accessibility Best Practices presentation (PowerPoint, 5.1 MB)</a></p>
+        <p>Get the <a href="/data.xlsx">Q4 Financial Data spreadsheet (Excel, 450 KB)</a></p>
+        <p>Download the <a href="/manual.docx">User Manual v2.0 (Word, 1.2 MB)</a></p>
+        <p>Watch the <a href="/video.mp4">Introduction to WCAG training video (MP4, 125 MB)</a></p>
+        <p>Access the <a href="/checklist.pdf">Accessibility Checklist (PDF, 156 KB)</a></p>
+    </section>
+
+    <section>
+        <h2>3. Article Links with Context</h2>
+        
+        <!-- Articles with descriptive link text -->
+        <article>
+            <h3>New Accessibility Features Released</h3>
+            <p>We've released new features to improve screen reader compatibility.</p>
+            <a href="/article1">Read about the new accessibility features</a>
+        </article>
+        
+        <article>
+            <h3>WCAG 3.0 Draft Published</h3>
+            <p>The latest draft includes significant changes to conformance models.</p>
+            <a href="/article2">Explore WCAG 3.0 draft changes</a>
+        </article>
+        
+        <article>
+            <h3>Mobile Accessibility Guidelines</h3>
+            <p>Best practices for creating accessible mobile applications.</p>
+            <a href="/article3">View mobile accessibility guidelines</a>
+        </article>
+    </section>
+
+    <section>
+        <h2>4. Navigation Links</h2>
+        
+        <!-- Clear navigation links -->
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About Our Company</a>
+            <a href="/services">Our Services</a>
+            <a href="/portfolio">Client Portfolio</a>
+            <a href="/blog">Company Blog</a>
+            <a href="/contact">Contact Information</a>
+        </nav>
+        
+        <!-- Breadcrumb navigation -->
+        <nav aria-label="Breadcrumb">
+            <a href="/">Home</a> /
+            <a href="/products">Products</a> /
+            <a href="/products/software">Software Solutions</a> /
+            <span>Accessibility Tools</span>
+        </nav>
+    </section>
+
+    <section>
+        <h2>5. Email and External Links</h2>
+        
+        <!-- Descriptive email links -->
+        <p>For support, <a href="mailto:support@example.com">email our support team</a></p>
+        <p>Questions? <a href="mailto:info@example.com">Contact info@example.com</a></p>
+        
+        <!-- External links with clear descriptions -->
+        <p>Learn more at the <a href="https://www.w3.org/WAI/">W3C Web Accessibility Initiative website</a></p>
+        <p>View the <a href="https://webaim.org">WebAIM accessibility resources</a></p>
+        <p>Check the <a href="https://github.com/project/repo">project repository on GitHub</a></p>
+    </section>
+
+    <section>
+        <h2>6. Fluid ViewHelper Links with Good Text</h2>
+        
+        <!-- Properly descriptive Fluid links -->
+        <f:link.action action="show" controller="News" arguments="{newsItem: 123}">
+            View full news article about accessibility updates
+        </f:link.action>
+        
+        <f:link.page pageUid="123">Browse our complete product catalog</f:link.page>
+        
+        <f:link.external uri="https://example.com">
+            Visit Example.com for more resources
+        </f:link.external>
+        
+        <f:link.email email="info@example.com">
+            Send email to info@example.com
+        </f:link.email>
+        
+        <!-- Fluid links in loops with unique, descriptive text -->
+        <f:for each="{articles}" as="article">
+            <h3>{article.title}</h3>
+            <p>{article.teaser}</p>
+            <f:link.action action="detail" arguments="{article: article}">
+                Read the full article: {article.title}
+            </f:link.action>
+        </f:for>
+        
+        <!-- Nested Fluid with descriptive link text -->
+        <f:if condition="{showRegistration}">
+            <f:then>
+                <f:link.page pageUid="456">
+                    Register for the {event.name} event on {event.date}
+                </f:link.page>
+            </f:then>
+        </f:if>
+    </section>
+
+    <section>
+        <h2>7. Links in Lists with Unique Text</h2>
+        
+        <!-- Product list with unique, descriptive CTAs -->
+        <ul>
+            <li>Product A - <a href="/product-a/info">Learn about Product A features</a> | <a href="/product-a/buy">Purchase Product A</a></li>
+            <li>Product B - <a href="/product-b/info">Explore Product B specifications</a> | <a href="/product-b/buy">Buy Product B online</a></li>
+            <li>Product C - <a href="/product-c/info">View Product C details</a> | <a href="/product-c/buy">Order Product C now</a></li>
+        </ul>
+        
+        <!-- Resource list with descriptive links -->
+        <h3>Accessibility Resources</h3>
+        <ul>
+            <li><a href="/guide1">WCAG 2.1 Quick Reference Guide</a></li>
+            <li><a href="/templates">Accessible HTML Templates Collection</a></li>
+            <li><a href="/examples">Code Examples for Common Patterns</a></li>
+            <li><a href="/tools">Accessibility Testing Tools Directory</a></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>8. Table Links with Clear Purpose</h2>
+        
+        <!-- Table with descriptive download links -->
+        <table>
+            <caption>Annual Reports Archive</caption>
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Report Title</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2024</td>
+                    <td>Annual Sustainability Report</td>
+                    <td><a href="/2024-report.pdf">Download 2024 Sustainability Report (PDF, 3.2 MB)</a></td>
+                </tr>
+                <tr>
+                    <td>2023</td>
+                    <td>Annual Financial Report</td>
+                    <td><a href="/2023-report.pdf">Download 2023 Financial Report (PDF, 2.8 MB)</a></td>
+                </tr>
+                <tr>
+                    <td>2022</td>
+                    <td>Annual Impact Report</td>
+                    <td><a href="/2022-report.pdf">Download 2022 Impact Report (PDF, 4.1 MB)</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>9. Image Links with Descriptive Alt Text</h2>
+        
+        <!-- Image links where alt text serves as link text -->
+        <a href="/home">
+            <img src="logo.png" alt="Company Name - Return to Homepage">
+        </a>
+        
+        <a href="/search">
+            <img src="search-icon.png" alt="Search our website">
+        </a>
+        
+        <a href="/cart">
+            <img src="cart.png" alt="View shopping cart (3 items)">
+        </a>
+        
+        <!-- Fluid image links with descriptive alt -->
+        <f:link.page pageUid="1">
+            <f:image src="banner.jpg" alt="Summer Sale - Save up to 50% on selected items" />
+        </f:link.page>
+        
+        <f:link.external uri="https://twitter.com/company">
+            <f:image src="twitter-icon.png" alt="Follow us on Twitter" />
+        </f:link.external>
+    </section>
+
+    <section>
+        <h2>10. Action Links with Clear Outcomes</h2>
+        
+        <!-- Links that clearly state what will happen -->
+        <p><a href="/register">Create your free account</a></p>
+        <p><a href="/demo">Schedule a product demonstration</a></p>
+        <p><a href="/trial">Start your 30-day free trial</a></p>
+        <p><a href="/subscribe">Subscribe to our newsletter</a></p>
+        <p><a href="/unsubscribe">Unsubscribe from email updates</a></p>
+        <p><a href="/reset-password">Reset your password</a></p>
+        <p><a href="/update-profile">Update your profile information</a></p>
+    </section>
+
+    <section>
+        <h2>11. Links with Additional Context When Needed</h2>
+        
+        <!-- Links that use aria-label for additional context when visual context isn't enough -->
+        <p>Chapter 1: Introduction <a href="/edit/ch1" aria-label="Edit Chapter 1: Introduction">Edit</a></p>
+        <p>Chapter 2: Getting Started <a href="/edit/ch2" aria-label="Edit Chapter 2: Getting Started">Edit</a></p>
+        
+        <!-- Links with visually hidden text for screen readers -->
+        <p>Product SKU-12345 
+            <a href="/delete/12345">
+                Delete <span class="sr-only">Product SKU-12345</span>
+            </a>
+        </p>
+    </section>
+
+    <section>
+        <h2>12. Contextual Links That Are Still Descriptive</h2>
+        
+        <!-- Even "Read more" can be acceptable with proper implementation -->
+        <article>
+            <h3 id="article-wcag">Understanding WCAG Guidelines</h3>
+            <p>A comprehensive guide to web accessibility standards.</p>
+            <a href="/article/wcag" aria-labelledby="article-wcag">
+                Continue reading about Understanding WCAG Guidelines
+            </a>
+        </article>
+        
+        <!-- Using aria-describedby for additional context -->
+        <div>
+            <h3 id="service-consulting">Accessibility Consulting</h3>
+            <p id="service-consulting-desc">Professional consulting services for WCAG compliance.</p>
+            <a href="/services/consulting" 
+               aria-labelledby="service-consulting" 
+               aria-describedby="service-consulting-desc">
+                Learn about our consulting services
+            </a>
+        </div>
+    </section>
+
+    <section>
+        <h2>13. Links in Different Languages</h2>
+        
+        <!-- Properly labeled multilingual links -->
+        <p>View this page in <a href="/de/page" lang="de">Deutsch (German)</a></p>
+        <p>Ver esta página en <a href="/es/page" lang="es">Español (Spanish)</a></p>
+        <p>Voir cette page en <a href="/fr/page" lang="fr">Français (French)</a></p>
+    </section>
+
+    <section>
+        <h2>14. Skip Links and Utility Links</h2>
+        
+        <!-- Skip navigation and other utility links -->
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+        <a href="#navigation">Skip to navigation</a>
+        <a href="#footer">Skip to footer</a>
+        
+        <!-- Print and share links -->
+        <p><a href="javascript:window.print()">Print this page</a></p>
+        <p><a href="/share?url=current">Share this article on social media</a></p>
+    </section>
+
+    <section>
+        <h2>15. Form Action Links</h2>
+        
+        <!-- Clear form submission links -->
+        <form>
+            <a href="/save-draft">Save as draft</a>
+            <a href="/preview">Preview your submission</a>
+            <a href="/submit">Submit your application</a>
+            <a href="/cancel">Cancel and return to dashboard</a>
+        </form>
+    </section>
+
+</body>
+</html>

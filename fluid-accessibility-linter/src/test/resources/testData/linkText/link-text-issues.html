@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Link Text Accessibility Issues - Test Cases</title>
+</head>
+<body>
+    <h1>WCAG 2.1 Link Text Anti-Patterns Test File</h1>
+    <p>This file contains examples of link text that violate WCAG 2.1 Success Criterion 2.4.4 (Link Purpose in Context)</p>
+
+    <section>
+        <h2>1. Generic/Vague Link Text (Major Anti-Patterns)</h2>
+        
+        <!-- Classic "click here" violations -->
+        <p>To learn about accessibility, <a href="/accessibility">click here</a>.</p>
+        <p>For more information about our services, <a href="/services">click here</a>.</p>
+        <p><a href="/guidelines">Click here</a> to view the guidelines.</p>
+        
+        <!-- "Read more" without context -->
+        <article>
+            <h3>New Accessibility Features Released</h3>
+            <p>We've released new features...</p>
+            <a href="/article1">Read more</a>
+        </article>
+        
+        <article>
+            <h3>WCAG 3.0 Draft Published</h3>
+            <p>The latest draft includes...</p>
+            <a href="/article2">Read more</a>
+        </article>
+        
+        <!-- Other vague phrases -->
+        <p>Download the report <a href="/report.pdf">here</a>.</p>
+        <p>Visit <a href="/external">this page</a> for details.</p>
+        <p>The documentation is available <a href="/docs">on this link</a>.</p>
+        <p>See <a href="/info">more</a> about our company.</p>
+        <p>Find the answer <a href="/faq">here</a>.</p>
+        
+        <!-- Single word vague links -->
+        <p>Our <a href="/products">products</a></p>
+        <p>View <a href="/gallery">gallery</a></p>
+        <p>Download <a href="/file.zip">file</a></p>
+        <p>Open <a href="/doc.pdf">document</a></p>
+        <p>See <a href="/details">details</a></p>
+        <p>Visit <a href="/page">page</a></p>
+        <p>Go to <a href="/link">link</a></p>
+        
+        <!-- Learn more variations -->
+        <p>Accessibility best practices. <a href="/best-practices">Learn more</a></p>
+        <p>New features available. <a href="/features">Learn more</a></p>
+        <p>Training opportunities. <a href="/training">Learn more</a></p>
+    </section>
+
+    <section>
+        <h2>2. Redundant Link Phrases</h2>
+        
+        <!-- "Link to" is redundant -->
+        <p><a href="/home">Link to homepage</a></p>
+        <p><a href="/contact">Link to contact page</a></p>
+        
+        <!-- "Click" or "Click on" is unnecessary -->
+        <p><a href="/submit">Click to submit form</a></p>
+        <p><a href="/download">Click on this to download</a></p>
+        <p><a href="/register">Click here to register</a></p>
+    </section>
+
+    <section>
+        <h2>3. Raw URLs as Link Text</h2>
+        
+        <!-- URLs that are not human-readable -->
+        <p>Visit our site at <a href="https://example.com/page?id=123&ref=abc&utm_source=email">https://example.com/page?id=123&ref=abc&utm_source=email</a></p>
+        <p>Documentation: <a href="http://docs.example.com/api/v2/endpoints/user/profile">http://docs.example.com/api/v2/endpoints/user/profile</a></p>
+        <p>Resource: <a href="https://cdn.example.com/assets/2024/01/doc_v2.3.1_final.pdf">https://cdn.example.com/assets/2024/01/doc_v2.3.1_final.pdf</a></p>
+    </section>
+
+    <section>
+        <h2>4. Missing File Type Information</h2>
+        
+        <!-- Links to files without indicating type or size -->
+        <p>Download the <a href="/annual-report.pdf">annual report</a></p>
+        <p>View the <a href="/presentation.pptx">presentation</a></p>
+        <p>Get the <a href="/data.xlsx">spreadsheet</a></p>
+        <p>Download <a href="/manual.docx">user manual</a></p>
+        <p>Access the <a href="/video.mp4">training video</a></p>
+    </section>
+
+    <section>
+        <h2>5. Ambiguous Action Words</h2>
+        
+        <!-- Links that use vague action words -->
+        <p>To proceed, <a href="/next">go</a></p>
+        <p>Ready to start? <a href="/begin">Yes</a></p>
+        <p>Want to continue? <a href="/continue">Continue</a></p>
+        <p>Need help? <a href="/help">Yes</a></p>
+        <p>Interested? <a href="/info">Tell me more</a></p>
+    </section>
+
+    <section>
+        <h2>6. Empty or Meaningless Link Text</h2>
+        
+        <!-- Links with no text or only whitespace -->
+        <a href="/empty"></a>
+        <a href="/spaces">   </a>
+        
+        <!-- Links with only punctuation -->
+        <p>Next page <a href="/next">></a></p>
+        <p>Previous <a href="/prev"><</a></p>
+        <p>More info <a href="/info">...</a></p>
+        <p>Download <a href="/download">↓</a></p>
+    </section>
+
+    <section>
+        <h2>7. Fluid ViewHelper Links with Poor Text</h2>
+        
+        <!-- Fluid link ViewHelpers with generic text -->
+        <f:link.action action="show" controller="News">Read more</f:link.action>
+        <f:link.page pageUid="123">Click here</f:link.page>
+        <f:link.external uri="https://example.com">here</f:link.external>
+        <f:link.email email="info@example.com">here</f:link.email>
+        
+        <!-- Fluid links in loops with repetitive text -->
+        <f:for each="{articles}" as="article">
+            <h3>{article.title}</h3>
+            <p>{article.teaser}</p>
+            <f:link.action action="detail" arguments="{article: article}">More</f:link.action>
+        </f:for>
+        
+        <!-- Nested Fluid with poor link text -->
+        <f:if condition="{showLink}">
+            <f:then>
+                <f:link.page pageUid="456">Learn more</f:link.page>
+            </f:then>
+        </f:if>
+    </section>
+
+    <section>
+        <h2>8. Multiple Identical Link Texts</h2>
+        
+        <!-- Same text pointing to different destinations -->
+        <ul>
+            <li>Product A - <a href="/product-a/info">More info</a> | <a href="/product-a/buy">Buy now</a></li>
+            <li>Product B - <a href="/product-b/info">More info</a> | <a href="/product-b/buy">Buy now</a></li>
+            <li>Product C - <a href="/product-c/info">More info</a> | <a href="/product-c/buy">Buy now</a></li>
+        </ul>
+        
+        <!-- Cards with identical CTAs -->
+        <div class="card">
+            <h3>Service 1</h3>
+            <a href="/service1">Learn more</a>
+        </div>
+        <div class="card">
+            <h3>Service 2</h3>
+            <a href="/service2">Learn more</a>
+        </div>
+        <div class="card">
+            <h3>Service 3</h3>
+            <a href="/service3">Learn more</a>
+        </div>
+    </section>
+
+    <section>
+        <h2>9. Image Links Without Proper Alt Text</h2>
+        
+        <!-- Image links that would need descriptive alt text to serve as link text -->
+        <a href="/home"><img src="logo.png" alt=""></a>
+        <a href="/search"><img src="search-icon.png" alt="icon"></a>
+        <a href="/cart"><img src="cart.png" alt="image"></a>
+        
+        <!-- Fluid image links without proper alt -->
+        <f:link.page pageUid="1">
+            <f:image src="banner.jpg" alt="" />
+        </f:link.page>
+    </section>
+
+    <section>
+        <h2>10. Context-Dependent Links</h2>
+        
+        <!-- Links that only make sense with surrounding context -->
+        <table>
+            <tr>
+                <td>2024 Annual Report</td>
+                <td><a href="/2024-report.pdf">Download</a></td>
+            </tr>
+            <tr>
+                <td>2023 Annual Report</td>
+                <td><a href="/2023-report.pdf">Download</a></td>
+            </tr>
+        </table>
+        
+        <!-- Links in lists without context -->
+        <h3>Resources</h3>
+        <ul>
+            <li>Guidelines - <a href="/guide1">View</a></li>
+            <li>Templates - <a href="/templates">View</a></li>
+            <li>Examples - <a href="/examples">View</a></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>11. Additional Non-Descriptive Phrases from Code</h2>
+        
+        <!-- Testing all NON_DESCRIPTIVE_PHRASES -->
+        <p>For documentation <a href="/docs">follow this link</a></p>
+        <p>To register <a href="/register">click this link</a></p>
+        <p>New products available <a href="/products">check out</a></p>
+        <p>Our website <a href="/site">visit</a></p>
+        <p>Form ready <a href="/form">submit</a></p>
+        <p>Ready to begin? <a href="/begin">start</a></p>
+        <p>Next step <a href="/next">go</a></p>
+        <p>More details <a href="/details">see more</a></p>
+        <p>Information available <a href="/info">info</a></p>
+        <p>Additional information <a href="/additional">more info</a></p>
+        <p>The page <a href="/page">this page</a></p>
+        <p>The resource <a href="/resource">this link</a></p>
+        <p>Available <a href="/link">link</a></p>
+        <p>File ready <a href="/file.pdf">download</a></p>
+        <p>To proceed <a href="/proceed">click</a></p>
+        <p>Additional content <a href="/content">more</a></p>
+        <p>Tutorial available <a href="/tutorial">learn more</a></p>
+        <p>Article excerpt... <a href="/article">read more</a></p>
+        <p>Resource <a href="/res">here</a></p>
+        <p>Important update <a href="/update">click here</a></p>
+        
+        <!-- Testing CONTEXTUAL_PHRASES that need context -->
+        <p>New features released. <a href="/features">view more</a></p>
+        <p>Announcement posted. <a href="/announcement">continue reading</a></p>
+        <p>Research findings available. <a href="/research">find out more</a></p>
+        
+        <!-- Mixed cases and variations -->
+        <p>Important: <a href="/important">Click Here</a></p>
+        <p>Notice: <a href="/notice">CLICK HERE</a></p>
+        <p>Update: <a href="/update">Click Here!</a></p>
+        <p>News: <a href="/news">READ MORE</a></p>
+        <p>Alert: <a href="/alert">Learn More!</a></p>
+        <p>Info: <a href="/information">More Info.</a></p>
+    </section>
+
+    <section>
+        <h2>12. Special Cases and Edge Cases</h2>
+        
+        <!-- Very short but vague -->
+        <p><a href="/info">i</a> for information</p>
+        <p>Help <a href="/help">?</a></p>
+        
+        <!-- Numbers or codes as link text -->
+        <p>Error <a href="/error/404">404</a></p>
+        <p>Section <a href="/section/3.2.1">3.2.1</a></p>
+        
+        <!-- Mixed language without context -->
+        <p><a href="/more">Mehr</a></p>
+        <p><a href="/continue">Weiter</a></p>
+    </section>
+
+</body>
+</html>

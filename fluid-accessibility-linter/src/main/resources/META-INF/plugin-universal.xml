@@ -1,0 +1,59 @@
+<idea-plugin>
+    <id>com.typo3.fluid.accessibility-linter</id>
+    <name>Fluid Accessibility Linter</name>
+    <vendor email="inboxstuff@proton.me">CreateNothing</vendor>
+    <version>2.0.0</version>
+    
+    <description><![CDATA[Advanced accessibility linter for TYPO3 Fluid templates with a rule-based architecture.
+
+<b>Version 2.0 - Architectural Improvements:</b>
+<ul>
+    <li>Rule-based architecture with configurable validation strategies</li>
+    <li>Modular fix system with strategy pattern</li>
+    <li>Eliminated code duplication through composition</li>
+    <li>Improved separation of concerns</li>
+    <li>Extensible rule engine for easy addition of new checks</li>
+</ul>
+
+<b>Accessibility Checks:</b>
+<ul>
+    <li>Image accessibility (alt text, decorative images, SVG support)</li>
+    <li>Form validation (labels, fieldsets, placeholder patterns)</li>
+    <li>Heading hierarchy and structure</li>
+    <li>List semantics and structure</li>
+    <li>ARIA attributes and roles</li>
+    <li>Table accessibility</li>
+    <li>Navigation and skip links</li>
+    <li>Interactive components (modals, accordions, tabs)</li>
+    <li>Live regions and announcements</li>
+    <li>Language attributes</li>
+    <li>Fluid ViewHelper specific validations</li>
+</ul>]]></description>
+    
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Universal Accessibility Inspection - Single entry point -->
+        <localInspection language="HTML"
+                         displayName="Fluid Template Accessibility"
+                         groupName="Fluid Accessibility"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.typo3.fluid.linter.inspections.UniversalAccessibilityInspection"/>
+        
+        <!-- Language and File Type Support -->
+        <fileType name="Fluid Template" 
+                  implementationClass="com.typo3.fluid.linter.FluidFileType"
+                  fieldName="INSTANCE" 
+                  language="Fluid" 
+                  extensions="html"/>
+        
+        <lang.parserDefinition language="Fluid"
+                               implementationClass="com.typo3.fluid.linter.FluidParserDefinition"/>
+    </extensions>
+    
+    <actions>
+        <!-- Add actions here if needed -->
+    </actions>
+</idea-plugin>

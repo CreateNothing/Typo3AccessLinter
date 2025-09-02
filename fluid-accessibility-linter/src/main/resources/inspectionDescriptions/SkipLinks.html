@@ -1,0 +1,42 @@
+<html>
+  <body>
+    <h2>Skip navigation links</h2>
+
+    <p>
+      This inspection encourages a keyboard-accessible “skip to content” link
+      near the top of the page so users can bypass repeated navigation.
+    </p>
+
+    <h3>Why this matters</h3>
+    <p>
+      Keyboard and screen reader users shouldn’t have to tab through large
+      menus on every page. A visible‑on‑focus skip link provides a quick way to
+      jump to the main content.
+    </p>
+
+    <h3>What’s checked</h3>
+    <ul>
+      <li>Presence of a skip link (e.g., <code>&lt;a class="skip-link" href="#main"&gt;</code>).</li>
+      <li>Target exists and is descriptive (e.g., <code>id="main"</code>, <code>id="main-content"</code>).</li>
+      <li>Hidden links provide focus styles to become visible (e.g., <code>:focus</code> or <code>:focus-visible</code>).</li>
+      <li>Placement near top of <code>&lt;body&gt;</code>.</li>
+    </ul>
+
+    <h3>Quick‑fixes</h3>
+    <ul>
+      <li>(Planned) Insert a skip link after <code>&lt;body&gt;</code> when missing.</li>
+      <li>(Planned) Ensure or create a main content target id.</li>
+      <li>(Planned) Suggest a minimal CSS hint to reveal the link on focus.</li>
+    </ul>
+
+    <h3>Example</h3>
+    <pre>&lt;style&gt;.skip-link:focus{position:relative}&lt;/style&gt;
+&lt;body&gt;
+  &lt;a class="skip-link" href="#main-content"&gt;Skip to main content&lt;/a&gt;
+  ...
+  &lt;main id="main-content"&gt;...&lt;/main&gt;
+&lt;/body&gt;
+    </pre>
+  </body>
+</html>
+

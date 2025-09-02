@@ -4,7 +4,7 @@ A PhpStorm plugin that provides real-time accessibility linting for TYPO3 Fluid 
 
 ## Features
 
-### Current Implementation (v1.0.0)
+### Current Implementation
 
 - **Missing Alt Text Detection**: Identifies `<img>` tags and `f:image` ViewHelpers without alt attributes
 - **Invalid List Structure**: Detects when `<ul>` or `<ol>` elements contain invalid direct children (only `<li>` allowed)
@@ -45,12 +45,43 @@ The plugin automatically activates for all `.html` files in your project. Access
 
 Click on the highlighted issue and press `Alt+Enter` to see available quick fixes.
 
+## Rule Profiles (Presets) and Settings
+
+- Open `Settings | Tools | Fluid Accessibility`.
+- Toggle rules on/off and adjust severity per rule.
+- Apply a preset profile via the Preset selector:
+  - `WCAG 2.1 AA`: Balanced defaults with critical issues as errors.
+  - `WCAG 2.1 AAA`: Stricter than AA; more warnings elevated.
+  - `Strict QA`: Treat most rules as errors for CI/QA.
+  - `Relaxed Dev`: Lower severities to reduce noise during development.
+  - `Fluid-Heavy`: Emphasizes Fluid ViewHelper checks.
+- Import/Export: Use the buttons to import/export profiles as JSON.
+- Project file: If `a11y-profile.json` exists in the project root, it is auto‑loaded when opening settings.
+- Sample profile: See `fluid-accessibility-linter/a11y-profile.json` for a ready-made starting point.
+
+Example profile JSON shape:
+```
+{
+  "enabled": { "img-alt-text": true, "list-structure": true },
+  "severity": { "img-alt-text": "ERROR", "link-text": "WARNING" },
+  "config": { "link-text": { "maxLength": "100" } }
+}
+```
+
+## Architecture
+
+- Universal inspection: The plugin now registers a single rule‑engine based inspection (`Universal Fluid Accessibility Check`) in `plugin.xml`, which aggregates all checks. Legacy inspections remain available during the migration period.
+- No custom file type in release: The main `plugin.xml` targets `language="HTML"` only. The alternative `plugin-universal.xml` (with custom Fluid language/file type) is reserved for internal experiments and must not be used for release builds.
+- Performance: Results are cached per file and invalidated on edits, rule changes, or settings updates to keep inspections fast while staying accurate.
+
 ## Roadmap for Future Versions
 
-### v1.1.0 - Enhanced Image Checking
+### v1.1.0 - Image Checking
 - Decorative image detection (alt="" validation)
 - SVG accessibility attributes
 - Figure/figcaption validation
+
+Note: As of v1.4.0 these capabilities are merged into the base image inspection (no separate "Enhanced" variant).
 
 ### v1.2.0 - Form Accessibility
 - Label association for form inputs
@@ -106,6 +137,26 @@ Run test templates through the plugin:
 ```
 
 Then open `test-templates/sample-with-issues.html` to see the linting in action.
+
+### Regex Guidelines
+
+When matching HTML/Fluid with regex in inspections, follow these conventions:
+
+- Attribute boundaries: use `\b` before names (e.g., `\brole\s*=`, `\baria-label\s*=`) to avoid partial matches.
+- Attribute clusters: match "any attrs" with `[^>]*` instead of quote-heavy negations.
+- Values: match quotes portably with `[\"']` and contents with `[^\"']*`.
+- Roles/ARIA: prefer patterns like `\brole\s*=\s*[\"']([^\"']+)[\"']` and `\baria-label(?:ledby)?\s*=\s*[\"']([^\"']+)[\"']`.
+- IDs/classes: add word boundaries (`\bid\b`, `\bclass\b`) when filtering on specific attributes.
+- Content spans: avoid giant "start-tag…end-tag" regex. Instead, find the opening tag and compute the end with parsing helpers (see `findElementEnd(...)`).
+- Escaping: do not over-escape quotes. Only escape where Java strings require (`"` becomes `\"`).
+- Flags: add `Pattern.CASE_INSENSITIVE` (and `DOTALL` only when the pattern truly spans newlines).
+- Helpers: favor `getAttributeValue(tag, name)` and `hasAttribute(tag, name)` from `FluidAccessibilityInspection` over ad‑hoc regex.
+- Performance: compile patterns as `private static final Pattern` and keep them specific to reduce backtracking.
+
+Example snippets:
+
+- Any `<ul|ol>` with menu intent: `"<(?:ul|ol)[^>]*\b(class|role)\b[^>]*>"`
+- Redundant list role on `<ul>`: `"<ul[^>]*" + ROLE_LIST_PATTERN.pattern() + "[^>]*>"`
 
 ## Contributing
 

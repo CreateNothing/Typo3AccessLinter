@@ -1,43 +1,52 @@
 <idea-plugin>
     <id>com.typo3.fluid.accessibility-linter</id>
     <name>Fluid Accessibility Linter</name>
-    <vendor>TYPO3 Community</vendor>
-    <version>1.4.0</version>
+    <vendor email="inboxstuff@proton.me">CreateNothing</vendor>
+    <version>0.5.1</version>
     
-    <description><![CDATA[
-        Advanced accessibility linter for TYPO3 Fluid templates with context-aware intelligence.
-        Provides sophisticated real-time accessibility checks including:
-        <ul>
-            <li><b>Enhanced Image Accessibility:</b> Context-aware alt text validation, decorative image detection, SVG support</li>
-            <li><b>Smart Link Analysis:</b> Context-sensitive link text validation with surrounding content analysis</li>
-            <li><b>Advanced Form Validation:</b> Fieldset grouping, placeholder anti-patterns, required field consistency</li>
-            <li><b>Intelligent Heading Structure:</b> HTML5 sectioning awareness, Fluid layout understanding</li>
-            <li><b>Table Classification:</b> Automatic layout vs data table detection with appropriate validation</li>
-            <li><b>ARIA Intelligence:</b> Implicit role detection, context-appropriate validation, unnecessary aria-label detection</li>
-            <li><b>Navigation Optimization:</b> Skip link target validation, landmark redundancy detection</li>
-            <li><b>Interactive Components:</b> Modal focus management, accordion state tracking, tab keyboard navigation</li>
-            <li><b>Live Region Management:</b> Content prioritization, competing region detection</li>
-            <li><b>Multilingual Support:</b> Language attribute consistency, content language detection</li>
-            <li><b>List Semantics:</b> Content-aware ordered vs unordered validation</li>
-            <li><b>Radio/Checkbox Groups:</b> Intelligent grouping detection and validation</li>
-        </ul>
-        <br/>
-        <b>Version 1.4.0:</b> All inspections enhanced with context-aware intelligence and sophisticated validation logic.
-    ]]></description>
+    <!-- Icons are auto-detected from META-INF/pluginIcon.svg and pluginIcon_dark.svg -->
+    
+    <description><![CDATA[A fast, context-aware accessibility linter for TYPO3 Fluid templates in PhpStorm and other IntelliJ-based IDEs. It flags issues as you type and offers focused quick-fixes that align with WCAG and ARIA best practices.
+
+<br/><br/>
+<b>Key features</b>
+<ul>
+    <li><b>Real-time inspections:</b> images (alt text, decorative/SVG), links (meaningful text), forms (labels, required/state), headings (hierarchy & sectioning), tables (data vs layout, header scope), landmarks & navigation (skip links, redundancy), ARIA roles/attributes (implicit roles, misuse), interactive UI (modals, accordions, tabs), live regions, language attributes, list semantics, and radio/checkbox groups.</li>
+    <li><b>Fluid-aware analysis:</b> understands common TYPO3/Fluid patterns embedded in HTML templates.</li>
+    <li><b>One-click quick-fixes:</b> add missing labels/attributes, generate table scaffolds, adjust heading levels, mark decorative images, and more.</li>
+    <li><b>Configurable rules:</b> sensible defaults with options under <i>Settings | Tools | Fluid Accessibility</i>.</li>
+    <li><b>Compatible:</b> tested with PhpStorm and IntelliJ IDEA 2023.3 and newer.</li>
+</ul>
+<br/>
+Built and maintained by CreateNothing for the TYPO3 community. Not affiliated with or endorsed by the TYPO3 Association.]]></description>
     
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     
+    <extensionPoints>
+        <extensionPoint name="ruleProvider" interface="com.typo3.fluid.linter.rules.RuleProvider"/>
+        <extensionPoint name="fixStrategy" interface="com.typo3.fluid.linter.fixes.FixStrategy"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
+        <!-- Phase 1: Activate Universal Inspection Entry Point -->
+        <!-- Single, rule-engine based inspection (kept alongside legacy during migration) -->
+        <localInspection language="HTML"
+                         displayName="Universal Fluid Accessibility Check"
+                         groupName="Fluid Accessibility"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.typo3.fluid.linter.inspections.UniversalAccessibilityInspection"/>
+
         <!-- Phase 1: Core Accessibility Inspections -->
         
-        <!-- Enhanced Image Accessibility (replaces basic MissingAltTextInspection) -->
+        <!-- Image Accessibility (merged: formerly EnhancedImageAccessibilityInspection) -->
         <localInspection language="HTML"
-                         displayName="Enhanced image accessibility checks"
+                         displayName="Image accessibility checks"
                          groupName="Fluid Accessibility"
                          enabledByDefault="true"
                          level="ERROR"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedImageAccessibilityInspection"/>
+                         implementationClass="com.typo3.fluid.linter.inspections.ImageAccessibilityInspection"/>
         
         <!-- Form Accessibility -->
         <localInspection language="HTML"
@@ -75,7 +84,7 @@
         <localInspection language="HTML"
                          displayName="Non-descriptive link text"
                          groupName="Fluid Accessibility"
-                         enabledByDefault="true"
+                         enabledByDefault="false"
                          level="WARNING"
                          implementationClass="com.typo3.fluid.linter.inspections.LinkTextInspection"/>
         
@@ -168,106 +177,31 @@
                          level="WARNING"
                          implementationClass="com.typo3.fluid.linter.inspections.InvalidListStructureInspection"/>
         
-        <!-- Enhanced Inspections with Context-Aware Intelligence (v1.4.0) -->
-        <!-- These can be enabled as alternatives to the basic inspections above -->
-        
-        <!-- Enhanced Versions of Existing Inspections -->
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Link text with context analysis"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedLinkTextInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Heading hierarchy with HTML5 sectioning"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedHeadingHierarchyInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Table accessibility with layout detection"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedTableAccessibilityInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Form labels with fieldset grouping"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="ERROR"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedFormLabelInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Navigation landmarks with redundancy detection"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedNavigationLandmarkInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] ARIA roles with implicit role detection"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="ERROR"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedAriaRoleInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Modal dialogs with focus management"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedModalDialogInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Accordion with state management"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedAccordionAccessibilityInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Tab panels with keyboard navigation"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedTabPanelInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Live regions with content prioritization"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedLiveRegionInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Skip links with target validation"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedSkipLinksInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] List semantics with content analysis"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="WARNING"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedListSemanticInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Radio/checkbox groups with intelligent grouping"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="ERROR"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedRadioGroupFieldsetInspection"/>
-        
-        <localInspection language="HTML"
-                         displayName="[Enhanced] Page language with multilingual detection"
-                         groupName="Fluid Accessibility - Enhanced"
-                         enabledByDefault="false"
-                         level="ERROR"
-                         implementationClass="com.typo3.fluid.linter.inspections.EnhancedPageLanguageInspection"/>
+        <!-- Removed separate Enhanced variants; base inspections include enhancements -->
+    </extensions>
+
+    <!-- Register built-in providers via custom EP namespace -->
+    <extensions defaultExtensionNs="com.typo3.fluid.linter">
+        <ruleProvider implementation="com.typo3.fluid.linter.rules.DefaultRuleProvider"/>
+        <ruleProvider implementation="com.typo3.fluid.linter.rules.FluidRuleProvider"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddAttributeFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.ReplaceTextFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.WrapElementFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.ChangeAttributeFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddChildElementFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.MarkImageDecorativeFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.DeriveAltFromFilenameFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.GenerateTableHeaderScaffoldFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.GenerateLabelForInputFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddAriaRequiredAttributesFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AddSkipLinkFixStrategy"/>
+        <fixStrategy implementation="com.typo3.fluid.linter.fixes.AdjustHeadingLevelFixStrategy"/>
+    </extensions>
+
+    <!-- Settings UI (project-level) -->
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable instance="com.typo3.fluid.linter.settings.RuleSettingsConfigurable"
+                             id="fluid.accessibility.settings"
+                             displayName="Fluid Accessibility"/>
     </extensions>
 </idea-plugin>

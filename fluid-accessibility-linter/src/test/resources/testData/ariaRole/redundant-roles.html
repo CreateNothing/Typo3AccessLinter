@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Redundant ARIA Roles Test</title>
+</head>
+<body>
+    <!-- Redundant roles on semantic HTML elements -->
+    <button role="button">This role is redundant</button>
+    <nav role="navigation">Navigation with redundant role</nav>
+    <main role="main">Main content with redundant role</main>
+    <header role="banner">Header with redundant role</header>
+    <footer role="contentinfo">Footer with redundant role</footer>
+    <aside role="complementary">Aside with redundant role</aside>
+    <article role="article">Article with redundant role</article>
+    <form role="form">Form with redundant role</form>
+    <img role="img" src="image.jpg" alt="Image">
+    <ul role="list">
+        <li role="listitem">List item with redundant role</li>
+    </ul>
+    <a href="#" role="link">Link with redundant role</a>
+    
+    <!-- Headers with redundant heading role -->
+    <h1 role="heading">Heading 1 with redundant role</h1>
+    <h2 role="heading">Heading 2 with redundant role</h2>
+    
+    <!-- Input elements with redundant roles -->
+    <input type="text" role="textbox">
+    <textarea role="textbox">Text area with redundant role</textarea>
+    <select role="listbox">
+        <option>Option 1</option>
+    </select>
+    
+    <!-- Valid non-redundant roles (should not trigger warnings) -->
+    <div role="button">Div as button (valid)</div>
+    <span role="link">Span as link (valid)</span>
+    <div role="navigation">Div as navigation (valid)</div>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<head>
+    <title>Image Accessibility Valid Examples - Test Data</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <!-- Test cases for valid image accessibility (should NOT trigger ImageAccessibilityInspection) -->
+    
+    <section id="quality-alt-text">
+        <h2>High-Quality Alt Text</h2>
+        
+        <!-- Descriptive without redundant phrases -->
+        <img src="sunset.jpg" alt="Golden sunset over calm ocean waters">
+        <img src="mountain.jpg" alt="Snow-capped peaks under blue sky">
+        <img src="garden.jpg" alt="Colorful flower garden with roses and tulips">
+        
+        <!-- Functional descriptions -->
+        <img src="search-icon.png" alt="Search">
+        <img src="home-button.png" alt="Home">
+        <img src="close-icon.svg" alt="Close dialog">
+        
+        <!-- Context-appropriate descriptions -->
+        <img src="chart.png" alt="Sales increased 25% in Q4 2023">
+        <img src="diagram.svg" alt="Three-step process: Plan, Execute, Review">
+        <img src="map.jpg" alt="Location of conference center on Main Street">
+        
+        <!-- Optimal length alt text -->
+        <img src="complex-scene.jpg" alt="Children playing soccer in park while parents watch from benches">
+        <img src="artwork.jpg" alt="Abstract painting with bold red and blue geometric shapes">
+        
+        <!-- Fluid images with quality alt -->
+        <f:image src="hero.jpg" alt="Customer service team helping clients in modern office" />
+        <f:image src="product.jpg" alt="Stainless steel coffee maker with digital display" />
+    </section>
+    
+    <section id="properly-decorative">
+        <h2>Properly Marked Decorative Images</h2>
+        
+        <!-- Empty alt for decorative -->
+        <img src="spacer.gif" alt="" width="10" height="10">
+        <img src="divider.png" alt="" width="100" height="2">
+        <img src="pattern-bg.jpg" alt="">
+        
+        <!-- Role presentation/none -->
+        <img src="decoration.svg" role="presentation">
+        <img src="ornament.png" role="none">
+        <img src="flourish.gif" role="presentation" alt="">
+        
+        <!-- Decorative with proper context -->
+        <div class="section-divider">
+            <img src="separator-line.png" alt="" role="presentation">
+        </div>
+        
+        <!-- Small decorative elements -->
+        <ul>
+            <li><img src="bullet.gif" alt="" width="8" height="8"> List item text</li>
+            <li><img src="arrow.png" alt="" width="12" height="8"> Another item</li>
+        </ul>
+        
+        <!-- Fluid decorative -->
+        <f:image src="bg-texture.png" alt="" role="presentation" />
+        <f:image src="border-ornament.svg" role="none" />
+    </section>
+    
+    <section id="svg-accessibility-valid">
+        <h2>SVG with Proper Accessibility</h2>
+        
+        <!-- SVG with title -->
+        <svg width="100" height="100">
+            <title>Red circle icon</title>
+            <circle cx="50" cy="50" r="40" fill="red" />
+        </svg>
+        
+        <!-- SVG with description -->
+        <svg width="200" height="100">
+            <desc>Bar chart showing quarterly sales growth</desc>
+            <rect x="10" y="60" width="30" height="40" fill="blue"/>
+            <rect x="50" y="40" width="30" height="60" fill="blue"/>
+            <rect x="90" y="20" width="30" height="80" fill="blue"/>
+            <rect x="130" y="10" width="30" height="90" fill="blue"/>
+        </svg>
+        
+        <!-- SVG with aria-label -->
+        <svg width="50" height="50" aria-label="Five-star rating">
+            <path d="M25 5l5.5 11.1L42 17.6l-8.75 8.5L35.5 37L25 31.5L14.5 37l2.25-10.9L8 17.6l11.5-1.5L25 5z" fill="gold"/>
+        </svg>
+        
+        <!-- SVG with aria-labelledby -->
+        <h3 id="chart-title">Performance Metrics</h3>
+        <svg width="300" height="200" aria-labelledby="chart-title">
+            <rect x="50" y="50" width="200" height="100" fill="lightblue" stroke="blue"/>
+            <text x="150" y="105" text-anchor="middle">Metrics Data</text>
+        </svg>
+        
+        <!-- SVG with role="img" and title -->
+        <svg role="img" width="60" height="60">
+            <title>Warning triangle icon</title>
+            <polygon points="30,10 50,50 10,50" fill="orange" stroke="red"/>
+            <text x="30" y="35" text-anchor="middle" fill="red">!</text>
+        </svg>
+        
+        <!-- Decorative SVG -->
+        <svg role="presentation" width="100" height="20">
+            <rect width="100" height="2" fill="#ccc"/>
+        </svg>
+        
+        <svg role="none" width="50" height="50">
+            <circle cx="25" cy="25" r="20" fill="lightgray"/>
+        </svg>
+        
+        <!-- Complex accessible SVG -->
+        <svg role="img" width="400" height="200" aria-labelledby="sales-title" aria-describedby="sales-desc">
+            <title id="sales-title">2024 Sales Performance</title>
+            <desc id="sales-desc">Line chart showing steady growth from January to December with peak in November</desc>
+            <polyline points="50,150 100,140 150,120 200,110 250,100 300,90 350,80" stroke="blue" stroke-width="3" fill="none"/>
+            <text x="200" y="30" text-anchor="middle" font-size="16" font-weight="bold">Sales Growth 2024</text>
+        </svg>
+    </section>
+    
+    <section id="input-images-valid">
+        <h2>Input Type=Image with Proper Accessibility</h2>
+        
+        <!-- Input with alt -->
+        <form>
+            <input type="image" src="submit.png" alt="Submit form">
+        </form>
+        
+        <!-- Input with aria-label -->
+        <form>
+            <input type="image" src="search.png" aria-label="Search products">
+        </form>
+        
+        <!-- Input with aria-labelledby -->
+        <form>
+            <label id="search-label">Product Search</label>
+            <input type="text" name="query">
+            <input type="image" src="go.png" aria-labelledby="search-label">
+        </form>
+        
+        <!-- Input with title -->
+        <form>
+            <input type="image" src="login.png" title="Log in to your account">
+        </form>
+        
+        <!-- Input with multiple accessibility methods -->
+        <form>
+            <input type="image" src="checkout.png" alt="Proceed to checkout" title="Complete your purchase">
+        </form>
+    </section>
+    
+    <section id="aria-alternatives">
+        <h2>Images with ARIA Alternatives</h2>
+        
+        <!-- Images with aria-label (valid alternative to alt) -->
+        <img src="icon.png" aria-label="Home page navigation">
+        <img src="status.svg" aria-label="System status: Online">
+        <img src="rating.png" aria-label="4 out of 5 stars">
+        
+        <!-- Images with aria-labelledby -->
+        <h2 id="product-name">Premium Headphones</h2>
+        <img src="headphones.jpg" aria-labelledby="product-name">
+        
+        <div id="image-caption">Mountain landscape at sunrise</div>
+        <img src="landscape.jpg" aria-labelledby="image-caption">
+        
+        <!-- Complex labeling -->
+        <div id="price-label">Product Price</div>
+        <div id="currency">USD</div>
+        <img src="price-tag.png" aria-labelledby="price-label currency" alt="$299">
+        
+        <!-- Fluid with ARIA -->
+        <f:image src="notification.png" aria-label="New message notification" />
+        <f:image src="progress.svg" aria-labelledby="progress-text" />
+        <span id="progress-text">Upload progress: 75%</span>
+    </section>
+    
+    <section id="contextual-images">
+        <h2>Images with Good Context</h2>
+        
+        <!-- Images in figures -->
+        <figure>
+            <img src="architecture.jpg" alt="Modern glass office building with steel framework">
+            <figcaption>Our new headquarters opened in 2024</figcaption>
+        </figure>
+        
+        <!-- Images in descriptive cards -->
+        <div class="product-card">
+            <img src="laptop.jpg" alt="Thin silver laptop with backlit keyboard">
+            <h3>UltraBook Pro</h3>
+            <p>Lightweight design with powerful performance</p>
+        </div>
+        
+        <!-- Images in links with good alt -->
+        <a href="/gallery/nature">
+            <img src="forest-thumb.jpg" alt="View nature photography gallery">
+        </a>
+        
+        <a href="/download/annual-report.pdf">
+            <img src="pdf-icon.png" alt="Download 2024 annual report (PDF, 2.3 MB)">
+        </a>
+        
+        <!-- Functional images in navigation -->
+        <nav>
+            <a href="/home"><img src="home.svg" alt="Home"></a>
+            <a href="/about"><img src="info.svg" alt="About us"></a>
+            <a href="/contact"><img src="mail.svg" alt="Contact"></a>
+        </nav>
+    </section>
+    
+    <section id="complex-valid-scenarios">
+        <h2>Complex Valid Scenarios</h2>
+        
+        <!-- Gallery with proper alt text -->
+        <div class="photo-gallery">
+            <img src="wedding-1.jpg" alt="Bride and groom exchanging vows under flower arch">
+            <img src="wedding-2.jpg" alt="Wedding party toasting with champagne">
+            <img src="wedding-3.jpg" alt="First dance in elegantly decorated ballroom">
+        </div>
+        
+        <!-- Mixed content with proper accessibility -->
+        <article>
+            <h1>Travel Guide: Mountain Hiking</h1>
+            
+            <img src="trail-map.jpg" alt="Hiking trail map showing 3-mile loop with elevation markers">
+            
+            <p>Planning your mountain adventure...</p>
+            
+            <f:image src="equipment.jpg" alt="Essential hiking gear: boots, backpack, water bottle, and map" />
+            
+            <!-- Decorative separator -->
+            <img src="mountain-divider.png" alt="" role="presentation">
+            
+            <h2>Safety Tips</h2>
+            <svg role="img" aria-label="Warning: steep terrain ahead">
+                <polygon points="30,10 50,50 10,50" fill="red"/>
+                <text x="30" y="35" text-anchor="middle" fill="white">!</text>
+            </svg>
+            
+            <p>Always check weather conditions...</p>
+        </article>
+        
+        <!-- Form with accessible image inputs -->
+        <form>
+            <fieldset>
+                <legend>Search Options</legend>
+                <input type="text" name="query" aria-label="Search terms">
+                <input type="image" src="search-icon.png" alt="Search">
+                <input type="image" src="advanced-icon.png" alt="Advanced search options">
+            </fieldset>
+        </form>
+        
+        <!-- Data visualization with accessibility -->
+        <div class="dashboard">
+            <h2>Performance Dashboard</h2>
+            
+            <svg role="img" width="400" height="300" aria-labelledby="chart-title-1" aria-describedby="chart-desc-1">
+                <title id="chart-title-1">Revenue Trends</title>
+                <desc id="chart-desc-1">Monthly revenue showing consistent growth from January to December 2024</desc>
+                <!-- Chart elements -->
+                <line x1="50" y1="250" x2="350" y2="50" stroke="blue" stroke-width="3"/>
+            </svg>
+            
+            <img src="kpi-summary.png" alt="Key metrics: 150% revenue growth, 89% customer satisfaction, 12% cost reduction">
+        </div>
+    </section>
+    
+    <section id="fluid-specific-valid">
+        <h2>Fluid-Specific Valid Examples</h2>
+        
+        <!-- Fluid with dynamic but accessible alt -->
+        <f:for each="{gallery}" as="photo">
+            <figure>
+                <f:image src="{photo.url}" alt="{photo.description}" />
+                <figcaption>{photo.caption}</figcaption>
+            </figure>
+        </f:for>
+        
+        <!-- Conditional accessibility -->
+        <f:if condition="{user.profileImage}">
+            <f:image src="{user.profileImage}" alt="{user.name}'s profile photo" />
+        </f:if>
+        
+        <!-- Fluid with complex alt text generation -->
+        <f:image 
+            src="{product.image}" 
+            alt="{product.name}: {product.shortDescription}" 
+            aria-describedby="product-details-{product.id}"
+        />
+        
+        <!-- Decorative Fluid images -->
+        <f:if condition="{showDividers}">
+            <f:image src="section-divider.png" alt="" role="presentation" />
+        </f:if>
+    </section>
+</body>
+</html>
