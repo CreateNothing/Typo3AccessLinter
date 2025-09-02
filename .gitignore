@@ -2,6 +2,9 @@
 .claude/
 CLAUDE.md
 
+# Brainstorming and internal docs folder
+brainstorm/
+
 # IDE files
 .idea/
 .vscode/
