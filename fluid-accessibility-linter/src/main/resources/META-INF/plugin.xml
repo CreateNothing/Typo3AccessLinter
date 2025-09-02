@@ -4,6 +4,8 @@
     <vendor email="inboxstuff@proton.me">CreateNothing</vendor>
     <version>0.5.1</version>
     
+    <!-- Icons are auto-detected from META-INF/pluginIcon.svg and pluginIcon_dark.svg -->
+    
     <description><![CDATA[A fast, context-aware accessibility linter for TYPO3 Fluid templates in PhpStorm and other IntelliJ-based IDEs. It flags issues as you type and offers focused quick-fixes that align with WCAG and ARIA best practices.
 
 <br/><br/>
