@@ -5,10 +5,10 @@ import org.junit.Test;
 public class PageLanguageInspectionTest extends BaseInspectionTest {
 
     @Test
-    public void testShouldWarn_whenHtmlMissingLang() {
+    public void testShouldNotWarn_whenHtmlMissingLang() {
         String html = "<html><head></head><body></body></html>";
         var highlights = highlight(html, new PageLanguageInspection());
-        assertHighlightsContain(highlights, "Missing lang attribute on <html> element");
+        assertNoHighlightsContaining(highlights, "Missing lang attribute on <html> element");
     }
 
     @Test

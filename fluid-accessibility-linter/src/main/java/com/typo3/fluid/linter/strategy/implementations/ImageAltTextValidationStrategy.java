@@ -71,9 +71,8 @@ public class ImageAltTextValidationStrategy implements ValidationStrategy {
 
         if (alt != null) {
             String trimmed = alt.trim();
-            if (trimmed.isEmpty()) {
-                out.add(new ValidationResult(start, end, "Alt attribute must not be empty (use role='presentation' for decorative images)"));
-            } else if (isLowQualityAltText(trimmed)) {
+            // Allow empty alt as decorative without requiring role='presentation'
+            if (!trimmed.isEmpty() && isLowQualityAltText(trimmed)) {
                 out.add(new ValidationResult(start, end, "Alt text appears to be low quality: " + trimmed));
             }
         }

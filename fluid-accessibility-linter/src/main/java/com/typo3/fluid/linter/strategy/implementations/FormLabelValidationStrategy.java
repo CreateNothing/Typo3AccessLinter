@@ -43,19 +43,34 @@ public class FormLabelValidationStrategy implements ValidationStrategy {
         });
 
         for (XmlTag input : inputs) {
+            // Compute range early as it is used in multiple branches
+            int s = input.getTextRange().getStartOffset();
+            int e = input.getTextRange().getEndOffset();
+
             String type = value(input.getAttributeValue("type")).toLowerCase();
             if (!type.isEmpty() && !LABELED_INPUT_TYPES.contains(type)) continue;
 
             String ariaLabel = input.getAttributeValue("aria-label");
             String ariaLabelledby = input.getAttributeValue("aria-labelledby");
-            if ((ariaLabel != null && !ariaLabel.trim().isEmpty()) ||
-                (ariaLabelledby != null && !ariaLabelledby.trim().isEmpty())) {
+
+            // Accept aria-label directly
+            if (ariaLabel != null && !ariaLabel.trim().isEmpty()) {
                 continue; // accessible name provided
             }
 
+            // Accept aria-labelledby only if it references at least one existing element id
+            if (ariaLabelledby != null && !ariaLabelledby.trim().isEmpty()) {
+                if (anyReferencedIdExists(file, ariaLabelledby)) {
+                    continue; // valid programmatic label in place
+                } else {
+                    results.add(new ValidationResult(s, e,
+                            buildMissingIdrefMessage(ariaLabelledby)));
+                    continue;
+                }
+            }
+
             String id = input.getAttributeValue("id");
-            int s = input.getTextRange().getStartOffset();
-            int e = input.getTextRange().getEndOffset();
+            
 
             if (id == null || id.trim().isEmpty()) {
                 // Provide fixes: add <label for> (generating id) OR add aria-label
@@ -80,11 +95,54 @@ public class FormLabelValidationStrategy implements ValidationStrategy {
                 ariaFriendly.setAttribute("labelFixKind", "aria");
                 com.intellij.codeInspection.LocalQuickFix[] fixesAria = com.typo3.fluid.linter.fixes.FixRegistry.getInstance().getFixes(file, s, e, ariaFriendly);
                 com.intellij.codeInspection.LocalQuickFix[] fixes = concat(fixesLabel, fixesAria);
-                results.add(new ValidationResult(s, e, "Form input missing associated label", fixes));
+                String detail = id != null && !id.isBlank() ? " (<label for='" + id + "'>)" : "";
+                results.add(new ValidationResult(s, e, "Form input missing associated label" + detail, fixes));
             }
         }
 
         return results;
+    }
+
+    private boolean anyReferencedIdExists(PsiFile file, String ariaLabelledby) {
+        java.util.Set<String> want = new java.util.HashSet<>();
+        for (String id : ariaLabelledby.trim().split("\\s+")) {
+            if (!id.isBlank()) want.add(id.trim());
+        }
+        if (want.isEmpty()) return false;
+
+        java.util.Set<String> have = new java.util.HashSet<>();
+        file.accept(new PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(@org.jetbrains.annotations.NotNull PsiElement element) {
+                if (element instanceof XmlTag) {
+                    XmlTag tag = (XmlTag) element;
+                    String id = tag.getAttributeValue("id");
+                    if (id != null && !id.isBlank()) {
+                        have.add(id);
+                    }
+                }
+                super.visitElement(element);
+            }
+        });
+        for (String id : want) {
+            if (have.contains(id)) return true; // at least one exists
+        }
+        return false;
+    }
+
+    private String buildMissingIdrefMessage(String ariaLabelledby) {
+        String[] parts = ariaLabelledby.trim().split("\\s+");
+        StringBuilder missing = new StringBuilder();
+        for (String id : parts) {
+            if (!id.isBlank()) {
+                if (missing.length() > 0) missing.append(", ");
+                missing.append("'").append(id.trim()).append("'");
+            }
+        }
+        if (missing.length() == 0) {
+            return "aria-labelledby is present but empty; add valid id(s) or use aria-label";
+        }
+        return "aria-labelledby references non-existent ID(s): " + missing;
     }
 
     private boolean isLabelFor(List<XmlTag> labels, String id) {

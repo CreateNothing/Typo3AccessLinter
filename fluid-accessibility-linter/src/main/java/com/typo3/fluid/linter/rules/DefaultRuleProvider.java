@@ -61,6 +61,104 @@ public class DefaultRuleProvider implements RuleProvider {
             AccessibilityRule.RuleCategory.ARIA
         );
         engine.registerRule(ariaValidRule, new AriaValidationStrategy());
+
+        // ARIA role rules (validity, redundancy, conflicts, required props)
+        AccessibilityRule ariaRoleRule = createRule(
+            "aria-role",
+            "ARIA roles must be appropriate",
+            "Validate ARIA roles for validity, redundancy on semantic elements, and required properties",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.ARIA
+        );
+        engine.registerRule(ariaRoleRule, new AriaRoleValidationStrategy());
+
+        // Keyboard and focus rules
+        AccessibilityRule tabindexRule = createRule(
+            "tabindex-positive",
+            "Avoid positive tabindex",
+            "Positive tabindex values disrupt natural focus order",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.KEYBOARD
+        );
+        engine.registerRule(tabindexRule, new TabindexPositiveValidationStrategy());
+
+        AccessibilityRule focusCssRule = createRule(
+            "focus-indicator-css",
+            "Ensure visible focus indicators",
+            "Do not remove outlines for :focus/:focus-visible; provide strong indicators",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.KEYBOARD
+        );
+        engine.registerRule(focusCssRule, new FocusIndicatorCssValidationStrategy());
+
+        // Semantics: link vs button
+        AccessibilityRule linkButtonRule = createRule(
+            "link-vs-button",
+            "Use links for navigation, buttons for actions",
+            "Anchors should navigate; buttons should not be used for navigation",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.SEMANTICS
+        );
+        engine.registerRule(linkButtonRule, new LinkButtonSemanticsValidationStrategy());
+
+        // Document rules
+        AccessibilityRule langRule = createRule(
+            "page-language",
+            "Page language must be set",
+            "Declare valid language on <html> and language of parts",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.LANGUAGE
+        );
+        engine.registerRule(langRule, new LanguageValidationStrategy());
+
+        AccessibilityRule titleRule = createRule(
+            "page-title",
+            "Pages must have descriptive titles",
+            "Provide a unique, descriptive <title>",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.STRUCTURE
+        );
+        engine.registerRule(titleRule, new PageTitleValidationStrategy());
+
+        // Motion
+        AccessibilityRule motionRule = createRule(
+            "reduced-motion",
+            "Honor reduced motion preference",
+            "Provide @media (prefers-reduced-motion: reduce) alternative",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.STRUCTURE
+        );
+        engine.registerRule(motionRule, new ReducedMotionValidationStrategy());
+
+        // Target size
+        AccessibilityRule targetSizeRule = createRule(
+            "target-size",
+            "Ensure minimum target size",
+            "Clickable targets should be at least 24x24 CSS px",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.SEMANTICS
+        );
+        engine.registerRule(targetSizeRule, new TargetSizeValidationStrategy());
+
+        // Status messages
+        AccessibilityRule statusRule = createRule(
+            "status-messages",
+            "Expose status messages to AT",
+            "Use appropriate roles (e.g., role='alert') for errors and status",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.FORMS
+        );
+        engine.registerRule(statusRule, new StatusMessageValidationStrategy());
+
+        // ARIA label sanity rules (non-interactive misuse, empty labels, hidden elements)
+        AccessibilityRule ariaLabelSanityRule = createRule(
+            "aria-label-sanity",
+            "Avoid unnecessary aria-label",
+            "Use aria-label only when there is no visible text or to name landmarks/controls; avoid on non-interactive content and empty values",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.ARIA
+        );
+        engine.registerRule(ariaLabelSanityRule, new AriaLabelSanityStrategy());
         
         // Navigation rules
         AccessibilityRule linkTextRule = createRule(

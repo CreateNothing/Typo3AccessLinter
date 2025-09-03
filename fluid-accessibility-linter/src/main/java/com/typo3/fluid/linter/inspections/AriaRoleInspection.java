@@ -199,6 +199,11 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
     
     @Override
     protected void inspectFile(@NotNull PsiFile file, @NotNull ProblemsHolder holder) {
+        // Avoid duplicate highlights when the Universal inspection is enabled
+        com.typo3.fluid.linter.settings.RuleSettingsState st = com.typo3.fluid.linter.settings.RuleSettingsState.getInstance(file.getProject());
+        if (st != null && st.isUniversalEnabled() && st.isSuppressLegacyDuplicates()) {
+            return;
+        }
         String content = file.getText();
         
         // Check for invalid or abstract roles
@@ -225,6 +230,12 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         checkUnnecessaryAriaLabels(content, file, holder);
         checkAriaLabelOverrides(content, file, holder);
         checkVerboseAriaLabels(content, file, holder);
+
+        // Additional ARIA attribute/behavior checks
+        checkInvalidAriaAttributes(content, file, holder);
+        checkAriaHiddenWithFocusable(content, file, holder);
+        checkMissingAriaExpanded(content, file, holder);
+        checkAriaLabelTranslation(content, file, holder);
     }
     
     private void checkInvalidRoles(String content, PsiFile file, ProblemsHolder holder) {
@@ -384,12 +395,14 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             // Replace the element text
             if (!newText.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         int startOffset = element.getTextRange().getStartOffset();
                         int endOffset = element.getTextRange().getEndOffset();
                         document.replaceString(startOffset, endOffset, newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -423,11 +436,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
 
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -502,11 +517,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             if (!updated.equals(text)) {
                 final String newText = updated.replaceAll("\\s+>", ">");
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -535,12 +552,14 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             // Replace the element text
             if (!newText.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         int startOffset = element.getTextRange().getStartOffset();
                         int endOffset = element.getTextRange().getEndOffset();
                         document.replaceString(startOffset, endOffset, newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -569,12 +588,14 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             // Replace the element text
             if (!newText.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         int startOffset = element.getTextRange().getStartOffset();
                         int endOffset = element.getTextRange().getEndOffset();
                         document.replaceString(startOffset, endOffset, newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -923,11 +944,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
 
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -988,11 +1011,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             String updated = text.replaceFirst(">", " role=\"button\">");
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -1015,11 +1040,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             final String updated = updatedTmp.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -1067,12 +1094,14 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             // Replace the element text
             if (!newText.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         int startOffset = element.getTextRange().getStartOffset();
                         int endOffset = element.getTextRange().getEndOffset();
                         document.replaceString(startOffset, endOffset, newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -1101,14 +1130,7 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
                 continue;
             }
             
-            // Check if aria-label includes the visible text (WCAG 2.5.3)
-            if (!ariaLabel.toLowerCase().contains(visibleText.toLowerCase()) && 
-                !visibleText.toLowerCase().contains(ariaLabel.toLowerCase())) {
-                
-                registerProblem(holder, file, matcher.start(), matcher.end(),
-                    "Accessible name should include the visible label. Start aria-label with '" + visibleText + "' or remove aria-label so the visible text is used.",
-                    new IncludeVisibleTextInAriaLabelFix(visibleText, ariaLabel));
-            }
+            // Label-in-Name is handled in checkAriaLabelOverrides() to avoid duplicate reports.
             
             // Check for redundant role words in aria-label
             String role = extractRoleFromElement(matcher.group(0));
@@ -1126,6 +1148,11 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         Matcher allMatcher = anyWithAriaLabel.matcher(content);
         while (allMatcher.find()) {
             String element = allMatcher.group(0);
+            String tagName = extractTagName(element);
+            if (tagName != null && ("a".equalsIgnoreCase(tagName) || "button".equalsIgnoreCase(tagName))) {
+                // Already handled in the specific link/button pass above
+                continue;
+            }
             String ariaLabel = allMatcher.group(1);
             String role = extractRoleFromElement(element);
             if (role != null && containsRedundantRoleWord(ariaLabel, role)) {
@@ -1433,9 +1460,12 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             String result = sb.replace(tagStart, tagEnd + 1, finalTag).toString();
             final String resultText = result;
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+                PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                Document doc = pdm.getDocument(file);
                 if (doc != null) {
+                    pdm.doPostponedOperationsAndUnblockDocument(doc);
                     doc.replaceString(0, doc.getTextLength(), resultText);
+                    pdm.commitDocument(doc);
                 }
             });
         }
@@ -1480,11 +1510,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
                 final String finalText = updated.replaceAll("\\s+>", ">");
                 if (!finalText.equals(text)) {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
-                        Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                        PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                        Document document = pdm.getDocument(element.getContainingFile());
                         if (document != null) {
+                            pdm.doPostponedOperationsAndUnblockDocument(document);
                             document.replaceString(element.getTextRange().getStartOffset(),
                                     element.getTextRange().getEndOffset(), finalText);
+                            pdm.commitDocument(document);
                         }
                     });
                 }
@@ -1533,11 +1565,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             final String updated = updatedTmp.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -1569,11 +1603,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             final String updated = updatedTmp.replaceAll("\\s+>", ">").replaceAll("\\s+", " ");
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -1595,7 +1631,8 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
         @NotNull
         @Override
         public String getFamilyName() {
-            return "Start aria-label with visible text '" + visibleText + "'";
+            // Keep wording compatible with tests that search for "Include visible text"
+            return "Include visible text — start aria-label with '" + visibleText + "'";
         }
         
         @Override
@@ -1636,9 +1673,12 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             String result = sb.replace(tagStart, tagEnd + 1, finalTag).toString();
             final String resultText = result;
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+                PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                Document doc = pdm.getDocument(file);
                 if (doc != null) {
+                    pdm.doPostponedOperationsAndUnblockDocument(doc);
                     doc.replaceString(0, doc.getTextLength(), resultText);
+                    pdm.commitDocument(doc);
                 }
             });
         }
@@ -1683,9 +1723,12 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
                 String result = sb.replace(tagStart, tagEnd + 1, finalTag).toString();
                 final String resultText = result;
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document doc = pdm.getDocument(file);
                     if (doc != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(doc);
                         doc.replaceString(0, doc.getTextLength(), resultText);
+                        pdm.commitDocument(doc);
                     }
                 });
             }
@@ -1744,11 +1787,13 @@ public class AriaRoleInspection extends FluidAccessibilityInspection {
             String updated = text.replaceAll("\\s*\\baria-hidden\\s*=\\s*[\"'][^\"']*[\"']", "");
             if (!updated.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         document.replaceString(element.getTextRange().getStartOffset(),
                                 element.getTextRange().getEndOffset(), updated);
+                        pdm.commitDocument(document);
                     }
                 });
             }

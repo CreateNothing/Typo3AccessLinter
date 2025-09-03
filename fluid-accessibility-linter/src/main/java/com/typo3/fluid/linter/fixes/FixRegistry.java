@@ -62,6 +62,7 @@ public class FixRegistry {
             register(new ReplaceTextFixStrategy());
             register(new WrapElementFixStrategy());
             register(new ChangeAttributeFixStrategy());
+            register(new RemoveAttributeFixStrategy());
             register(new AddChildElementFixStrategy());
             register(new MarkImageDecorativeFixStrategy());
             register(new DeriveAltFromFilenameFixStrategy());

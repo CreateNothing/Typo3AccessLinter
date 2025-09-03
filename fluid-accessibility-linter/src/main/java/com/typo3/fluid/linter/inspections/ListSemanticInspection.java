@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 import java.util.*;
 
 public class ListSemanticInspection extends FluidAccessibilityInspection {
+
+    // De-duplicate deep-nesting warnings per file position
+    private final java.util.Set<Integer> deepNestingReportedOffsets = new java.util.HashSet<>();
     
     protected static final Pattern LIST_PATTERN = Pattern.compile(
         "<(ul|ol|dl)\\b([^>]*)>(.*?)</\\1>",
@@ -101,6 +104,8 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         // Enhanced context-aware semantic analysis
         analyzeListContentSemantics(content, file, holder);
         detectNavigationLists(content, file, holder);
+        // Reset per-file de-duplication for deep nesting warnings
+        this.deepNestingReportedOffsets.clear();
         validateListNestingContext(content, file, holder);
         checkListItemContentQuality(content, file, holder);
         
@@ -598,7 +603,7 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         }
         
         // Check for deeply nested lists
-        checkNestedListDepth(content, file, holder, 0, 0);
+        checkNestedListDepth(content, file, holder, 0, 0, -1);
     }
     
     private void checkListItemContentQuality(String content, PsiFile file, ProblemsHolder holder) {
@@ -676,26 +681,117 @@ public class ListSemanticInspection extends FluidAccessibilityInspection {
         }
     }
     
-    private void checkNestedListDepth(String content, PsiFile file, ProblemsHolder holder, int startPos, int depth) {
+    private void checkNestedListDepth(String content, PsiFile file, ProblemsHolder holder, int startPos, int depth, int rootStart) {
+        // When we recurse, only search INSIDE the current list element to avoid
+        // repeatedly matching the same <ul>/<ol> tag which inflates depth.
+        // Determine the bounds of the element starting at startPos (if any).
+        int searchStart = startPos;
+        int searchEnd = content.length();
+        if (startPos >= 0 && startPos < content.length() && content.charAt(startPos) == '<') {
+            // Identify if this is a UL/OL and compute a precise end limited to that list
+            String tag = extractOpeningTagName(content, startPos);
+            int openEnd = content.indexOf('>', startPos);
+            if (openEnd > startPos) {
+                searchStart = openEnd + 1;
+            }
+            int elementEnd = ("ul".equalsIgnoreCase(tag) || "ol".equalsIgnoreCase(tag))
+                ? findListEnd(content, startPos, tag.toLowerCase())
+                : findElementEnd(content, startPos);
+            if (elementEnd > searchStart) {
+                searchEnd = elementEnd;
+            }
+            // Establish root list start for de-duplication
+            if (rootStart < 0) {
+                rootStart = startPos;
+            }
+        }
+
         if (depth > 4) {
             LocalQuickFix[] fixes = new LocalQuickFix[] {
                 new FlattenDeepNestingFix(),
                 new FlattenDeepNestingToItemsFix()
             };
-            registerProblems(holder, file, startPos, startPos + 100,
-                String.format("List nesting is %d levels deep. Consider flattening for better accessibility and usability", depth),
-                fixes);
+            // De-duplicate by top-level list offset; anchor the warning to the top-level list
+            int anchor = rootStart >= 0 ? rootStart : startPos;
+            if (!deepNestingReportedOffsets.contains(anchor)) {
+                deepNestingReportedOffsets.add(anchor);
+                registerProblems(holder, file, anchor, Math.min(anchor + 100, content.length()),
+                    String.format("List nesting is %d levels deep. Consider flattening for better accessibility and usability", depth),
+                    fixes);
+            }
             return;
         }
         
         Pattern listPattern = Pattern.compile("<(?:ul|ol)[^>]*>", Pattern.CASE_INSENSITIVE);
         Matcher listMatcher = listPattern.matcher(content);
-        listMatcher.region(startPos, content.length());
+        listMatcher.region(Math.max(0, searchStart), Math.max(Math.min(searchEnd, content.length()), 0));
         
         while (listMatcher.find()) {
-            int listEnd = findElementEnd(content, listMatcher.start());
-            checkNestedListDepth(content, file, holder, listMatcher.start(), depth + 1);
+            // Recurse into each nested list we find within the current bounds
+            checkNestedListDepth(content, file, holder, listMatcher.start(), depth + 1, rootStart);
         }
+    }
+
+    // Extract opening tag name (e.g., "ul" or "ol") at a given position
+    private String extractOpeningTagName(String content, int startPos) {
+        int i = startPos + 1; // skip '<'
+        StringBuilder sb = new StringBuilder();
+        while (i < content.length()) {
+            char c = content.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                sb.append(c);
+            } else {
+                break;
+            }
+            i++;
+        }
+        return sb.toString();
+    }
+
+    // Find the end index of the specific list element, counting only same-tag nesting
+    private int findListEnd(String content, int startPos, String tagName) {
+        int openEnd = content.indexOf('>', startPos);
+        if (openEnd < 0) return content.length();
+        int level = 1;
+        boolean inQuote = false;
+        char quote = '\0';
+        for (int i = openEnd + 1; i < content.length(); i++) {
+            char c = content.charAt(i);
+            if (inQuote) {
+                if (c == quote) inQuote = false;
+                continue;
+            }
+            if (c == '\'' || c == '"') {
+                inQuote = true; quote = c; continue;
+            }
+            if (c == '<') {
+                // closing tag?
+                if (i + 2 + tagName.length() <= content.length() && content.charAt(i + 1) == '/') {
+                    String maybe = content.substring(i + 2, Math.min(i + 2 + tagName.length(), content.length()));
+                    if (maybe.equalsIgnoreCase(tagName)) {
+                        int end = content.indexOf('>', i);
+                        if (end < 0) return content.length();
+                        level--;
+                        if (level == 0) return end + 1;
+                        i = end; // jump to end of tag
+                        continue;
+                    }
+                }
+                // opening same tag?
+                if (i + 1 + tagName.length() <= content.length()) {
+                    String maybeOpen = content.substring(i + 1, Math.min(i + 1 + tagName.length(), content.length()));
+                    if (maybeOpen.equalsIgnoreCase(tagName)) {
+                        level++;
+                        // advance to end of this opening tag to speed up
+                        int end = content.indexOf('>', i);
+                        if (end < 0) return content.length();
+                        i = end;
+                        continue;
+                    }
+                }
+            }
+        }
+        return content.length();
     }
     
     // Helper methods for content analysis

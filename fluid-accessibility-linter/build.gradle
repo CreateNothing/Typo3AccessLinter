@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.typo3.fluid'
-version '0.6.0'
+version '0.6.1'
 
 repositories {
     mavenCentral()
@@ -24,6 +24,18 @@ intellij {
 patchPluginXml {
     sinceBuild = '233.0'
     untilBuild = '253.*'
+    changeNotes = '''
+      <ul>
+        <li>Fix: eliminate false positives and duplicates in deep list nesting warnings</li>
+        <li>New: ARIA role validation strategy registered (redundancy, conflicts, required props)</li>
+        <li>New: Keyboard/focus checks – positive tabindex, focus outline removal</li>
+        <li>New: Semantics – anchors used as buttons and buttons used for navigation</li>
+        <li>New: Reduced-motion hint and minimum target size check</li>
+        <li>Tweak: Accept empty <code>alt</code> for decorative images</li>
+        <li>Tweak: Remove DOCTYPE and &lt;html&gt; enforcement to avoid noise in fragments</li>
+        <li>Internal: Developer a11y test pack added to improve coverage</li>
+      </ul>
+    '''
 }
 
 java {

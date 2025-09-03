@@ -47,4 +47,28 @@ public class FormLabelValidationStrategyTest extends LightJavaCodeInsightFixture
         boolean found = violations.stream().anyMatch(v -> v.getMessage().toLowerCase().contains("missing associated label"));
         assertTrue("ID without matching label should be flagged", found);
     }
+
+    @Test
+    public void testShouldPassWhenAriaLabelledbyMatchesLabelId() {
+        String html = "<html><body>" +
+                "<label id=\"label1\">First Name</label>" +
+                "<input type=\"text\" aria-labelledby=\"label1\">" +
+                "</body></html>";
+        PsiFile file = myFixture.configureByText("form-aria-labelledby-ok.html", html).getContainingFile();
+        var violations = RuleEngine.getInstance().execute(file);
+        boolean anyLabelIssue = violations.stream().anyMatch(v -> v.getMessage().toLowerCase().contains("label"));
+        assertFalse("aria-labelledby should satisfy labeling when id exists", anyLabelIssue);
+    }
+
+    @Test
+    public void testShouldFailWhenAriaLabelledbyReferencesMissingId() {
+        String html = "<html><body>" +
+                "<label id=\"label1\">First Name</label>" +
+                "<input type=\"text\" aria-labelledby=\"doesNotExist\">" +
+                "</body></html>";
+        PsiFile file = myFixture.configureByText("form-aria-labelledby-missing.html", html).getContainingFile();
+        var violations = RuleEngine.getInstance().execute(file);
+        boolean found = violations.stream().anyMatch(v -> v.getMessage().toLowerCase().contains("aria-labelledby references non-existent"));
+        assertTrue("Missing aria-labelledby idref should be flagged", found);
+    }
 }

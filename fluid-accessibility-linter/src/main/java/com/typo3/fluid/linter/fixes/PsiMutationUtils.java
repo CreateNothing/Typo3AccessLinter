@@ -24,9 +24,11 @@ public final class PsiMutationUtils {
         String openTag = "<" + tagName + attrs + ">";
         String closeTag = "</" + tagName + ">";
         WriteCommandAction.runWriteCommandAction(project, "Wrap with tag", null, () -> {
+            PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+            pdm.doPostponedOperationsAndUnblockDocument(doc);
             doc.insertString(endOffset, closeTag);
             doc.insertString(startOffset, openTag);
-            PsiDocumentManager.getInstance(project).commitDocument(doc);
+            pdm.commitDocument(doc);
         });
     }
 
@@ -60,8 +62,10 @@ public final class PsiMutationUtils {
         if (gt < 0) return;
         int insertOffset = start + gt + 1;
         WriteCommandAction.runWriteCommandAction(project, "Insert after start tag", null, () -> {
+            PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+            pdm.doPostponedOperationsAndUnblockDocument(doc);
             doc.insertString(insertOffset, xml);
-            PsiDocumentManager.getInstance(project).commitDocument(doc);
+            pdm.commitDocument(doc);
         });
     }
 
@@ -73,8 +77,10 @@ public final class PsiMutationUtils {
         if (doc == null) return;
         int insertOffset = target.getTextRange().getStartOffset();
         WriteCommandAction.runWriteCommandAction(project, "Insert before element", null, () -> {
+            PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+            pdm.doPostponedOperationsAndUnblockDocument(doc);
             doc.insertString(insertOffset, xml);
-            PsiDocumentManager.getInstance(project).commitDocument(doc);
+            pdm.commitDocument(doc);
         });
     }
 
@@ -86,8 +92,10 @@ public final class PsiMutationUtils {
         if (doc == null) return;
         int insertOffset = target.getTextRange().getEndOffset();
         WriteCommandAction.runWriteCommandAction(project, "Insert after element", null, () -> {
+            PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+            pdm.doPostponedOperationsAndUnblockDocument(doc);
             doc.insertString(insertOffset, xml);
-            PsiDocumentManager.getInstance(project).commitDocument(doc);
+            pdm.commitDocument(doc);
         });
     }
 

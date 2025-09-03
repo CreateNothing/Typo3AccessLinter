@@ -29,7 +29,7 @@ public class RuleViolation {
     }
 
     public String getMessage() {
-        return String.format("[%s] %s", rule.getId(), result.getMessage());
+        return result.getMessage();
     }
 
     public AccessibilityRule.RuleSeverity getSeverity() {
