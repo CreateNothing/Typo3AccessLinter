@@ -161,11 +161,14 @@ Built and maintained by CreateNothing for the TYPO3 community. Not affiliated wi
                          level="WARNING"
                          implementationClass="com.typo3.fluid.linter.inspections.LiveRegionInspection"/>
         
-        <!-- Enhanced aria-label Validation -->
+        <!-- Enhanced aria-label Validation
+             Note: Disabled by default to avoid duplicate reports with the
+             UniversalAccessibilityInspection and AriaRoleInspection. Users can
+             enable this legacy standalone inspection from Settings if desired. -->
         <localInspection language="HTML"
                          displayName="Comprehensive aria-label validation"
                          groupName="Fluid Accessibility"
-                         enabledByDefault="true"
+                         enabledByDefault="false"
                          level="WARNING"
                          implementationClass="com.typo3.fluid.linter.inspections.AriaLabelValidationInspection"/>
         

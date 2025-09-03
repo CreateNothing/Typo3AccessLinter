@@ -461,12 +461,14 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
             // Replace the element text
             if (!newText.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         int startOffset = element.getTextRange().getStartOffset();
                         int endOffset = element.getTextRange().getEndOffset();
                         document.replaceString(startOffset, endOffset, newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }
@@ -505,14 +507,15 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
             
             // Replace the element text and position cursor in the empty aria-label
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                Document document = PsiDocumentManager.getInstance(project)
-                        .getDocument(element.getContainingFile());
+                PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                Document document = pdm.getDocument(element.getContainingFile());
                 if (document != null) {
+                    pdm.doPostponedOperationsAndUnblockDocument(document);
                     int startOffset = element.getTextRange().getStartOffset();
                     int endOffset = element.getTextRange().getEndOffset();
                     document.replaceString(startOffset, endOffset, newText);
+                    pdm.commitDocument(document);
                     
-                    // Try to position cursor inside the quotes
                     Editor editor = FileEditorManager
                             .getInstance(project).getSelectedTextEditor();
                     if (editor != null) {
@@ -552,12 +555,14 @@ public class AriaLabelValidationInspection extends FluidAccessibilityInspection 
             // Replace the element text
             if (!newText.equals(text)) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
-                    Document document = PsiDocumentManager.getInstance(project)
-                            .getDocument(element.getContainingFile());
+                    PsiDocumentManager pdm = PsiDocumentManager.getInstance(project);
+                    Document document = pdm.getDocument(element.getContainingFile());
                     if (document != null) {
+                        pdm.doPostponedOperationsAndUnblockDocument(document);
                         int startOffset = element.getTextRange().getStartOffset();
                         int endOffset = element.getTextRange().getEndOffset();
                         document.replaceString(startOffset, endOffset, newText);
+                        pdm.commitDocument(document);
                     }
                 });
             }

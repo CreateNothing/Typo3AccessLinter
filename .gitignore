@@ -20,6 +20,13 @@ node_modules/
 dist/
 build/
 
+# Release notes (local-only)
+releases/
+
+# Documentation (local-only)
+docs/
+**/a11y*.md
+
 # Environment files
 .env
 .env.local

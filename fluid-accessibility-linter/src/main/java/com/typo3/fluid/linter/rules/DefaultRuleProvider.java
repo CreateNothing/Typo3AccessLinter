@@ -61,6 +61,26 @@ public class DefaultRuleProvider implements RuleProvider {
             AccessibilityRule.RuleCategory.ARIA
         );
         engine.registerRule(ariaValidRule, new AriaValidationStrategy());
+
+        // ARIA role rules (validity, redundancy, conflicts, required props)
+        AccessibilityRule ariaRoleRule = createRule(
+            "aria-role",
+            "ARIA roles must be appropriate",
+            "Validate ARIA roles for validity, redundancy on semantic elements, and required properties",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.ARIA
+        );
+        engine.registerRule(ariaRoleRule, new AriaRoleValidationStrategy());
+
+        // ARIA label sanity rules (non-interactive misuse, empty labels, hidden elements)
+        AccessibilityRule ariaLabelSanityRule = createRule(
+            "aria-label-sanity",
+            "Avoid unnecessary aria-label",
+            "Use aria-label only when there is no visible text or to name landmarks/controls; avoid on non-interactive content and empty values",
+            AccessibilityRule.RuleSeverity.WARNING,
+            AccessibilityRule.RuleCategory.ARIA
+        );
+        engine.registerRule(ariaLabelSanityRule, new AriaLabelSanityStrategy());
         
         // Navigation rules
         AccessibilityRule linkTextRule = createRule(

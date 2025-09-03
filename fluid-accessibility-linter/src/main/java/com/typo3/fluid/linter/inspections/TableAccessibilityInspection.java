@@ -717,8 +717,10 @@ public class TableAccessibilityInspection extends FluidAccessibilityInspection {
             int insertAt = openEnd + 1;
             String caption = "<caption>Table</caption>";
             com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project, () -> {
+                com.intellij.psi.PsiDocumentManager pdm = com.intellij.psi.PsiDocumentManager.getInstance(project);
+                pdm.doPostponedOperationsAndUnblockDocument(doc);
                 doc.insertString(insertAt, caption);
-                com.intellij.psi.PsiDocumentManager.getInstance(project).commitDocument(doc);
+                pdm.commitDocument(doc);
             });
         }
     }
