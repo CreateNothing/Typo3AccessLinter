@@ -67,8 +67,7 @@ public class PageLanguageInspection extends FluidAccessibilityInspection {
             return;
         }
         
-        // Check HTML element for lang attribute
-        checkHtmlElementLanguage(content, file, holder);
+        // Skip requiring <html> root; only validate present language attributes and compatibility
         
         // Check all lang attributes for valid codes
         checkLanguageCodeValidity(content, file, holder);
@@ -94,8 +93,8 @@ public class PageLanguageInspection extends FluidAccessibilityInspection {
             // Check if html tag exists and has xmlns:f attribute (namespace declaration only)
             Pattern htmlWithNamespace = Pattern.compile("<html[^>]*xmlns:f=[^>]*>", Pattern.CASE_INSENSITIVE);
             if (htmlWithNamespace.matcher(content).find()) {
-                // If html tag only has Fluid namespace and no DOCTYPE, it's likely a Layout/Partial
-                if (!content.contains("<!DOCTYPE") && !content.contains("<head>") && !content.contains("<body>")) {
+                // If html tag only has Fluid namespace and lacks head/body, it's likely a Layout/Partial
+                if (!content.contains("<head>") && !content.contains("<body>")) {
                     return true;
                 }
             }
@@ -105,58 +104,8 @@ public class PageLanguageInspection extends FluidAccessibilityInspection {
     }
     
     private void checkHtmlElementLanguage(String content, PsiFile file, ProblemsHolder holder) {
-        Matcher htmlMatcher = HTML_TAG_PATTERN.matcher(content);
-        
-        if (htmlMatcher.find()) {
-            String htmlTag = htmlMatcher.group();
-            int offset = htmlMatcher.start();
-            
-            // Check for lang attribute
-            if (!hasAttribute(htmlTag, "lang")) {
-                registerProblem(file, holder, offset,
-                    "Missing lang attribute on <html> element (WCAG 3.1.1 Level A)",
-                    ProblemHighlightType.ERROR,
-                    new AddLangAttributeQuickFix());
-            } else {
-                // Check if lang value is empty
-                String langValue = getAttributeValue(htmlTag, "lang");
-                if (AccessibilityUtils.isEmptyOrWhitespace(langValue)) {
-                    registerProblem(file, holder, offset,
-                        "Lang attribute is empty - must specify a valid language code",
-                        ProblemHighlightType.ERROR,
-                        new SetLangValueQuickFix("en"));
-                } else if (!AccessibilityUtils.isValidLanguageCode(langValue)) {
-                    registerProblem(file, holder, offset,
-                        String.format("Invalid language code '%s' - use BCP 47 format (e.g., 'en', 'en-US', 'de')",
-                            langValue),
-                        ProblemHighlightType.ERROR,
-                        new SetLangValueQuickFix("en"));
-                }
-            }
-            
-            // Check for xml:lang attribute
-            if (hasAttribute(htmlTag, "xml:lang")) {
-                String xmlLangValue = getAttributeValue(htmlTag, "xml:lang");
-                String langValue = getAttributeValue(htmlTag, "lang");
-                
-                if (langValue != null && xmlLangValue != null && !langValue.equals(xmlLangValue)) {
-                    registerProblem(file, holder, offset,
-                        String.format("xml:lang='%s' doesn't match lang='%s' - they should be identical",
-                            xmlLangValue, langValue),
-                        ProblemHighlightType.WARNING,
-                        new SyncXmlLangQuickFix());
-                }
-            }
-        } else {
-            // No HTML element found - this might be a partial template
-            // Check if this looks like a complete HTML document
-            if (content.contains("<!DOCTYPE") || content.contains("<head>") || content.contains("<body>")) {
-                registerProblem(file, holder, 0,
-                    "Missing <html> element with lang attribute",
-                    ProblemHighlightType.ERROR,
-                    null);
-            }
-        }
+        // Removed: no longer require <html> element or lang on <html>
+        return;
     }
     
     private void checkLanguageCodeValidity(String content, PsiFile file, ProblemsHolder holder) {
