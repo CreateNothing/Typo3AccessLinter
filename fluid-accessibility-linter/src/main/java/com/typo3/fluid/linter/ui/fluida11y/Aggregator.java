@@ -33,7 +33,7 @@ public final class Aggregator implements DumbAware {
                 RowKey key = new RowKey(ch.key.ctx, ch.key.kind, ch.key.logicalName);
                 String badge = toBadge(ch.oldFile, ch.newFile);
                 String path = displayPath(ch.newFile != null ? ch.newFile : ch.oldFile);
-                overrides.put(key, new OverridesVM.Row(key.ctx, key.kind, key.logicalName, badge, path));
+                overrides.put(key, new OverridesVM.Row(key.ctx, key.kind, key.name, badge, path));
             }
             requestRefresh();
         });

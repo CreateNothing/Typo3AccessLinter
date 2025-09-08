@@ -28,6 +28,20 @@ public class HeadingHierarchyInspectionTest extends LightJavaCodeInsightFixtureT
         }
     }
 
+    private void doNotContain(String html, String... unexpectedMessages) {
+        myFixture.configureByText("test.html", html);
+        myFixture.enableInspections(new HeadingHierarchyInspection());
+        var highlights = myFixture.doHighlighting();
+        for (String unexpected : unexpectedMessages) {
+            boolean found = highlights.stream().anyMatch(h -> h.getDescription() != null && h.getDescription().contains(unexpected));
+            if (found) {
+                System.out.println("Unexpectedly found: " + unexpected);
+                highlights.forEach(h -> System.out.println("  - " + h.getDescription()));
+            }
+            assertFalse("Unexpected message found: " + unexpected, found);
+        }
+    }
+
     @Test
     public void testMultipleH1InMainContent() {
         String html = "<h1>Main Title</h1><p>content</p><h1>Another Title</h1>";
@@ -83,5 +97,11 @@ public class HeadingHierarchyInspectionTest extends LightJavaCodeInsightFixtureT
     public void testLargeHeadingJumpBetweenContexts() {
         String html = "<h1>Title</h1><f:section name=\"part\"><h5>Deep</h5></f:section>";
         doTest(html, "Large heading level jump between contexts: H1 to H5. Consider intermediate heading levels");
+    }
+
+    @Test
+    public void testTranslateViewHelperNotEmptyHeading() {
+        String html = "<h1><f:translate key=\"plugin.members\" /></h1>";
+        doNotContain(html, "Empty H1 element in main content - headings must contain text content");
     }
 }

@@ -201,18 +201,23 @@ public class AccessibilityUtils {
     }
     
     /**
-     * Extract text content from HTML, removing tags
+     * Extract text content from HTML/Fluid, removing tags. Recognizes certain
+     * Fluid ViewHelpers that produce textual output (e.g. <f:translate />) and
+     * substitutes their meaningful value so that headings aren’t falsely marked empty.
      */
     public static String extractTextContent(String html) {
         if (html == null) return "";
-        
-        // Remove script and style content
+
+        // Remove script and style content first
         html = html.replaceAll("(?s)<script[^>]*>.*?</script>", "");
         html = html.replaceAll("(?s)<style[^>]*>.*?</style>", "");
-        
-        // Remove HTML tags
+
+        // Substitute common Fluid text-producing ViewHelpers before stripping tags
+        html = substituteFluidTranslate(html);
+
+        // Remove remaining HTML/Fluid tags
         html = html.replaceAll("<[^>]+>", " ");
-        
+
         // Decode common HTML entities
         html = html.replaceAll("&nbsp;", " ");
         html = html.replaceAll("&amp;", "&");
@@ -220,9 +225,41 @@ public class AccessibilityUtils {
         html = html.replaceAll("&gt;", ">");
         html = html.replaceAll("&quot;", "\"");
         html = html.replaceAll("&#39;", "'");
-        
+
         // Clean up whitespace
         return html.replaceAll("\\s+", " ").trim();
+    }
+
+    // Recognize <f:translate .../> and replace with a representative text so
+    // that content checks (e.g., empty-heading) see non-empty text.
+    private static String substituteFluidTranslate(String html) {
+        final java.util.regex.Pattern p = java.util.regex.Pattern.compile(
+                "<f:translate\\b[^>]*/>", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
+        final java.util.regex.Matcher m = p.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            String tag = m.group();
+            String replacement = extractAttribute(tag, "default");
+            if (isEmptyOrWhitespace(replacement)) {
+                replacement = extractAttribute(tag, "key");
+            }
+            if (isEmptyOrWhitespace(replacement)) {
+                // Fallback placeholder to ensure non-empty content when translate is present
+                replacement = "i18n";
+            }
+            m.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(" " + replacement + " "));
+        }
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
+    // Extracts an attribute value (single or double quoted) from a tag snippet
+    private static String extractAttribute(String tag, String attr) {
+        java.util.regex.Matcher am = java.util.regex.Pattern.compile(
+                "\\b" + java.util.regex.Pattern.quote(attr) + "\\s*=\\s*(['\"])(.*?)\\1",
+                java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL
+        ).matcher(tag);
+        return am.find() ? am.group(2) : null;
     }
     
     /**

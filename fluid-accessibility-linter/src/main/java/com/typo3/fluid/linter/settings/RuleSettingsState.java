@@ -1,6 +1,7 @@
 package com.typo3.fluid.linter.settings;
 
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.components.StoragePathMacros;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+@Service(Service.Level.PROJECT)
 @State(name = "FluidAccessibilityRuleSettings",
         storages = {@Storage(StoragePathMacros.WORKSPACE_FILE)})
 public class RuleSettingsState implements PersistentStateComponent<RuleSettingsState.State> {
