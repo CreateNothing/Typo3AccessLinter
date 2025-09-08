@@ -15,7 +15,7 @@ import java.util.Map;
 @Service(Service.Level.PROJECT)
 @State(name = "FluidAccessibilityRuleSettings",
         storages = {@Storage(StoragePathMacros.WORKSPACE_FILE)})
-public class RuleSettingsState implements PersistentStateComponent<RuleSettingsState.State> {
+public final class RuleSettingsState implements PersistentStateComponent<RuleSettingsState.State> {
 
     public static class State {
         public Map<String, Boolean> enabled = new HashMap<>();

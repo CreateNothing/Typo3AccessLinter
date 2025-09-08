@@ -21,6 +21,7 @@ public final class ProfileIO {
 
     public static void exportProfile(Project project, File file) throws Exception {
         RuleSettingsState state = RuleSettingsState.getInstance(project);
+        if (state == null) throw new IllegalStateException("RuleSettingsState service not available");
         try (BufferedWriter w = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
             w.write(GSON.toJson(state.getState()));
         }
@@ -28,6 +29,7 @@ public final class ProfileIO {
 
     public static void importProfile(Project project, File file) throws Exception {
         RuleSettingsState stateSvc = RuleSettingsState.getInstance(project);
+        if (stateSvc == null) throw new IllegalStateException("RuleSettingsState service not available");
         try (BufferedReader r = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
             RuleSettingsState.State in = GSON.fromJson(r, RuleSettingsState.State.class);
             if (in != null) {
@@ -36,4 +38,3 @@ public final class ProfileIO {
         }
     }
 }
-
