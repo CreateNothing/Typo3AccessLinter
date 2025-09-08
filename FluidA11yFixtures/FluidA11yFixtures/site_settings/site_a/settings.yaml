@@ -1,0 +1,5 @@
+styles:
+  templates:
+    partialRootPath: 'EXT:site_a/Resources/Private/Partials'
+    templateRootPath: 'EXT:ext_vendor/Resources/Private/Templates'
+    layoutRootPath: 'EXT:ext_vendor/Resources/Private/Layouts'

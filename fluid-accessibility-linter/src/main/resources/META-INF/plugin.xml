@@ -29,6 +29,30 @@ Built and maintained by CreateNothing for the TYPO3 community. Not affiliated wi
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- Unified Tool Window: Fluid A11y (tabs: Outline, Parents & Overrides, Diagnostics) -->
+        <toolWindow id="Fluid A11y"
+                    anchor="right"
+                    factoryClass="com.typo3.fluid.linter.ui.fluida11y.FluidA11yToolWindowFactory"
+                    canCloseContents="false"/>
+
+        <!-- Editor Inspector Bar (notification area at top of editor) -->
+        <editorNotificationProvider implementation="com.typo3.fluid.linter.ui.fluida11y.editor.InspectorBarProvider"/>
+
+        <!-- Tool Window: Parents & Overrides -->
+        <toolWindow id="Fluid Parents &amp; Overrides"
+                    anchor="right"
+                    factoryClass="com.typo3.fluid.linter.ui.parents.ParentsOverridesToolWindowFactory"
+                    canCloseContents="false"/>
+
+        <!-- Tool Window: Heading Outline -->
+        <toolWindow id="Fluid Heading Outline"
+                    anchor="right"
+                    factoryClass="com.typo3.fluid.linter.ui.outline.HeadingOutlineToolWindowFactory"
+                    canCloseContents="false"/>
+
+        <!-- Live update wiring: initialize BulkFileListener at project startup -->
+        <postStartupActivity implementation="com.typo3.fluid.linter.update.GraphUpdateStartupActivity"/>
+
         <!-- Phase 1: Activate Universal Inspection Entry Point -->
         <!-- Single, rule-engine based inspection (kept alongside legacy during migration) -->
         <localInspection language="HTML"

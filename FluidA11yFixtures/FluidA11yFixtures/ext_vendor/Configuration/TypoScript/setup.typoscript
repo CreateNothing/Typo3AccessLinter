@@ -1,0 +1,25 @@
+plugin.tx_vendor.view {
+  templateRootPaths {
+    0 = EXT:ext_vendor/Resources/Private/Templates/
+  }
+  partialRootPaths {
+    0 = EXT:ext_vendor/Resources/Private/Partials/
+  }
+  layoutRootPaths {
+    0 = EXT:ext_vendor/Resources/Private/Layouts/
+  }
+}
+
+page = PAGE
+page.10 = FLUIDTEMPLATE
+page.10 {
+  templateRootPaths {
+    0 = EXT:ext_vendor/Resources/Private/Templates/
+  }
+  partialRootPaths {
+    0 = EXT:ext_vendor/Resources/Private/Partials/
+  }
+  layoutRootPaths {
+    0 = EXT:ext_vendor/Resources/Private/Layouts/
+  }
+}
